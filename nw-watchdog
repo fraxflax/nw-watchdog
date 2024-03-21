@@ -31,7 +31,7 @@ IPADDRALRT=y                           # --no-ipaddr-alert | -A
 IFCUPDOWN=y                            # --no-interface-reset | -R
 FORK=y                                 # --foreground | --no-daemonize | -D
 #PROXYID=''                            # --ipsec-policy-routing | --proxy-id | -P
-                                       # --verbose | -v ; --debug
+# --verbose | -v ; --debug
 V=4				       # --verbosity-level | -V
 IFC=''                                 # --interface | -i
 STATICIFC=''                           # --force-interface | -I
@@ -51,6 +51,7 @@ IFCDOWNT='ifdown %{IFC}'               # --ifcdown | -U
 ALERTCMD='exec wall'                   # --alert | -a
 #ALERTCMD="mailx -s 'Network Watchdog Alert' root@`cat /etc/mailname`"
 SYSTEMDSERVICENAME=''                  # --install-systemd
+
 USAGE() {
     [ -n "$1" ] && printf "$@"
 
@@ -287,14 +288,14 @@ ${_b_}EXAMPLES:$__
 
 	$_b_$nwwatchdog$__ wgserver.domain.dom \\
 EOU
-cat<<'EOU'
+    cat<<'EOU'
           --log-level=alert \
 	  --alert='mailx -a "From: nwwatchdog@`cat hostname -f`" -s "wgserver via %{IFC}" admin@`cat /etc/mailname`' \
 	  --slow-up-timeout=3 \
 	  --ifup-grace=20 \
 	  --install-systemd=nwwatchdog-wgserver
 EOU
-$FMT<<EOU
+    $FMT<<EOU
 
 	Then we setup the monitor for the wireguard full tunnel which will also create and configure the tunnel:
 	OBSERVE that we, as ${___}TARGET$__, use the actual gw and peer for the subnet (1.0.0.1) and therefore we don't need to ping-check the ${___}TARGET$__ (--no-ping-target) as it will be checked as nexthop.
@@ -303,7 +304,7 @@ $FMT<<EOU
 
 	$_b_$nwwatchdog$__ 10.0.0.1 \\
 EOU
-cat<<'EOU'
+    cat<<'EOU'
 	  --no-ping-target \
 	  --log-level=alert \
 	  --alert='mailx -a "From: nwwatchdog@`cat hostname -f`" -s "wireguard wg0" admin@`cat /etc/mailname`' \
@@ -316,14 +317,14 @@ cat<<'EOU'
 		     | grep " has address "
                      | cut -d" " -f4
                      | while read addr; do
-                         `echo ip route add $addr/32 via `ip route show default | head -1 | cut -d" " -f3` ;
+                         ip route add $addr/32 via `ip route show default | head -1 | cut -d" " -f3` ;
                        done ; 
                      ip route add 0.0.0.0/1 via 10.0.0.1 dev wg0 src 10.0.0.2 ; 
 		     ip route add 128.0.0.0/1 via 10.0.0.1 dev wg0 src 10.0.0.2 2>/dev/null' \
           --ifcdown='ip link del wg0' \
 	  --install-systemd=nwwatchdog-wg0     
 EOU
-$FMT<<EOU
+    $FMT<<EOU
 
 ${_b_}DEPENDENCIES:$__
 
@@ -331,11 +332,14 @@ EOU
 
     [ -n "$1" ] && printf "$@"
 }
-
 USAGEpager() {
-    which less >/dev/null 2>&1 && { USAGE "$@" | less -R ; exit 1;}
-    which more >/dev/null 2>&1 && { USAGE "$@" | more ; exit 1;}
-    USAGE "$@"
+    if which less >/dev/null 2>&1; then
+	USAGE "$@" | less -R 
+    elif which more >/dev/null 2>&1; then
+	USAGE "$@" | more
+    else
+	USAGE "$@"
+    fi
 }
 warnnl() {
     local PATN="$1" ; shift
@@ -352,9 +356,10 @@ dieUSAGEpager() {
     USAGEpager "$PATN" "$@"
     exit 1
 }
+
 # Parse arguments
 SOPTS='[hNPARDvd]' # Short options without arguments
-xTARGET='';xV='';xIFC='';xLOGFILE='';xLOGSIZE='';xPIDFILE='';xSLOWUPTIMEOUT='';xSLEEP='';xGRACE='';xMAXNOLINK='';xIFCUPT='';xIFCDOWNT='';ALERTCMD='';xSYSTEMDSERVICENAME=''
+xTARGET='';xV='';xIFC='';xLOGFILE='';xLOGSIZE='';xPIDFILE='';xSLOWUPTIMEOUT='';xSLEEP='';xGRACE='';xMAXNOLINK='';xIFCUPT='';xIFCDOWNT='';xALERTCMD='';xSYSTEMDSERVICENAME=''
 
 while [ $# -gt 0 ]; do
     ARG="$1"; shift
@@ -380,7 +385,7 @@ while [ $# -gt 0 ]; do
 	    ;;
 	-v|--verbose)
 	    [ -z "$xV" ] || dieUSAGEpager "verbosity-level specified multiple times\n%s" \
-				  "(exclusively use '-v', '--verbose', '-V' or '--verbosity-level' only once)"
+					  "(exclusively use '-v', '--verbose', '-V' or '--verbosity-level' only once)"
 	    xV=1; V=5
 	    ;;
 	-d|--debug)
@@ -396,11 +401,10 @@ while [ $# -gt 0 ]; do
 	    A=`printf "%s" "$ARG" | sed -E 's/(..)(.*)/\1/'`
 	    B=`printf "%s" "$ARG" | sed -E 's/(..)(.*)/-\2/'`
 	    set -- "$A" "$B" "$@"
-	    exit 0
 	    ;;
 	-V*|--verbosity-level*)
 	    [ -z "$xV" ] || dieUSAGEpager "verbosity-level specified multiple times\n%s" \
-				  "(exclusively use '-v', '-V' or '--verbosity-level' only once)"
+					  "(exclusively use '-v', '-V' or '--verbosity-level' only once)"
 	    if [ "$ARG" = "-V" -o "$ARG" = "--verbosity-level" ]; then V="$1"; shift
 	    elif printf "%s" "$ARG" | grep -qEe '-(-verbosity-level|V)=.*' ; then V="${ARG#*=}"
 	    else V=`printf "%s" "$ARG" | sed -E 's/-(-verbosity-level|V)//'`; fi
@@ -409,7 +413,7 @@ while [ $# -gt 0 ]; do
 	    ;;
 	-i*|--interface*)
 	    [ -z "$xIFC" ] || dieUSAGEpager "interface specified multiple times\n%s" \
-				    "(exclusively use '-i', '--interface', '-I' or '--force-interface' only once)"
+					    "(exclusively use '-i', '--interface', '-I' or '--force-interface' only once)"
 	    if [ "$ARG" = "-i" -o "$ARG" = "--interface" ]; then IFC="$1"; shift
 	    elif printf "%s" "$ARG" | grep -qEe '-(-interface|i)=.*' ; then IFC="${ARG#*=}"
 	    else IFC=`printf "%s" "$ARG" | sed -E 's/-(-interface|i)//'`; fi
@@ -417,7 +421,7 @@ while [ $# -gt 0 ]; do
 	    ;;
 	-I*|--force-interface*)
 	    [ -z "$xIFC" ] || dieUSAGEpager "interface specified multiple times\n%s" \
-				    "(exclusively use '-i', '--interface', '-I' or '--force-interface' only once)"
+					    "(exclusively use '-i', '--interface', '-I' or '--force-interface' only once)"
 	    if [ "$ARG" = "-I" -o "$ARG" = "--force-interface" ]; then STATICIFC="$1"; shift
 	    elif printf "%s" "$ARG" | grep -qEe '-(-force-interface|I)=.*' ; then STATICIFC="${ARG#*=}"
 	    else STATICIFC=`printf "%s" "$ARG" | sed -E 's/-(-force-interface|I)//'`; fi
@@ -426,7 +430,7 @@ while [ $# -gt 0 ]; do
 	    ;;
 	-l*|--logfile*)
 	    [ -z "$xLOGFILE" ] || dieUSAGEpager "logfile specified multiple times\n%s" \
-					"(exclusively use '-l', or '--logfile' only once)"
+						"(exclusively use '-l', or '--logfile' only once)"
 	    if [ "$ARG" = "-l" -o "$ARG" = "--logfile" ]; then LOGFILE="$1"; shift
 	    elif printf "%s" "$ARG" | grep -qEe '-(-logfile|l)=.*' ; then LOGFILE="${ARG#*=}"
 	    else LOGFILE=`printf "%s" "$ARG" | sed -E 's/-(-logfile|l)//'`; fi
@@ -434,7 +438,7 @@ while [ $# -gt 0 ]; do
 	    ;;
 	-z*|--logsize*)
 	    [ -z "$xLOGSIZE" ] || dieUSAGEpager "logsize specified multiple times\n%s" \
-					"(exclusively use '-z' or '--logsize' only once)"
+						"(exclusively use '-z' or '--logsize' only once)"
 	    if [ "$ARG" = "-z" -o "$ARG" = "--logsize" ]; then LOGSIZE="$1"; shift
 	    elif printf "%s" "$ARG" | grep -qEe '-(-logsize|z)=.*' ; then LOGSIZE="${ARG#*=}"
 	    else LOGSIZE=`printf "%s" "$ARG" | sed -E 's/-(-logsize|z)//'`; fi
@@ -443,7 +447,7 @@ while [ $# -gt 0 ]; do
 	    ;;
 	-p*|--pidfile*)
 	    [ -z "$xPIDFILE" ] || dieUSAGEpager "pidfile specified multiple times\n%s" \
-					"(exclusively use '-p', or '--pidfile' only once)"
+						"(exclusively use '-p', or '--pidfile' only once)"
 	    if [ "$ARG" = "-p" -o "$ARG" = "--pidfile" ]; then PIDFILE="$1"; shift
 	    elif printf "%s" "$ARG" | grep -qEe '-(-pidfile|p)=.*' ; then PIDFILE="${ARG#*=}"
 	    else PIDFILE=`printf "%s" "$ARG" | sed -E 's/-(-pidfile|p)//'`; fi
@@ -460,7 +464,7 @@ while [ $# -gt 0 ]; do
 	    ;;
 	-s*|--sleep*|--interval*)
 	    [ -z "$xSLEEP" ] || dieUSAGEpager "interval specified multiple times\n%s" \
-				      "(exclusively use '-s', '--sleep' or '--interval' only once)"
+					      "(exclusively use '-s', '--sleep' or '--interval' only once)"
 	    if [ "$ARG" = "-s" -o "$ARG" = "--sleep" -o "$ARG" = "--interval" ]; then SLEEP="$1"; shift
 	    elif printf "%s" "$ARG" | grep -qEe '-(-(sleep|interval)|s)=.*' ; then SLEEP="${ARG#*=}"
 	    else SLEEP=`printf "%s" "$ARG" | sed -E 's/-(-(sleep|interval)|s)//'`; fi
@@ -469,7 +473,7 @@ while [ $# -gt 0 ]; do
 	    ;;
 	-g*|--ifup-grace*)
 	    [ -z "$xGRACE" ] || dieUSAGEpager "ifup-grace specified multiple times\n%s" \
-				      "(exclusively use '-g' or '--ifup-grace' only once)"
+					      "(exclusively use '-g' or '--ifup-grace' only once)"
 	    if [ "$ARG" = "-g" -o "$ARG" = "--ifup-grace" ]; then GRACE="$1"; shift
 	    elif printf "%s" "$ARG" | grep -qEe '-(-ifup-grace|g)=.*' ; then GRACE="${ARG#*=}"
 	    else GRACE=`printf "%s" "$ARG" | sed -E 's/-(-ifup-grace|g)//'`; fi
@@ -478,7 +482,7 @@ while [ $# -gt 0 ]; do
 	    ;;
 	-n*|--max-nolink*)
 	    [ -z "$xMAXNOLINK" ] || dieUSAGEpager "max-nolink specified multiple times\n%s" \
-				      "(exclusively use '-n' or '--max-nolink' only once)"
+						  "(exclusively use '-n' or '--max-nolink' only once)"
 	    if [ "$ARG" = "-n" -o "$ARG" = "--max-nolink" ]; then MAXNOLINK="$1"; shift
 	    elif printf "%s" "$ARG" | grep -qEe '-(-max-nolink|n)=.*' ; then MAXNOLINK="${ARG#*=}"
 	    else MAXNOLINK=`printf "%s" "$ARG" | sed -E 's/-(-max-nolink|n)//'`; fi
@@ -487,31 +491,31 @@ while [ $# -gt 0 ]; do
 	    ;;
 	-u*|--ifcup*)
 	    [ -z "$xIFCUPT" ] || dieUSAGEpager "ifcup specified multiple times\n%s" \
-					"(exclusively use '-u', or '--ifcup' only once)"
-	    if [ "$ARG" = "-p" -o "$ARG" = "--ifcup" ]; then IFCUPT="$1"; shift
+					       "(exclusively use '-u', or '--ifcup' only once)"
+	    if [ "$ARG" = "-u" -o "$ARG" = "--ifcup" ]; then IFCUPT="$1"; shift
 	    elif printf "%s" "$ARG" | grep -qEe '-(-ifcup|u)=.*' ; then IFCUPT="${ARG#*=}"
 	    else IFCUPT=`printf "%s" "$ARG" | sed -E 's/-(-ifcup|u)//'`; fi
 	    xIFCUPT=1;
 	    ;;
 	-U*|--ifcdown*)
 	    [ -z "$xIFCDOWNT" ] || dieUSAGEpager "ifcdown specified multiple times\n%s" \
-					"(exclusively use '-U', or '--ifcdown' only once)"
-	    if [ "$ARG" = "-p" -o "$ARG" = "--ifcdown" ]; then IFCDOWNT="$1"; shift
+						 "(exclusively use '-U', or '--ifcdown' only once)"
+	    if [ "$ARG" = "-U" -o "$ARG" = "--ifcdown" ]; then IFCDOWNT="$1"; shift
 	    elif printf "%s" "$ARG" | grep -qEe '-(-ifcdown|U)=.*' ; then IFCDOWNT="${ARG#*=}"
 	    else IFCDOWNT=`printf "%s" "$ARG" | sed -E 's/-(-ifcdown|U)//'`; fi
 	    xIFCDOWNT=1;
 	    ;;
 	-a*|--alert*)
 	    [ -z "$xALERTCMD" ] || dieUSAGEpager "alert specified multiple times\n%s" \
-					"(exclusively use '-a', or '--alert' only once)"
-	    if [ "$ARG" = "-p" -o "$ARG" = "--alert" ]; then ALERTCMD="$1"; shift
+						 "(exclusively use '-a', or '--alert' only once)"
+	    if [ "$ARG" = "-a" -o "$ARG" = "--alert" ]; then ALERTCMD="$1"; shift
 	    elif printf "%s" "$ARG" | grep -qEe '-(-alert|a)=.*' ; then ALERTCMD="${ARG#*=}"
 	    else ALERTCMD=`printf "%s" "$ARG" | sed -E 's/-(-alert|a)//'`; fi
 	    xALERTCMD=1;
 	    ;;
 	--install-systemd*)
 	    [ -z "$xSYSTEMDSERVICENAME" ] || dieUSAGEpager "install-systemd specified multiple times\n%s" \
-					"(exclusively use '-a', or '--install-systemd' only once)"
+							   "(exclusively use '-a', or '--install-systemd' only once)"
 	    if [ "$ARG" = "--install-systemd" ]; then SYSTEMDSERVICENAME="$1"; shift
 	    elif printf "%s" "$ARG" | grep -qEe '--install-systemd=.*' ; then SYSTEMDSERVICENAME="${ARG#*=}"
 	    else SYSTEMDSERVICENAME=`printf "%s" "$ARG" | sed -E 's/--install-systemd//'`; fi
@@ -523,18 +527,18 @@ while [ $# -gt 0 ]; do
 	    ;;
     esac
 done
-[ -z "$PINGTARGET" -a -z "$PINGNEXTHOP" ] && dieUSAGEpager "You must allow pinging of target and/or nexthop!\n%s\%" \
-				     "(can't use --no-ping-target and --no-ping-nexthop at the same time)"
+[ -z "$PINGTARGET" -a -z "$PINGNEXTHOP" ] && dieUSAGEpager "You must allow pinging of target and/or nexthop!\n%s" \
+							   "(can't use --no-ping-target and --no-ping-nexthop at the same time)"
 
 [ -n "$TARGET" ] || dieUSAGEpager "%s\n%s" \
-		       "Target not specified!" "Specify IP address or resolvable hostname."
+				  "Target not specified!" "Specify IP address or resolvable hostname."
 
 [ "$LOGFILE" = '-' ] && LOGFILE=''
 [ -n "$LOGFILE" ] && {
     touch "$LOGFILE" 2>/dev/null || \
 	dienl "%s\n%s" "Cannot write to logfile '$LOGFILE'." "Run as user with access or specify another --logfile."
 }
-
+#~~~
 log() {
     #[ "$LOGSIZE" -gt 0 ] && [ -f "$LOGFILE" ] && [ `stat -c %s $LOGFILE` -gt $LOGSIZE ] && mv $LOGFILE $LOGFILE.old
     local PATN="$1\n" ; shift
@@ -667,8 +671,8 @@ nexthop() {
 	    info "Detected topology: IFC='%s' -> '%s' ; NEXTHOP='%s' -> '%s'" "$IFC" "$NIFC" "$NEXTHOP" "$NNEXTHOP"
 	    IFC="$NIFC"
 	    IFCUP=`printf "%s" "$IFCUPT" | sed -E "s/\%\{IFC\}/$IFC/g"`
-	    IFCDOWN=`echo "%s" "$IFCDOWNT" | sed -E "s/\%\{IFC\}/$IFC/g"`
-	    ALERTCMD=`echo "%s" "$ALERTCMD" | sed -E "s/\%\{IFC\}/$IFC/g"`
+	    IFCDOWN=`printf "%s" "$IFCDOWNT" | sed -E "s/\%\{IFC\}/$IFC/g"`
+	    ALERTCMD=`printf "%s" "$ALERTCMD" | sed -E "s/\%\{IFC\}/$IFC/g"`
 	    NEXTHOP="$NNEXTHOP"
 	    return 0
 	elif [ "$STATICIFC" = "$NIFC" ]; then
@@ -679,7 +683,7 @@ nexthop() {
 	    return 0
 	else
 	    alert "Conflicting topology detected, route to target '%s' (%s) is on interface '%s', but forced Interface is '%s'" \
-		 "$TARGET" "$TADDR" "$NIFC" "$STATICIFC"
+		  "$TARGET" "$TADDR" "$NIFC" "$STATICIFC"
 	    return 0
 	fi
     else
@@ -704,21 +708,54 @@ touch "$PIDFILE" 2>/dev/null || die "%s\n%s" "Cannot write to pidfile '$PIDFILE'
 PID=`cat "$PIDFILE"`
 [ "$PID" -qt 0 ] 2>/dev/null && [ -d /proc/$PID ] && dienl "Process already running with pid $PID"
 
-[ -n "$FORK" ] && { 
+[ -n "$FORK" -o -n "$SYSTEMDSERVICENAME" ] && { 
     trace MAINPID=$$
-    trace "forking: %s" "$0 -D -l \"$LOGFILE\" -d $TARGET $NOPTS -V $V -i $IFC -z $LOGSIZE -p \"$PIDFILE\" -s $SLEEP -g $GRACE"
     NOPTS='-D'
     [ -z "$PINGNEXTHOP" ] && NOPTS="${NOPTS}G"
     [ -z "$PINGTARGET" ] && NOPTS="${NOPTS}P"
-    [ -z "$IFCUPDOWN" ] && NOPTS="${NOPTS}I"
-    [ -z "$LOGFILE" ] && LOGFILE='-'
-    { sleep 0.25 ; exec "$0" $TARGET ${NOPTS}i$IFC -p"$PIDFILE" -V$V -l"$LOGFILE" -z$LOGSIZE -s$SLEEP -g$GRACE ;} &
-    exit 0
+    [ -z "$IPADDRALRT" ] && NOPTS="${NOPTS}A"
+    [ -z "$IFCUPDOWN" ] && NOPTS="${NOPTS}R"
+
+    AOPTS="V$V -t$SLOWUPTIMEOUT -s$SLEEP -g$GRACE -n$MAXNOLINK -u'$IFCUPT' -U'$IFCDOWNT' -a'$ALERTCMD' -z$LOGSIZE" 
+    [ -z "$STATICIFC" -a -n "$xIFC" ] && AOPTS="$AOPS -i '$IFC'"
+    [ -n "$STATICIFC" ] && AOPTS="$AOPS -I '$IFC'"
+
+    [ -n "$FORK" ] && {
+	if [ -n "$LOGFILE" ]; then AOPTS="$AOPTS -l '$LOGFILE'"
+	else AOPTS="$AOPTS -l-"; fi
+	AOPTS="$AOPTS -p'$PIDFILE'"
+	trace "forking: %s" "sh '$0' '$TARGET' $NOPTS$AOPTS"
+	{ sleep 0.25 ; sh -c "sh '$0' '$TARGET' $NOPTS$AOPTS" ;} &
+	exit 0
+    }
+    ### Generate systemd service file here
+    echo "SYSTEMDSERVICENAME=$SYSTEMDSERVICENAME"
+    exit 0;
 }
-echo $$ > "$PIDFILE"
+printf $$ > "$PIDFILE"
 trace PID=$$
-debug "\n\tSETTINGS:\n\tV=%d\n\tFORK=%s\n\tTARGET=%s\n\tIFC=%s\n\tPINGNEXTHOP=%s\n\tPINGTARGET=%s\n\tLOGFILE=%s\n\tLOGSIZE=%d\n\tPIDFILE=%s\n\tSLEEP=%d\n\tGRACE=%d\n\tIFCUPDOWN=%s\n\tIFCUP='%s'\n\tIFCDOWN='%s'\n" \
-      "$V"  "$FORK"  "$TARGET"  "$IFC"  "$PINGNEXTHOP"  "$PINGTARGET"  "$LOGFILE"  "$LOGSIZE"  "$PIDFILE"  "$SLEEP"  "$GRACE"  "$IFCUPDOWN" "$IFCUP"  "$IFCDOWN"
+debug "\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s" \
+      "~~~ SETTINGS ~~~" \
+      "TARGET='$TARGET'" \
+      "PINGNEXTHOP='$PINGNEXTHOP'" \
+      "PINGTARGET='$PINGTARGET'" \
+      "IPADDRALRT='$IPADDRALRT'" \
+      "IFCUPDOWN='$IFCUPDOWN'" \
+      "FORK='$FORK'" \
+      "V='$V'" \
+      "IFC='$IFC'" \
+      "STATICIFC='$STATICIFC'" \
+      "LOGFILE='$LOGFILE'" \
+      "LOGSIZE='$LOGSIZE'" \
+      "PIDFILE='$PIDFILE'" \
+      "SLOWUPTIMEOUT='$SLOWUPTIMEOUT'" \
+      "SLEEP='$SLEEP'" \
+      "GRACE='$GRACE'" \
+      "MAXNOLINK='$MAXNOLINK'" \
+      "IFCUPT='$IFCUPT'" \
+      "IFCDOWNT='$IFCDOWNT'" \
+      "ALERTCMD='$ALERTCMD'" \
+      "SYSTEMDSERVICENAME='$SYSTEMDSERVICENAME'"
 
 isup() {
     local ADDR="$1"
