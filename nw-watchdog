@@ -1,0 +1,849 @@
+#!/bin/sh
+
+# frax-FIXME:
+#
+# dienl and warnnl is not a good approach for initial problems
+# if run as systemd service ??? (or is it ok to use stderr as log?)
+#
+# ... dieUSAGEpager would be no good at least ... I guess ....
+# test it!
+# 
+# think about using this approach instead:
+# to be able to log errors if started as service
+# read in all options beforehand and then then check them afterwards,
+# starting with logfile
+# use /dev/stderr as logfile if errnous logfile-option
+#
+# test using traceroute to get nexthop
+# when can't be determined from forwarding table
+# setup some policyrouting and test
+# 
+
+
+##############################################################################
+# DEFAULTS                             # OPTIONS and ARGUMENTS
+##############################################################################
+TARGET=''                              # TARGET
+
+PINGNEXTHOP=y                          # --no-ping-nexthop | -N | --no-ping-gateway | -G
+PINGTARGET=y                           # --no-ping-target | -P
+IPADDRALRT=y                           # --no-ipaddr-alert | -A
+IFCUPDOWN=y                            # --no-interface-reset | -R
+FORK=y                                 # --foreground | --no-daemonize | -D
+#PROXYID=''                            # --ipsec-policy-routing | --proxy-id | -P
+                                       # --verbose | -v ; --debug
+V=4				       # --verbosity-level | -V
+IFC=''                                 # --interface | -i
+STATICIFC=''                           # --force-interface | -I
+LOGFILE='/var/log/nw-watchdog.log'     # --logfile | -l
+LOGSIZE=0                              # --logsize | -z
+PIDFILE=/run/nw-watchdog.pid	       # --pidfile | -p
+SLOWUPTIMEOUT=7                        # --slow-up-timeout | -t
+SLEEP=10                               # --interval | --sleep | -s
+GRACE=40                               # --ifup-grace | -g
+MAXNOLINK=1                            # --max-nolink | -n
+IFCUPT='ifup %{IFC}'                   # --ifcup | -u
+#IFCUPT='nmcli d u %{IFC}'
+#IFCUPT='nmcli c u wghome'
+IFCDOWNT='ifdown %{IFC}'               # --ifcdown | -U
+#IFCDOWNT='nmcli d d %{IFC}'
+#IFCDOWNT='nmcli c d wghome'
+ALERTCMD='exec wall'                   # --alert | -a
+#ALERTCMD="mailx -s 'Network Watchdog Alert' root@`cat /etc/mailname`"
+SYSTEMDSERVICENAME=''                  # --install-systemd
+USAGE() {
+    [ -n "$1" ] && printf "$@"
+
+    nwwatchdog="`basename "$0" 2>/dev/null`" || nwwatchdog=nw-watchdog
+    DEPS="fprintd-verify pgrep pkill ps sed setsid" 
+    COLS=72; _b_=''; ___=''; __=''; which tput>/dev/null && { COLS=`tput cols`; _b_=`tput bold`; ___=`tput smul`; __=`tput sgr0`; }
+    FMT=cat; which fmt>/dev/null && FMT="fmt -s -w $COLS"
+    $FMT<<EOU
+
+${_b_}NAME $__
+        $nwwatchdog - Network Watchdog
+
+${_b_}SYNOPSIS $__
+
+        $_b_$nwwatchdog$__ [ OPTIONS ] ${___}TARGET$__
+
+${_b_}DESCRIPTION $__
+       $_b_$nwwatchdog$__ is a higly configurable network watchdog written in posix shell script for use in Linux. It monitors the network connectivity to a specified target and/or the next hop towards that target, alerting upon lost connectivity explaining what is wrong. It can handle resetting the source interface and will detect topology changes and, if allowed, reconfigure itself accordingly. It's intended to run as a daemon and has an option to install itself as a systemd service.  If you want to monitor the connectivity to several targets, you can run several instances of $nwwatchdog using different $_b_--pidfile$__ option arguments.
+
+       $_b_$nwwatchdog$__ is free software written by Fredrik Ax <frax@axnet.nu>.
+       Get the latest version from https://github...../nw-watchdog. frax-FIXME
+       Feel free to modify and/or (re)distribute it in any way you like.
+       It comes with ABSOLUTELY NO WARRANTY.
+
+
+${_b_}TARGET $__
+       The mandatory argument ${___}TARGET$__ is the target (destination) to monitor the connection to. ${___}TARGET$__ can be an IP address or a resolvable hostname / FQDN. If it's a hostname / FQDN, it will be resolved to an IP address (first one found) at startup and the resolved IP address will be used for the monitoring. Upon failed ping-checks the name will be resolved again and if it resolves to a new IP address, that will be used for the monitoring from there on.
+
+${_b_}OPTIONS $__(no arguments)
+       These options take no arguments, and may be specified in any order. They can be grouped (e.g. -vAP) in their short form, also having one of the OPTIONS that takes arguments last.
+
+    $_b_--help | -h $__
+        Shows this help in a pager ( less | more ) if available.
+
+    $_b_--no-ping-nexthop | -N | --no-ping-gateway | -G $__
+        Do not try to ping nexthop ( usually the gateway ). Only connectivity to target itself is checked. It can be useful if gateway (next hop) is not setup to reply to ping.
+        In future versions there might be an option to do arp-checks instead of ping.
+        Only one of $_b_--no-ping-nexthop$__ and $_b_--no-ping-target$__ can be specified.
+
+    $_b_--no-ping-target | -P $__
+        Do not try to ping target. Only connectivity to the nexthop for the target is checked.
+        It can be useful if target does not reply to ping or is not reachable and we still want to monitor the path.
+        Only one of $_b_--no-ping-nexthop$__ and $_b_--no-ping-target$__ can be specified.
+
+    $_b_--no-ipaddr-alert | -A $__
+        Do not alert for not finding any global scope ip addresses on the source interface.
+
+    $_b_--no-interface-reset | -R $__
+        Do not try to bring down and up interface after failed connectivity checks.
+        (Do not try to "repair" the connection", just monitor it.)
+
+    $_b_--foreground | --no-daemonize | -D $__
+        Do not daemonize, run in foreground.
+
+    $_b_--verbose | -v $__
+        Shortcut for $_b_--verbosity-level=5$__
+        Cannot be combined with $_b_--verbosity-level$__.
+
+    $_b_--debug | -d $__
+        Shortcut for: $_b_--verbosity-level=6$__ $_b_--logfile=-$__ $_b_--logsize=0$__ $_b_--pidfile=/dev/null$__ $_b_--slow-up-timeout=1$__ $_b_--sleep=3$__ $_b_--ifup-grace=10$__ $_b_--foreground$__ 
+
+        If it's combined with any of the options it provides shortcuts for, the specified option will take precedence over the $_b_--debug$__ shortcut.
+
+        $_b_--debug$__ cannot be combined with $_b_--install-systemd$__.
+
+${_b_}OPTIONS (with ARGUMENT):$__
+        These opions takes a single argument each and may be specified in any order. Specify with equalsign or space or no space between option and argument. They can only be grouped last with the shortform of the NO-ARGUMENT-OPTIONS above (e.g. -PAV5).
+
+    $_b_--verbosity-level | -V$__ ${___}level$__
+        Default: $V
+        Integer greater than or equal to zero.
+        Determines how much info is logged to the logfile.
+
+        ${_b_}0$__ - none
+        No output to logfile and no alerts trigged at all ... pretty useless unless you just want to keep traffic going keeping a connecting alive without any alerts.
+
+        ${_b_}1$__ - error
+        Only logs and alerts on errors causing the $nwwatchdog not to function as intended.
+
+        ${_b_}2$__ - warning
+        Also logs and alerts on warnings about configuration, etc.
+
+        ${_b_}3$__ - alert
+        Log and alerts on connectivity failures, interface down, and other things disrupting the monitored connection, as well as on warnings and errors.
+        Also see the $_b_--alert$__ option.
+
+        ${_b_}4$__ - info (default)
+        Same as level 4, but also logs some more info about what's going on.
+
+        ${_b_}5$__ - trace
+        Logs even more info about what's happening, when it's sleeping, etc
+
+        ${_b_}6$__ - debug
+        Logs even more internal details and debug info.
+
+    ${_b_}--interface | -i$__ ${___}interface$__
+        Where ${___}interface$__ is the name of the source interface to initially use.
+        If not specified it will be determined from the forwarding table by looking at the route to the target. The reason to specify it even so would be to have $nwwatchdog bring it up if it's down when starting.
+
+        The interface may dynamically change due to topology detection. If you want to force the use of a specific interface, use $_b_--force-interface$__ instead.
+
+        Cannot be combined with $_b_--force-interface$__.
+
+    $_b_--force-interface | -I$__ ${___}interface$__
+        Where ${___}interface$__ is the name of the source interface to always use.
+        Packets will always be sent from this interface, forwadring table will be ignored as well as conflicting topology changes.
+        This is useful for monitoring the preferred path and making sure it's up, but does not really tell if you have connectivity to the target or not. In most cases you would want to use $_b_--interface$__ instead of this option or not specify any interface at all.
+        Cannot be combined with $_b_--interface$__.
+
+    $_b_--logfile | -l$__ ${___}logfile$__
+        Default: '$LOGFILE'
+        Logfile to use. If specified as '-' logs are written to stdout.
+
+    $_b_--logsize | -z$__ ${___}size$__
+        Default: $LOGSIZE
+	Integer greater than or equal to zero.
+        Max size (in kilobytes) that logfile will grow to. If exceeded the oldest entries will be removed. 0 for unlimited logfile size (which you would want if you rotate the log).
+
+    $_b_--pidfile | -p$__ ${___}pidfile$__
+        Default: '$PIDFILE'
+        Pidfile to use.
+
+    $_b_--slow-up-timeout | -t$__ ${___}seconds$__
+        Default: $SLOWUPTIMEOUT
+        Integer greater than zero.
+
+        The pingtest to check if a target is up is performed in several steps. First a "quick-up" test is done sending one single ICMP echo packet waiting for the reply in 1 second. If that fails, a more thourough "slow-up" test sending 5 ICMP echos is done. This parameter controls how long we wait for each packet before timing out and sending the next packet. The default (7) takes height for the fact that some idle VPN interfaces can take up to 30 seconds to get traffic through after re-negotiating encryption, exchanging encryptions keys, renewed authentcation, etc, etc, so all in all the "slow-up" test can take up to 35 seconds before timing out (if the connection it's up and active it takes only little more than it takes to get the first reply).
+
+        5 packets are always sent in the slow-up test.
+        The packets are sent adaptively, meaning that as soon as a reply is received the next packet is sent without delay, shortening the test time if the connection is up, to as quickly as the target can reply. (Not to flood the target, no more than 5 packets will be sent adaptively.)
+        The TIMEOUT for waiting on each packet is this parameter and the
+        DEADLINE = TIMEOUT * 5
+        Giving a DEADLINE of 5 * 7 = 35 seconds in the default case.
+        
+        $_b_--slow-up-timeout=3$__ is useful for monitoring connections to targets with low - medium latency via interfaces that does not need a long wake-up time (e.g. ethernet interfaces).
+
+        $_b_--slow-up-timeout=1$__ is suitable to use for monitoring local targets (e.g. nexthop) on ethernet carried subnets.
+
+    $_b_--interval | --sleep | -s$__ ${___}seconds$__
+        Default: $SLEEP
+        Integer greater than zero.
+        How many seconds to sleep after sucessful ping check. 
+
+    $_b_--ifup-grace | -g$__ ${___}seconds$__
+        Default: $GRACE
+        Integer greater than zero.
+        How many seconds to sleep before next check after interface has been reset.
+
+    $_b_--max-nolink | -n$__ ${___}number$__
+        Default: $MAXNOLINK
+        Integer greater than or equal to zero.
+        Maximum number of consecutive failed link checks in which the interface have been reset (brought down and up again) before doing new topology check.
+        A word of warning: If set to 0 and interface is not up / goes down, infinite retries to bring the interface up will be made before checking topology. Only set it to 0 if you are sure that the specified interface should always be used and you want to make sure it's up before starting to monitor the connection.
+        Typically, you would want to also use $_b_--force-interface$__ when using $_b_--max-nolink=0$__.
+
+    $_b_--ifcup | -u $__
+        Default: '$IFCUPT'
+        Command(s) run with 'sh -c' to bring the interface up.
+	%{IFC} will be dynmaically replaced with the interface name currently in use as source interface.
+
+	Examples:
+	    ifupdown:
+              --ifcup='ifup %{IFC}'
+
+	    ifupdown, non privilege user running $nwwatchdog:
+              --ifcup='sudo ifup %{IFC}'
+
+	    NetworkManager device:
+              --ifcup='nmcli device up %{IFC}'
+
+	    NetworkManager connection:
+              --ifcup='nmcli connection up %{IFC}-connection-name'
+
+	    iproute2 + isc-dhcp-client:
+              --ifcup='ip link set %{IFC} up && dhclient -pf /run/dhclient-%{IFC}.pid %{IFC}'
+
+    $_b_--ifcdown | -U $__
+        Default: '$IFCDOWNT'
+        Command(s) run with 'sh -c' to bring the interface down.
+	%{IFC} will be dynmaically replaced with the interface name currently in use as source interface.
+
+	Examples:
+	    ifupdown:
+              --ifcdown='ifdown %{IFC}'
+
+	    ifupdown, non privilege user running $nwwatchdog:
+              --ifcdown='sudo ifdown %{IFC}'
+
+	    NetworkManager device:
+              --ifcdown='nmcli device down %{IFC}'
+
+	    NetworkManager connection:
+              --ifcdown='nmcli connection down %{IFC}-connection-name'
+
+	    iproute2 + isc-dhcp-client:
+              --ifcdown='kill \`cat /run/dhclient-%{IFC}.pid\` ; ip link set down %{IFC}'
+
+
+    $_b_--alert | -a $__
+    	Default: '$ALERTCMD'
+        Command(s) to which the errors, warnings and alerts messages will be piped, executed with 'sh -c'.
+	%{IFC} will be dynmaically replaced with the interface name currently in use as source interface.
+	Set to '-' to disable alerting (alerts will still be logged if --log-level is 3 or higher).
+
+	Example of howto email the messages using mailx (mailutils) with a custom from address:
+	    --alert='mailx -a 'From: nwwatchdog@this.hst' -s "nwwatchdog alert" my@email.adr'
+
+    $_b_--install-systemd SERVICENAME $__ frax-TODO 
+        Will install a daemonized (KillMode=process) systemd service /etc/systemd/system/SERVICENAME.service using
+        $_b_--pidfile=/run/SERVICENAME.pid$__
+        $_b_--lofile=/var/log/SERVICENAME.log$__
+        removing potential $_b_--foreground$__, $_b_--no-daemonize$__ & $_b_-D$__ options
+        but otherwise with the exact same options as run (apart from the $_b_--install-systemd$__ option itself of course).
+        It will then enable it, start it and show status of it.
+        This option requires root privileges and cannot be combined with $_b_--debug$__.
+
+
+${_b_}EXAMPLES:$__
+
+        some text explaining the first example:
+    	$_b_$nwwatchdog$__ -D 1.2.3.4
+
+        some text explaining the second example:
+	$_b_$nwwatchdog$__ -D 1.2.3.4
+
+        some text explaining the last example:
+	$_b_$nwwatchdog$__ -D 1.2.3.4
+        ... some more text clarifying the above
+
+
+	Here's an more extensive example of how one can use $nwwatchdog to setup and monitor a wireguard full tunnel, also monitoring the connectivity to the wireguard server, running both whatchdogs as systemd services:
+
+	Firstly, we setup the monitor for the wireguard server which we reach via the default route:
+
+	$_b_$nwwatchdog$__ wgserver.domain.dom \\
+EOU
+cat<<'EOU'
+          --log-level=alert \
+	  --alert='mailx -a "From: nwwatchdog@`cat hostname -f`" -s "wgserver via %{IFC}" admin@`cat /etc/mailname`' \
+	  --slow-up-timeout=3 \
+	  --ifup-grace=20 \
+	  --install-systemd=nwwatchdog-wgserver
+EOU
+$FMT<<EOU
+
+	Then we setup the monitor for the wireguard full tunnel which will also create and configure the tunnel:
+	OBSERVE that we, as ${___}TARGET$__, use the actual gw and peer for the subnet (1.0.0.1) and therefore we don't need to ping-check the ${___}TARGET$__ (--no-ping-target) as it will be checked as nexthop.
+
+	It might have been smoother to use some scripts for the ifcup and ifcdown options, but as it's not really necessary we just specify the commands directly as arguments to the options, however for readability there are line-breaks in the command string which should be removed running it. The point is to show that you can do extensive work in the ifcup and ifcdown options.
+
+	$_b_$nwwatchdog$__ 10.0.0.1 \\
+EOU
+cat<<'EOU'
+	  --no-ping-target \
+	  --log-level=alert \
+	  --alert='mailx -a "From: nwwatchdog@`cat hostname -f`" -s "wireguard wg0" admin@`cat /etc/mailname`' \
+	  --force-interface=wg0 \
+	  --ifcup='ip link add wg0 type wireguard ;
+                   ip link set wg0 up ;
+                   wg setconf wg0 /etc/wireguard/wg0.conf ;
+                   ip address add 10.0.0.2 peer 10.0.0.2 dev wg0 ;
+	           host wgserver.domain.dom
+		     | grep " has address "
+                     | cut -d" " -f4
+                     | while read addr; do
+                         `echo ip route add $addr/32 via `ip route show default | head -1 | cut -d" " -f3` ;
+                       done ; 
+                     ip route add 0.0.0.0/1 via 10.0.0.1 dev wg0 src 10.0.0.2 ; 
+		     ip route add 128.0.0.0/1 via 10.0.0.1 dev wg0 src 10.0.0.2 2>/dev/null' \
+          --ifcdown='ip link del wg0' \
+	  --install-systemd=nwwatchdog-wg0     
+EOU
+$FMT<<EOU
+
+${_b_}DEPENDENCIES:$__
+
+EOU
+
+    [ -n "$1" ] && printf "$@"
+}
+
+USAGEpager() {
+    which less >/dev/null 2>&1 && { USAGE "$@" | less -R ; exit 1;}
+    which more >/dev/null 2>&1 && { USAGE "$@" | more ; exit 1;}
+    USAGE "$@"
+}
+warnnl() {
+    local PATN="$1" ; shift
+    printf "\nWARNING:\n$PATN\n\n" "$@" >>/dev/stderr
+}
+dienl() {
+    local PATN="$1 ... aborting!" ; shift
+    printf "\nERROR: $PATN\n\n" "$@" >>/dev/stderr
+    exit 1
+}
+dieUSAGEpager() {
+    local PATN="\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nERROR: $1 ... aborting!\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+    shift
+    USAGEpager "$PATN" "$@"
+    exit 1
+}
+# Parse arguments
+SOPTS='[hNPARDvd]' # Short options without arguments
+xTARGET='';xV='';xIFC='';xLOGFILE='';xLOGSIZE='';xPIDFILE='';xSLOWUPTIMEOUT='';xSLEEP='';xGRACE='';xMAXNOLINK='';xIFCUPT='';xIFCDOWNT='';ALERTCMD='';xSYSTEMDSERVICENAME=''
+
+while [ $# -gt 0 ]; do
+    ARG="$1"; shift
+    case "$ARG" in
+	-h|--help)
+	    USAGEpager
+	    exit 0
+	    ;;
+	-N|--no-ping-nexthop|-G|--no-ping-gateway)
+	    PINGNEXTHOP=''
+	    ;;
+	-P|--no-ping-target)
+	    PINGTARGET=''
+	    ;;
+	-A|--no-ipaddr-alert)
+	    IPADDRALRT=''
+	    ;;
+	-R|--no-interface-reset)
+	    IFCUPDOWN=''
+	    ;;
+	-D|--no-daemonize|--foreground)
+	    FORK=''
+	    ;;
+	-v|--verbose)
+	    [ -z "$xV" ] || dieUSAGEpager "verbosity-level specified multiple times\n%s" \
+				  "(exclusively use '-v', '--verbose', '-V' or '--verbosity-level' only once)"
+	    xV=1; V=5
+	    ;;
+	-d|--debug)
+	    [ -z "$xV" ] && V=6 
+	    [ -z "$xLOGFILE" ] &&  { LOGFILE=''; LOGSIZE=0; }
+	    [ -z "$xPIDFILE" ] && PIDFILE='/dev/null'
+	    [ -z "xSLOWUPTIMEOUT" ] && SLOWUPTIMEOUT=1
+	    [ -z "xSLEEP" ] && SLEEP=3
+	    [ -z "xGRACE" ] && GRACE=10
+	    FORK=''
+	    ;;
+	-${SOPTS}*) # single out short options without arguments
+	    A=`printf "%s" "$ARG" | sed -E 's/(..)(.*)/\1/'`
+	    B=`printf "%s" "$ARG" | sed -E 's/(..)(.*)/-\2/'`
+	    set -- "$A" "$B" "$@"
+	    exit 0
+	    ;;
+	-V*|--verbosity-level*)
+	    [ -z "$xV" ] || dieUSAGEpager "verbosity-level specified multiple times\n%s" \
+				  "(exclusively use '-v', '-V' or '--verbosity-level' only once)"
+	    if [ "$ARG" = "-V" -o "$ARG" = "--verbosity-level" ]; then V="$1"; shift
+	    elif printf "%s" "$ARG" | grep -qEe '-(-verbosity-level|V)=.*' ; then V="${ARG#*=}"
+	    else V=`printf "%s" "$ARG" | sed -E 's/-(-verbosity-level|V)//'`; fi
+	    [ "$V" -ge 0 ] 2>/dev/null || dieUSAGEpager "Invalid verbosity level '$V' (must be integer >= 0)"
+	    xV=1
+	    ;;
+	-i*|--interface*)
+	    [ -z "$xIFC" ] || dieUSAGEpager "interface specified multiple times\n%s" \
+				    "(exclusively use '-i', '--interface', '-I' or '--force-interface' only once)"
+	    if [ "$ARG" = "-i" -o "$ARG" = "--interface" ]; then IFC="$1"; shift
+	    elif printf "%s" "$ARG" | grep -qEe '-(-interface|i)=.*' ; then IFC="${ARG#*=}"
+	    else IFC=`printf "%s" "$ARG" | sed -E 's/-(-interface|i)//'`; fi
+	    xIFC=1;
+	    ;;
+	-I*|--force-interface*)
+	    [ -z "$xIFC" ] || dieUSAGEpager "interface specified multiple times\n%s" \
+				    "(exclusively use '-i', '--interface', '-I' or '--force-interface' only once)"
+	    if [ "$ARG" = "-I" -o "$ARG" = "--force-interface" ]; then STATICIFC="$1"; shift
+	    elif printf "%s" "$ARG" | grep -qEe '-(-force-interface|I)=.*' ; then STATICIFC="${ARG#*=}"
+	    else STATICIFC=`printf "%s" "$ARG" | sed -E 's/-(-force-interface|I)//'`; fi
+	    IFC=$STATICIFC
+	    xIFC=1;
+	    ;;
+	-l*|--logfile*)
+	    [ -z "$xLOGFILE" ] || dieUSAGEpager "logfile specified multiple times\n%s" \
+					"(exclusively use '-l', or '--logfile' only once)"
+	    if [ "$ARG" = "-l" -o "$ARG" = "--logfile" ]; then LOGFILE="$1"; shift
+	    elif printf "%s" "$ARG" | grep -qEe '-(-logfile|l)=.*' ; then LOGFILE="${ARG#*=}"
+	    else LOGFILE=`printf "%s" "$ARG" | sed -E 's/-(-logfile|l)//'`; fi
+	    xLOGFILE=1;
+	    ;;
+	-z*|--logsize*)
+	    [ -z "$xLOGSIZE" ] || dieUSAGEpager "logsize specified multiple times\n%s" \
+					"(exclusively use '-z' or '--logsize' only once)"
+	    if [ "$ARG" = "-z" -o "$ARG" = "--logsize" ]; then LOGSIZE="$1"; shift
+	    elif printf "%s" "$ARG" | grep -qEe '-(-logsize|z)=.*' ; then LOGSIZE="${ARG#*=}"
+	    else LOGSIZE=`printf "%s" "$ARG" | sed -E 's/-(-logsize|z)//'`; fi
+	    [ "$LOGSIZE" -ge 0 ] 2>/dev/null || dieUSAGEpager "Invalid logsize '$LOGSIZE' (must be integer >= 0)"
+	    xLOGSIZE=1
+	    ;;
+	-p*|--pidfile*)
+	    [ -z "$xPIDFILE" ] || dieUSAGEpager "pidfile specified multiple times\n%s" \
+					"(exclusively use '-p', or '--pidfile' only once)"
+	    if [ "$ARG" = "-p" -o "$ARG" = "--pidfile" ]; then PIDFILE="$1"; shift
+	    elif printf "%s" "$ARG" | grep -qEe '-(-pidfile|p)=.*' ; then PIDFILE="${ARG#*=}"
+	    else PIDFILE=`printf "%s" "$ARG" | sed -E 's/-(-pidfile|p)//'`; fi
+	    xPIDFILE=1;
+	    ;;
+	-t*|--slow-up-timeout*)
+	    [ -z "$xSLOWUPTIMEOUT" ] || dieUSAGEpager "slow-up-timeout specified multiple times\n%s" \
+						      "(exclusively use '-t' or '--slow-up-timeout' only once)"
+	    if [ "$ARG" = "-t" -o "$ARG" = "--slow-up-timeout" ]; then SLOWUPTIMEOUT="$1"; shift
+	    elif printf "%s" "$ARG" | grep -qEe '-(-slow-up-timeout|t)=.*' ; then SLOWUPTIMEOUT="${ARG#*=}"
+	    else SLOWUPTIMEOUT=`printf "%s" "$ARG" | sed -E 's/-(-slow-up-timeout|t)//'`; fi
+	    [ "$SLOWUPTIMEOUT" -ge 1 ] 2>/dev/null || dieUSAGEpager "Invalid slow-up-timeout interval '$SLOWUPTIMEOUT' (must be integer >= 1)"
+	    xSLOWUPTIMEOUT=1
+	    ;;
+	-s*|--sleep*|--interval*)
+	    [ -z "$xSLEEP" ] || dieUSAGEpager "interval specified multiple times\n%s" \
+				      "(exclusively use '-s', '--sleep' or '--interval' only once)"
+	    if [ "$ARG" = "-s" -o "$ARG" = "--sleep" -o "$ARG" = "--interval" ]; then SLEEP="$1"; shift
+	    elif printf "%s" "$ARG" | grep -qEe '-(-(sleep|interval)|s)=.*' ; then SLEEP="${ARG#*=}"
+	    else SLEEP=`printf "%s" "$ARG" | sed -E 's/-(-(sleep|interval)|s)//'`; fi
+	    [ "$SLEEP" -ge 1 ] 2>/dev/null || dieUSAGEpager "Invalid sleep interval '$SLEEP' (must be integer >= 1)"
+	    xSLEEP=1
+	    ;;
+	-g*|--ifup-grace*)
+	    [ -z "$xGRACE" ] || dieUSAGEpager "ifup-grace specified multiple times\n%s" \
+				      "(exclusively use '-g' or '--ifup-grace' only once)"
+	    if [ "$ARG" = "-g" -o "$ARG" = "--ifup-grace" ]; then GRACE="$1"; shift
+	    elif printf "%s" "$ARG" | grep -qEe '-(-ifup-grace|g)=.*' ; then GRACE="${ARG#*=}"
+	    else GRACE=`printf "%s" "$ARG" | sed -E 's/-(-ifup-grace|g)//'`; fi
+	    [ "$GRACE" -ge 1 ] 2>/dev/null || dieUSAGEpager "Invalid ifup-grace '$GRACE' (must be integer >= 1)"
+	    xGRACE=1
+	    ;;
+	-n*|--max-nolink*)
+	    [ -z "$xMAXNOLINK" ] || dieUSAGEpager "max-nolink specified multiple times\n%s" \
+				      "(exclusively use '-n' or '--max-nolink' only once)"
+	    if [ "$ARG" = "-n" -o "$ARG" = "--max-nolink" ]; then MAXNOLINK="$1"; shift
+	    elif printf "%s" "$ARG" | grep -qEe '-(-max-nolink|n)=.*' ; then MAXNOLINK="${ARG#*=}"
+	    else MAXNOLINK=`printf "%s" "$ARG" | sed -E 's/-(-max-nolink|n)//'`; fi
+	    [ "$MAXNOLINK" -ge 1 ] 2>/dev/null || dieUSAGEpager "Invalid max-nolink '$MAXNOLINK' (must be integer >= 1)"
+	    xMAXNOLINK=1
+	    ;;
+	-u*|--ifcup*)
+	    [ -z "$xIFCUPT" ] || dieUSAGEpager "ifcup specified multiple times\n%s" \
+					"(exclusively use '-u', or '--ifcup' only once)"
+	    if [ "$ARG" = "-p" -o "$ARG" = "--ifcup" ]; then IFCUPT="$1"; shift
+	    elif printf "%s" "$ARG" | grep -qEe '-(-ifcup|u)=.*' ; then IFCUPT="${ARG#*=}"
+	    else IFCUPT=`printf "%s" "$ARG" | sed -E 's/-(-ifcup|u)//'`; fi
+	    xIFCUPT=1;
+	    ;;
+	-U*|--ifcdown*)
+	    [ -z "$xIFCDOWNT" ] || dieUSAGEpager "ifcdown specified multiple times\n%s" \
+					"(exclusively use '-U', or '--ifcdown' only once)"
+	    if [ "$ARG" = "-p" -o "$ARG" = "--ifcdown" ]; then IFCDOWNT="$1"; shift
+	    elif printf "%s" "$ARG" | grep -qEe '-(-ifcdown|U)=.*' ; then IFCDOWNT="${ARG#*=}"
+	    else IFCDOWNT=`printf "%s" "$ARG" | sed -E 's/-(-ifcdown|U)//'`; fi
+	    xIFCDOWNT=1;
+	    ;;
+	-a*|--alert*)
+	    [ -z "$xALERTCMD" ] || dieUSAGEpager "alert specified multiple times\n%s" \
+					"(exclusively use '-a', or '--alert' only once)"
+	    if [ "$ARG" = "-p" -o "$ARG" = "--alert" ]; then ALERTCMD="$1"; shift
+	    elif printf "%s" "$ARG" | grep -qEe '-(-alert|a)=.*' ; then ALERTCMD="${ARG#*=}"
+	    else ALERTCMD=`printf "%s" "$ARG" | sed -E 's/-(-alert|a)//'`; fi
+	    xALERTCMD=1;
+	    ;;
+	--install-systemd*)
+	    [ -z "$xSYSTEMDSERVICENAME" ] || dieUSAGEpager "install-systemd specified multiple times\n%s" \
+					"(exclusively use '-a', or '--install-systemd' only once)"
+	    if [ "$ARG" = "--install-systemd" ]; then SYSTEMDSERVICENAME="$1"; shift
+	    elif printf "%s" "$ARG" | grep -qEe '--install-systemd=.*' ; then SYSTEMDSERVICENAME="${ARG#*=}"
+	    else SYSTEMDSERVICENAME=`printf "%s" "$ARG" | sed -E 's/--install-systemd//'`; fi
+	    xSYSTEMDSERVICENAME=1;
+	    ;;
+	*)
+	    [ -z "$xTARGET" ] || dieUSAGEpager "More than one target specified ('%s' + '%s')" "$TARGET" "$ARG"
+	    TARGET="$ARG"; xTARGET=1
+	    ;;
+    esac
+done
+[ -z "$PINGTARGET" -a -z "$PINGNEXTHOP" ] && dieUSAGEpager "You must allow pinging of target and/or nexthop!\n%s\%" \
+				     "(can't use --no-ping-target and --no-ping-nexthop at the same time)"
+
+[ -n "$TARGET" ] || dieUSAGEpager "%s\n%s" \
+		       "Target not specified!" "Specify IP address or resolvable hostname."
+
+[ "$LOGFILE" = '-' ] && LOGFILE=''
+[ -n "$LOGFILE" ] && {
+    touch "$LOGFILE" 2>/dev/null || \
+	dienl "%s\n%s" "Cannot write to logfile '$LOGFILE'." "Run as user with access or specify another --logfile."
+}
+
+log() {
+    #[ "$LOGSIZE" -gt 0 ] && [ -f "$LOGFILE" ] && [ `stat -c %s $LOGFILE` -gt $LOGSIZE ] && mv $LOGFILE $LOGFILE.old
+    local PATN="$1\n" ; shift
+    if [ -n "$LOGFILE" ]; then
+	printf "%s  $PATN" "`date '+%Y-%m-%d %H:%M:%S %z'`" "$@" >>$LOGFILE
+    else
+	printf "%s  $PATN" "`date '+%Y-%m-%d %H:%M:%S %z'`" "$@"
+    fi
+}
+error() {
+    [ $V -ge 1 ] || return
+    local PATN="$1" ; shift
+    log "ERROR: $PATN" "$@"
+}
+warn() {
+    [ $V -ge 2 ] || return
+    local PATN="WARNING: $1" ; shift
+    log "$PATN" "$@"
+}
+die() {
+    local PATN="$1 ... aborting!" ; shift
+    [ -n "$LOGFILE" ] && error "$PATN" "$@"
+    printf "\nERROR: $PATN\n\n" "$@" >>/dev/stderr
+    exit 1
+}
+alert() {
+    [ $V -ge 3 ] || return
+    local PATN="$1" ; shift
+    log "ALERT: $PATN" "$@"
+}
+info() {
+    [ $V -ge 4 ] || return
+    local PATN="INFO: $1" ; shift
+    log "$PATN" "$@"
+}
+trace() {
+    [ $V -ge 5 ] || return
+    local PATN="TRACE: $1" ; shift
+    log "$PATN" "$@"
+}
+debug() {
+    [ $V -ge 6 ] || return
+    local PATN="DEBUG: $1" ; shift
+    log "$PATN" "$@"
+}
+
+# Clean up zero-padding if TARGET is an IP address
+printf "%s" "$TARGET" | grep -qE '^((0*[0-9]?[0-9]|1[0-9][0-9]|2([0-4][0-9]|5[0-5]))\.){3}(0*[0-9]?[0-9]|1[0-9][0-9]|2([0-4][0-9]|5[0-5]))$' \
+    && TARGET=`printf "%s" "$TARGET" | sed -E 's/(^|\.)0+([1-9]+)/\1\2/g'`
+resolve_target() {
+    trace "Resolving target '%s' (cached='%s')" "$TARGET" "$TADDR"
+    TADDR=`getent ahostsv4 "$TARGET" | head -1 | awk '{print $1}'`
+    trace "Resolved target '%s' to '%s'" "$TARGET" "$TADDR"
+    [ -n "$TADDR" ] || return 1
+    return 0
+}
+resolve_target || dieUSAGEpager "Target '$TARGET' does not resolve to an IPv4 address."
+
+ifreset() {
+    [ -n "$IFCUPDOWN" ] || {
+	info 'Not resetting interface due to --no-interface-reset.'
+    	return 0
+    }
+    [ -n "$IFC" ] || return 2
+    info "Resetting '$IFC'."
+    debug "%s: %s" "$IFCDOWN" "$IFCDD"
+    IFCDD=`sh -c "$IFCDOWN" 2>&1`
+    sleep 1
+    debug "%s: %s" "$IFCUP" "$IFCUD"
+    IFCUD=`sh -c "$IFCUP" 2>&1` || return 1
+    trace "Sleeping for $GRACE seconds."
+    sleep $GRACE
+    return 0
+}
+
+linkcheck() {
+    [ -n "$IFC" ] || return 2
+    NOLINK=0
+    while true; do
+	ip link show $IFC >/dev/null 2>&1 && {
+	    IPADDRS=''; ip addr show dev $IFC | grep -qE 'inet6? .* scope global' && IPADDRS=y
+	    [ -n "$IPADDRS" -a -n "$IPADDRALRT" ] \
+		|| alert "%s\n\t%s" \
+			 "There is no IPv4 or IPv6 global scope ip address on interface '$IFC'!" \
+			 "If that is ok, you can disable these alerts with --no-ipaddr-alert."
+	    return 0
+	}
+	NOLINK=$((NOLINK+1))
+	[ $MAXNOLINK -gt 0 -a $NOLINK -gt $MAXNOLINK ] && {
+	    warn "%s\n\t%s" \
+		 "Could not get link up on $MAXNOLINK attempts (with $GRACE seconds between them.)" \
+		 "Adjust these values with --max-nolink and --if-up-grace"
+	    return 1
+	}
+	info "No link on $IFC... reset attempt $NOLINK out of $MAXNOLINK (0=infinite)"
+	[ -n "$1" ] && \
+	    warnnl "Interface '%s' has no link, trying to reset it\n\t%s\n\t%s\n\t%s" \
+		   "$IFC" \
+		   "waiting for $GRACE seconds for link to come up" \
+		   "attempt $NOLINK of $MAXNOLINK (0=infinite)" \
+		   "(abort and use --interface or --force-interface to bring it up automatically)"
+	ifreset
+	case "$?" in
+	    2) die "Internal ERROR: No interface to reset!" ;;       
+	    1) if [ -n "$1" ]; then
+		   die "%s\n\t%s" \
+		       "Could not bring up interface '$IFC'." \
+		       "Check your --if-up and --if-down commands."
+	       else 
+		   warn "%s\n\t%s" \
+			"Could not reset interface '$IFC'." \
+			"Check your --if-up and --if-down commands."
+		   trace "Sleeping for $GRACE seconds"
+		   sleep $GRACE
+	       fi
+	       ;;
+	esac
+    done
+}
+
+nexthop() {
+    NIFC="`ip route get $TADDR | grep -o 'dev [^ ]*' | cut -d' ' -f2`"
+    if [ -n "$NIFC" ]; then
+	NNEXTHOP="`ip route get $TADDR | grep -o 'via [^ ]*' | cut -d' ' -f2`"
+	[ -z "$NNEXTHOP" ] && NNEXTHOP="$TADDR"
+	if [ "$IFC" = "$NIFC" -a "$NEXTHOP" = "$NNEXTHOP" ]; then
+	    trace "No topology changes detected. IFC='%s' NEXTHOP='%s'" "$IFC" "$NEXTHOP"
+	    return 0
+	elif [ -z "$STATICIFC" ]; then
+	    info "Detected topology: IFC='%s' -> '%s' ; NEXTHOP='%s' -> '%s'" "$IFC" "$NIFC" "$NEXTHOP" "$NNEXTHOP"
+	    IFC="$NIFC"
+	    IFCUP=`printf "%s" "$IFCUPT" | sed -E "s/\%\{IFC\}/$IFC/g"`
+	    IFCDOWN=`echo "%s" "$IFCDOWNT" | sed -E "s/\%\{IFC\}/$IFC/g"`
+	    ALERTCMD=`echo "%s" "$ALERTCMD" | sed -E "s/\%\{IFC\}/$IFC/g"`
+	    NEXTHOP="$NNEXTHOP"
+	    return 0
+	elif [ "$STATICIFC" = "$NIFC" ]; then
+	    info "Detected topology on forced interface '%s': NEXTHOP='%s' -> '%s'" "$IFC" "$NEXTHOP" "$NNEXTHOP"
+	    debug "STATICIFC='%s' IFC='%s' NIFC='%s' NEXTHOP='%s' NNEXTHOP='%s'" \
+		  "$STATICIFC" "$IFC" "$NIFC" "$NEXTHOP" "$NNEXTHOP"
+	    NEXTHOP="$NNEXTHOP"
+	    return 0
+	else
+	    alert "Conflicting topology detected, route to target '%s' (%s) is on interface '%s', but forced Interface is '%s'" \
+		 "$TARGET" "$TADDR" "$NIFC" "$STATICIFC"
+	    return 0
+	fi
+    else
+	info "No route to target '%s' (%s) available." "$TARGET" "$TADDR"
+	return 1
+    fi
+}
+
+nexthop || {
+    if [ -n "$IFC" ]; then
+	linkcheck initial
+	nexthop || { ifreset ; nexthop ; }
+    else
+	die "No interface specified and no route to target '%s' (%s) available, make sure interface is up,\n\t%s" \
+	    "$TARGET" "$TADDR" 'or use --interface or --force-interface to bring it up automatically.'
+    fi
+}
+
+
+[ -n "$PIDFILE" ] || PIDFILE=/run/nw-watchdog.pid
+touch "$PIDFILE" 2>/dev/null || die "%s\n%s" "Cannot write to pidfile '$PIDFILE'." "Run as user with access or specify another --pidfile"
+PID=`cat "$PIDFILE"`
+[ "$PID" -qt 0 ] 2>/dev/null && [ -d /proc/$PID ] && dienl "Process already running with pid $PID"
+
+[ -n "$FORK" ] && { 
+    trace MAINPID=$$
+    trace "forking: %s" "$0 -D -l \"$LOGFILE\" -d $TARGET $NOPTS -V $V -i $IFC -z $LOGSIZE -p \"$PIDFILE\" -s $SLEEP -g $GRACE"
+    NOPTS='-D'
+    [ -z "$PINGNEXTHOP" ] && NOPTS="${NOPTS}G"
+    [ -z "$PINGTARGET" ] && NOPTS="${NOPTS}P"
+    [ -z "$IFCUPDOWN" ] && NOPTS="${NOPTS}I"
+    [ -z "$LOGFILE" ] && LOGFILE='-'
+    { sleep 0.25 ; exec "$0" $TARGET ${NOPTS}i$IFC -p"$PIDFILE" -V$V -l"$LOGFILE" -z$LOGSIZE -s$SLEEP -g$GRACE ;} &
+    exit 0
+}
+echo $$ > "$PIDFILE"
+trace PID=$$
+debug "\n\tSETTINGS:\n\tV=%d\n\tFORK=%s\n\tTARGET=%s\n\tIFC=%s\n\tPINGNEXTHOP=%s\n\tPINGTARGET=%s\n\tLOGFILE=%s\n\tLOGSIZE=%d\n\tPIDFILE=%s\n\tSLEEP=%d\n\tGRACE=%d\n\tIFCUPDOWN=%s\n\tIFCUP='%s'\n\tIFCDOWN='%s'\n" \
+      "$V"  "$FORK"  "$TARGET"  "$IFC"  "$PINGNEXTHOP"  "$PINGTARGET"  "$LOGFILE"  "$LOGSIZE"  "$PIDFILE"  "$SLEEP"  "$GRACE"  "$IFCUPDOWN" "$IFCUP"  "$IFCDOWN"
+
+isup() {
+    local ADDR="$1"
+
+    # quick check if line is already up
+    ping -q -w1 -c1 -I$IFC $ADDR >/dev/null 2>&1 && {
+	debug 'quick-up ok'
+	return 0
+    }
+    trace 'quickup failed ... trying slow-up ...'
+    
+    ping -qA -w$SUDEADLINE -W$SLOWUPTIMEOUT -c$SUCOUNT -I$IFC $ADDR >/dev/null 2>&1 && {
+	trace 'slow-up ok'
+	return 0
+    }
+
+    # If ping does not receive any reply packets at all it will exit
+    # with code 1. If a packet count and deadline are both specified,
+    # and fewer than count packets are received by the time the
+    # deadline has arrived, it will also exit with code 1. On other
+    # error it exits with code 2. Otherwise it exits with code 0. This
+    # makes it possible to use the exit code to see if a host is alive
+    # or not.
+
+    # double check that we're up (the above could potentially
+    # (but unlikely due to -A) return 1 or 2 even if we're up)
+    ping -q -w2 -c1 -I$IFC $ADDR >/dev/null  2>&1 && {
+	trace 'verify-up ok'
+	return 0
+    }
+    # We don't get traffic through
+    debug 'not-up'
+    [ -n "$2" ] && {
+	local OADDR=$TADDR
+	if resolve_target; then
+	    [ "$OADDR" = "$TADDR" ] || {
+		info "Target '$TARGET' now resolves to '$TADDR', instead of '$OADDR'."
+		nexthop && isup "$TADDR" && return 0;
+	    }
+	else
+	    TADDR=$OADDR
+	    alert "Target '%s' no longer resolves to an ip address, will keep using '$TADDR'." "$TARGET"
+	fi
+    }
+    return 1
+}
+
+while true; do
+    if [ -n "$PINGTARGET" ]; then
+	while isup $TADDR; do
+	    sleep $SLEEP
+	done
+	info "Not getting replies from target '%s' (%s), checking link and topology." "$TARGET" "$TADDR"
+	if linkcheck && nexthop; then 
+	    isup "$TADDR" resolve || {
+ 		if [ -n "$PINGNEXTHOP" ]; then 
+		    if isup "$NEXTHOP"; then
+			alert "Not getting replies from target '%s' (%s) on interface '%s', but nexthop '%s' replies." \
+			      "$TARGET" "$TADDR" "$IFC" "$NEXTHOP"
+			info "Sleeping for %d seconds." "$GRACE"
+			sleep $GRACE
+		    else
+			alert "Not getting replies from target '%s' (%s) on interface '%s', nor from nexthop '%s', resetting interface." \
+			      "$TARGET" "$TADDR" "$IFC" "$NEXTHOP"
+			ifreset
+		    fi
+		else
+		    alert "Not getting replies from target '%s' (%s) on interface '%s', resetting interface." "$TARGET" "$TADDR" "$IFC"
+		    ifreset
+		fi
+	    }
+	else
+	    alert "Not getting replies from target '%s' (%s) and no route to target available, resetting interface '%s'." \
+		  "$TARGET" "$TADDR" "$IFC"
+	    ifreset
+	fi
+
+    else
+	while isup $NEXTHOP; do
+	    sleep $SLEEP
+	done
+	info "Not getting replies from nexthop '%s' (for --no-ping-target '%s' (%s)) on interface '%s', checking link and nexthop." \
+	     "$NEXTHOP" "$TARGET" "$TADDR" "$IFC"
+	if linkcheck && nexthop; then 
+	    isup "$NEXTHOP" || {
+		alert "Not getting replies from nexthop '%s' (for --no-ping-target '%s' (%s)), resetting interface '%s'." \
+		      "$NEXTHOP" "$TARGET" "$TADDR" "$IFC"
+		ifreset
+	    }
+	else
+	    alert "No route to --no-ping-target '%s' (%s). Resetting interface '%s'." "$TARGET" "$TADDR" "$IFC"
+	    ifreset
+	    
+	fi
+    fi
+done
+exit 0
+
+###
+# below is the backlight --install code for reference
+[ "--install" = "$OP" ] && {
+    [ `id -u` -eq 0 ] || USAGE "# '$backlight --install' must be run as root"
+    GRP=video
+    [ -n "$VAL" ] && GRP=$VAL
+    grep -E "^$GRP:" /etc/group >/dev/null || USAGE "# group '$GRP' not found in /etc/group"
+    chgrp $GRP /sys/class/backlight/*/brightness ; chmod g+w /sys/class/backlight/*/brightness
+    echo
+    ls -l /sys/class/backlight/*/brightness
+    echo
+    [ -d /etc/systemd/system ] || { echo "WARNING '/etc/systemd/system/' does not exists, systemd backlightgroup.service not installed."; exit 0;}
+    cat>/etc/systemd/system/backlightgroup.service<<EOF
+[Unit]
+Description=Permission for group $GRP to set backlight brightness
+After=syslog.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c '/bin/chgrp $GRP /sys/class/backlight/*/brightness ; /bin/chmod g+w /sys/class/backlight/*/brightness'
+RemainAfterExit=no
+
+[Install]
+WantedBy=sysinit.target
+EOF
+    systemctl enable backlightgroup.service || USAGE "# failed to enable the backlightgroup.service"
+    systemctl start backlightgroup.service || USAGE "# failed to start the backlightgroup.service"
+    systemctl status --no-pager backlightgroup.service
+    exit 0
+}
