@@ -2,21 +2,18 @@
 
 # frax-FIXME:
 #
+# if run as systemd service,
 # dienl and warnnl is not a good approach for initial problems
-# if run as systemd service ??? (or is it ok to use stderr as log?)
-#
+# (or is it ok to use stderr as log?)
 # ... dieUSAGEpager would be no good at least ... I guess ....
 # test it!
 # 
 # think about using this approach instead:
-# to be able to log errors if started as service
+# to be able to log errors if started as service, but
 # read in all options beforehand and then then check them afterwards,
 # starting with logfile
 # use /dev/stderr as logfile if errnous logfile-option
 #
-# test using traceroute to get nexthop
-# when can't be determined from forwarding table
-# setup some policyrouting and test
 # 
 
 
