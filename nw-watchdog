@@ -59,7 +59,8 @@ GRACE=40                               # --ifup-grace | -g
 MAXNOLINK=1                            # --max-nolink | -n
 IFCUPT='ifup %{IFC}'                   # --ifcup | -u
 IFCDOWNT='ifdown %{IFC}'               # --ifcdown | -U
-ALERTCMD='exec wall'                   # --alert | -a
+ALERTCMD='if which wall >/dev/null; then exec wall; else cat 1>&2; fi'
+                                       # --alert | -a
 SYSTEMDSERVICENAME=''                  # --install-systemd
 
 nwwatchdog=`basename "$0"` 2>/dev/null || nwwatchdog=nw-watchdog
@@ -67,10 +68,27 @@ nwwatchdog=`basename "$0"` 2>/dev/null || nwwatchdog=nw-watchdog
 # Let's put the "standard" path first to be sure we get the standard untilities we need
 PATH="/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
 DEPENDENCIES="awk cat cut date getent grep ip ping printf sed sleep touch" 
+which which >/dev/null 2>&1 || {
+    echo "'which' is not available in your PATH!"  1>&2
+    echo "... aborting!"  1>&2
+    exit 1
+}
+for x in $DEPENDENCIES; do which $x>/dev/null || lacking="$lacking $x"; done
+[ -n "$lacking" ] && {
+    echo ' ' 1>&2
+    echo 'DEPENDENCY ERROR' 1>&2
+    echo 'The following executable(s) are lacking in your PATH:' 1>&2
+    echo "   $lacking" 1>&2
+    echo "preventing $nwwatchdog from continuing." 1>&2
+    echo ' ' 1>&2
+    echo "(PATH=$PATH)" 1>&2
+    echo ' ' 1>&2
+EOW
+    exit 1
+}
 
 USAGE() {
     [ -n "$1" ] && printf "$@"
-
     COLS=72; _b_=''; ___=''; __=''; which tput>/dev/null && { COLS=`tput cols`; _b_=`tput bold`; ___=`tput smul`; __=`tput sgr0`; }
     FMT=cat; which fmt>/dev/null && FMT="fmt -s -w $COLS"
     $FMT<<EOU
@@ -369,27 +387,9 @@ ${_b_}DEPENDENCIES$__
 EOU
     for dep in $DEPENDENCIES; do
 		printf "        * ${_b_}%s$__\n" "$dep"
-    done
-    
+    done    
     [ -n "$1" ] && printf "$@"
 }
-lacking=
-for x in $DEPENDENCIES; do which $x>/dev/null || lacking="$lacking $x"; done
-test -n "$lacking" && {
-    cat<<EOW>/dev/stderr
-
-DEPENDENCY ERROR!
-
-The following executable(s) are lacking in your PATH:
-   $lacking
-preventing $nwwatchdog from continuing.
-
-(PATH=$PATH)
-
-EOW
-    exit 1
-}
-
 USAGEpager() {
     if which less >/dev/null 2>&1; then
 	USAGE "$@" | less -R 
@@ -399,19 +399,19 @@ USAGEpager() {
 	USAGE "$@"
     fi
 }
-warnnl() {
-    local PATN="$1" ; shift
-    printf "\nWARNING:\n$PATN\n\n" "$@" >>/dev/stderr
-}
-dienl() {
-    local PATN="$1 ... aborting!" ; shift
-    printf "\nERROR: $PATN\n\n" "$@" >>/dev/stderr
-    exit 1
-}
 dieUSAGEpager() {
     local PATN="\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nERROR: $1 ... aborting!\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
     shift
     USAGEpager "$PATN" "$@"
+    exit 1
+}
+warnnl() {
+    local PATN="$1" ; shift
+    printf "\nWARNING:\n$PATN\n\n" "$@" 1>&2
+}
+dienl() {
+    local PATN="$1 ... aborting!" ; shift
+    printf "\nERROR: $PATN\n\n" "$@" 1>&2
     exit 1
 }
 
@@ -610,22 +610,24 @@ error() {
     [ $V -ge 1 ] || return
     local PATN="$1" ; shift
     log "  ERROR: $PATN" "$@"
+    printf "\n\n$nwwatchdog $TARGET ERROR:\n   $PATN\n\n\n" "$@" | sh -c "$ALERTCMD"
+}
+die() {
+    local PATN="$1 ... aborting!" ; shift
+    error "$PATN" "$@"
+    exit 1
 }
 warn() {
     [ $V -ge 2 ] || return
     local PATN="$1" ; shift
     log "WARNING: $PATN" "$@"
-}
-die() {
-    local PATN="$1 ... aborting!" ; shift
-    [ -n "$LOGFILE" ] && error "$PATN" "$@"
-    printf "\nERROR: $PATN\n\n" "$@" >>/dev/stderr
-    exit 1
+    printf "\n\n$nwwatchdog $TARGET WARNING:\n   $PATN\n\n\n" "$@" | sh -c "$ALERTCMD"
 }
 alert() {
     [ $V -ge 3 ] || return
     local PATN="$1" ; shift
     log "  ALERT: $PATN" "$@"
+    printf "\n\n$nwwatchdog $TARGET ALERT:\n   $PATN\n\n\n" "$@" | sh -c "$ALERTCMD"
 }
 info() {
     [ $V -ge 4 ] || return
@@ -846,7 +848,7 @@ PID=`cat "$PIDFILE"`
 printf $$ > "$PIDFILE"
 debug "PID=$$ BASENAME=$nwwatchdog COMM=`cat  /proc/$$/comm`"
 
-debug "\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s" \
+debug "\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s" \
       "~~~ SETTINGS ~~~" \
       "TARGET='$TARGET'" \
       "PINGNEXTHOP='$PINGNEXTHOP'" \
@@ -866,8 +868,7 @@ debug "\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\
       "MAXNOLINK='$MAXNOLINK'" \
       "IFCUPT='$IFCUPT'" \
       "IFCDOWNT='$IFCDOWNT'" \
-      "ALERTCMD='$ALERTCMD'" \
-      "SYSTEMDSERVICENAME='$SYSTEMDSERVICENAME'"
+      "ALERTCMD='$ALERTCMD'"
 
 isup() {
     local ADDR="$1"
