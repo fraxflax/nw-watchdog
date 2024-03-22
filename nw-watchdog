@@ -27,6 +27,8 @@
 # starting with logfile
 # use /dev/stderr as logfile if errnous logfile-option
 #
+# * Go through USAGE and provide some more EXAMPLES
+# 
 
 ##############################################################################
 # DEFAULTS                             
