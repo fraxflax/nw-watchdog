@@ -2,8 +2,10 @@
 
 # frax-FIXME:
 #
+# implement log-truncating upon reached logsize 
+#
 # if run as systemd service,
-# dienl and warnnl is not a good approach for initial problems
+# dienl and warnnl might not a good approach for reporting on initial problems
 # (or is it ok to use stderr as log?)
 # ... dieUSAGEpager would be no good at least ... I guess ....
 # test it!
@@ -14,21 +16,20 @@
 # starting with logfile
 # use /dev/stderr as logfile if errnous logfile-option
 #
-# 
-
+# check nexthop with arp before ping
+#
 
 ##############################################################################
-# DEFAULTS                             # OPTIONS and ARGUMENTS
+# DEFAULTS                             
 ##############################################################################
-TARGET=''                              # TARGET
+TARGET=''                              # TARGET (destination) 
 
 PINGNEXTHOP=y                          # --no-ping-nexthop | -N | --no-ping-gateway | -G
 PINGTARGET=y                           # --no-ping-target | -P
 IPADDRALRT=y                           # --no-ipaddr-alert | -A
 IFCUPDOWN=y                            # --no-interface-reset | -R
 FORK=y                                 # --foreground | --no-daemonize | -D
-#PROXYID=''                            # --ipsec-policy-routing | --proxy-id | -P
-# --verbose | -v ; --debug
+
 V=4				       # --verbosity-level | -V
 IFC=''                                 # --interface | -i
 STATICIFC=''                           # --force-interface | -I
@@ -40,19 +41,15 @@ SLEEP=10                               # --interval | --sleep | -s
 GRACE=40                               # --ifup-grace | -g
 MAXNOLINK=1                            # --max-nolink | -n
 IFCUPT='ifup %{IFC}'                   # --ifcup | -u
-#IFCUPT='nmcli d u %{IFC}'
-#IFCUPT='nmcli c u wghome'
 IFCDOWNT='ifdown %{IFC}'               # --ifcdown | -U
-#IFCDOWNT='nmcli d d %{IFC}'
-#IFCDOWNT='nmcli c d wghome'
 ALERTCMD='exec wall'                   # --alert | -a
-#ALERTCMD="mailx -s 'Network Watchdog Alert' root@`cat /etc/mailname`"
 SYSTEMDSERVICENAME=''                  # --install-systemd
+
+nwwatchdog=`basename "$0"` 2>/dev/null || nwwatchdog=nw-watchdog
 
 USAGE() {
     [ -n "$1" ] && printf "$@"
 
-    nwwatchdog="`basename "$0" 2>/dev/null`" || nwwatchdog=nw-watchdog
     DEPS="fprintd-verify pgrep pkill ps sed setsid" 
     COLS=72; _b_=''; ___=''; __=''; which tput>/dev/null && { COLS=`tput cols`; _b_=`tput bold`; ___=`tput smul`; __=`tput sgr0`; }
     FMT=cat; which fmt>/dev/null && FMT="fmt -s -w $COLS"
@@ -114,7 +111,7 @@ ${_b_}OPTIONS $__(no arguments)
 
         $_b_--debug$__ cannot be combined with $_b_--install-systemd$__.
 
-${_b_}OPTIONS (with ARGUMENT):$__
+${_b_}OPTIONS$__ (with ARGUMENT)
         These opions takes a single argument each and may be specified in any order. Specify with equalsign or space or no space between option and argument. They can only be grouped last with the shortform of the NO-ARGUMENT-OPTIONS above (e.g. -PAV5).
 
     $_b_--verbosity-level | -V$__ ${___}level$__
@@ -146,7 +143,7 @@ ${_b_}OPTIONS (with ARGUMENT):$__
 
     ${_b_}--interface | -i$__ ${___}interface$__
         Where ${___}interface$__ is the name of the source interface to initially use.
-        If not specified it will be determined from the forwarding table by looking at the route to the target. The reason to specify it even so would be to have $nwwatchdog bring it up if it's down when starting.
+        If not specified it will be determined from the FIB by looking at the route to the target. The reason to specify it even so would be to have $nwwatchdog bring it up if it's down when starting.
 
         The interface may dynamically change due to topology detection. If you want to force the use of a specific interface, use $_b_--force-interface$__ instead.
 
@@ -220,10 +217,14 @@ ${_b_}OPTIONS (with ARGUMENT):$__
               --ifcup='nmcli device up %{IFC}'
 
 	    NetworkManager connection:
-              --ifcup='nmcli connection up %{IFC}-connection-name'
+              --ifcup='nmcli connection up connection-name'
 
 	    iproute2 + isc-dhcp-client:
               --ifcup='ip link set %{IFC} up && dhclient -pf /run/dhclient-%{IFC}.pid %{IFC}'
+
+	    strongSwan IPSec (setup for IPSec policy routing): 
+              --ifcup='ipsec up connection-name'
+	      (see ${_b_}EXAMPLES$__  below for a more extensive IPSec example using vti tunnel interface)
 
     $_b_--ifcdown | -U $__
         Default: '$IFCDOWNT'
@@ -246,6 +247,9 @@ ${_b_}OPTIONS (with ARGUMENT):$__
 	    iproute2 + isc-dhcp-client:
               --ifcdown='kill \`cat /run/dhclient-%{IFC}.pid\` ; ip link set down %{IFC}'
 
+	    strongSwan IPSec (setup for IPSec policy routing): 
+              --ifcup='ipsec down connection-name'
+	      (see ${_b_}EXAMPLES$__  below for a more extensive IPSec example using vti tunnel interface)
 
     $_b_--alert | -a $__
     	Default: '$ALERTCMD'
@@ -253,18 +257,28 @@ ${_b_}OPTIONS (with ARGUMENT):$__
 	%{IFC} will be dynmaically replaced with the interface name currently in use as source interface.
 	Set to '-' to disable alerting (alerts will still be logged if --log-level is 3 or higher).
 
-	Example of howto email the messages using mailx (mailutils) with a custom from address:
+	Example of howto email the alert messages using mailx (mailutils) with a custom from address:
 	    --alert='mailx -a 'From: nwwatchdog@this.hst' -s "nwwatchdog alert" my@email.adr'
 
-    $_b_--install-systemd SERVICENAME $__ frax-TODO 
-        Will install a daemonized (KillMode=process) systemd service /etc/systemd/system/SERVICENAME.service using
-        $_b_--pidfile=/run/SERVICENAME.pid$__
-        $_b_--lofile=/var/log/SERVICENAME.log$__
-        removing potential $_b_--foreground$__, $_b_--no-daemonize$__ & $_b_-D$__ options
-        but otherwise with the exact same options as run (apart from the $_b_--install-systemd$__ option itself of course).
-        It will then enable it, start it and show status of it.
-        This option requires root privileges and cannot be combined with $_b_--debug$__.
+    $_b_--install-systemd$__ ${___}SERVICENAME$__ 
+        Will write a systemd service file /etc/systemd/system/nw-watchdog-${___}SERVICENAME$__.service file launching $nwwatchdog as a daemon with
+        $_b_--pidfile$__=/run/nw-watchdog-${___}SERVICENAME$__.pid$__
+        $_b_--lofile$__=/var/log/nw-watchdog-${___}SERVICENAME$__.log$__
+	and otherwise with the exact same options as run (apart from the $_b_--install-systemd$__ option itself of course).
 
+	If /etc/systemd/system/nw-watchdog-${___}SERVICENAME$__.service already exists, the service will be stopped and the file overwritten.
+
+	It will then enable, start it and show status of the newly created nw-watchdog-${___}SERVICENAME$__.service.
+
+	The ${___}SERVICENAME$__ must consist of at least 1 valid character ( 'a-z', 'A-Z', '0-9', '-' and '_' ) and be no longer than 236 characters.
+
+        This option requires root privileges.
+
+	Note:
+	To completely remove the service do (as root):
+	    systemctl stop nw-watchdog-${___}SERVICENAME$__.service
+	    systemctl disable nw-watchdog-${___}SERVICENAME$__.service
+	    rm /etc/systemd/system/nw-watchdog-${___}SERVICENAME$__.service
 
 ${_b_}EXAMPLES:$__
 
@@ -277,6 +291,9 @@ ${_b_}EXAMPLES:$__
         some text explaining the last example:
 	$_b_$nwwatchdog$__ -D 1.2.3.4
         ... some more text clarifying the above
+
+	strongswan ipsec (with iproute2 for vti tunnel interface): 
+              --ifcup='ipsec up connection-name ; ip tunnel add $IFACE mode vti local 4.3.2.1 remote 1.2.3.4 ttl 255 key 111 ; ip....
 
 
 	Here's an more extensive example of how one can use $nwwatchdog to setup and monitor a wireguard full tunnel, also monitoring the connectivity to the wireguard server, running both whatchdogs as systemd services:
@@ -659,8 +676,23 @@ linkcheck() {
 nexthop() {
     NIFC="`ip route get $TADDR | grep -o 'dev [^ ]*' | cut -d' ' -f2`"
     if [ -n "$NIFC" ]; then
-	NNEXTHOP="`ip route get $TADDR | grep -o 'via [^ ]*' | cut -d' ' -f2`"
-	[ -z "$NNEXTHOP" ] && NNEXTHOP="$TADDR"
+	NNEXTHOP="`ip route get $TADDR | grep -oE 'via [^ ]*' | cut -d' ' -f2`"
+	[ -z "$NNEXTHOP" ] && {
+	    NNEXTHOP="$TADDR"
+	    debug "No nexthop detected (same subnet, IPSec Policy Routing or host-local address), using target as nexthop... "
+	    # If it's a host-local address 'ip route get' will give lo as source interface even if addr is on different interface
+	    # which will cause 'ping -I$IFC' to fail, so let's figure which the interface with the address is instead
+	    [ "$NIFC" = "lo" ] && {
+		local ADDR=`printf '%s' "$TADDR" | sed -E 's/\./\\\\./g'`
+		[ -n "`ip addr | grep -E "inet $ADDR( |\/)"`" ] && {
+		    LIFC="`ip addr | grep -B9999 -E "inet $ADDR( |\/)" | grep -oE '^[0-9]+:\s+[^@:]+' | tail -1 | awk '{print $2}'`"
+		    [ -n "$LIFC" ] && {
+			debug "Found $TADDR on local interface '$LIFC' (overriding '$NIFC')"
+			NIFC="$LIFC"
+		    }
+		}
+	    }
+	}
 	if [ "$IFC" = "$NIFC" -a "$NEXTHOP" = "$NNEXTHOP" ]; then
 	    trace "No topology changes detected. IFC='%s' NEXTHOP='%s'" "$IFC" "$NEXTHOP"
 	    return 0
@@ -689,6 +721,53 @@ nexthop() {
     fi
 }
 
+[ -n "$FORK" -o -n "$SYSTEMDSERVICENAME" ] && { 
+    debug "MAINPID=$$ BASENAME=$nwwatchdog COMM=`cat /proc/$$/comm`"
+    NOPTS=''
+    [ -z "$PINGNEXTHOP" ] && NOPTS="${NOPTS}N"
+    [ -z "$PINGTARGET" ] && NOPTS="${NOPTS}P"
+    [ -z "$IPADDRALRT" ] && NOPTS="${NOPTS}A"
+    [ -z "$IFCUPDOWN" ] && NOPTS="${NOPTS}R"
+
+    AOPTS="V$V -t$SLOWUPTIMEOUT -s$SLEEP -g$GRACE -n$MAXNOLINK -u'$IFCUPT' -U'$IFCDOWNT' -a'$ALERTCMD' -z$LOGSIZE" 
+    [ -z "$STATICIFC" -a -n "$xIFC" ] && AOPTS="$AOPS -i '$IFC'"
+    [ -n "$STATICIFC" ] && AOPTS="$AOPS -I '$IFC'"
+}
+
+### Systemd service creation
+[ -n "$SYSTEMDSERVICENAME" ] && {
+    printf "%s" "$SYSTEMDSERVICENAME" | grep -qEe '^[a-zA-Z0-9_-]+$' || \
+	dieUSAGEpager "Invalid systemd service name '%s'\n%s" "$SYSTEMDSERVICENAME" \
+		      "The SYSTEMDSERVICENAME must contain only alphanumeric characters, hyphens and underscores and be no longer than 236 characters."
+    [ `printf "%s" "$SYSTEMDSERVICENAME" | wc -c` -gt 236 ] && dieUSAGEpager "Systemd service name '%s' is too long (max 236 characters)" "$SYSTEMDSERVICENAME"
+    
+    [ `id -u` -eq 0 ] || die "$nwwatchdog --install-systemd must be run as root"
+    
+    [ -d /etc/systemd/system/. ] || die "'/etc/systemd/system/' does not exists, systemd '$SYSTEMDSERVICENAME.service' NOT installed!"
+
+    #cat<<EOF
+    cat>/etc/systemd/system/nw-watchdog-$SYSTEMDSERVICENAME.service<<EOF
+[Unit]
+Description=$nwwatchdog for connectivity to $TARGET
+Wants=network.target
+
+[Service]
+Type=forking
+KillMode=process
+PIDFile=/var/run/nw-watchdog-$SYSTEMDSERVICENAME.pid
+ExecStart=/bin/sh '`readlink -e "$0"`' '$TARGET' -$NOPTS$AOPTS -p/var/run/nw-watchdog-$SYSTEMDSERVICENAME.pid -l/var/log/nw-watchdog-$SYSTEMDSERVICENAME.log
+
+[Install]
+WantedBy=sysinit.target
+EOF
+    systemctl daemon-reload || die "failed to reload systemd"
+    systemctl enable nw-watchdog-$SYSTEMDSERVICENAME.service || die "failed to enable the $SYSTEMDSERVICENAME.service"
+    systemctl start nw-watchdog-$SYSTEMDSERVICENAME.service || die "failed to start the $SYSTEMDSERVICENAME.service"
+    systemctl status --no-pager nw-watchdog-$SYSTEMDSERVICENAME.service
+    exit 0
+
+}
+
 nexthop || {
     if [ -n "$IFC" ]; then
 	linkcheck initial
@@ -705,32 +784,24 @@ touch "$PIDFILE" 2>/dev/null || die "%s\n%s" "Cannot write to pidfile '$PIDFILE'
 PID=`cat "$PIDFILE"`
 [ "$PID" -qt 0 ] 2>/dev/null && [ -d /proc/$PID ] && dienl "Process already running with pid $PID"
 
-[ -n "$FORK" -o -n "$SYSTEMDSERVICENAME" ] && { 
-    trace MAINPID=$$
-    NOPTS='-D'
-    [ -z "$PINGNEXTHOP" ] && NOPTS="${NOPTS}G"
-    [ -z "$PINGTARGET" ] && NOPTS="${NOPTS}P"
-    [ -z "$IPADDRALRT" ] && NOPTS="${NOPTS}A"
-    [ -z "$IFCUPDOWN" ] && NOPTS="${NOPTS}R"
-
-    AOPTS="V$V -t$SLOWUPTIMEOUT -s$SLEEP -g$GRACE -n$MAXNOLINK -u'$IFCUPT' -U'$IFCDOWNT' -a'$ALERTCMD' -z$LOGSIZE" 
-    [ -z "$STATICIFC" -a -n "$xIFC" ] && AOPTS="$AOPS -i '$IFC'"
-    [ -n "$STATICIFC" ] && AOPTS="$AOPS -I '$IFC'"
-
-    [ -n "$FORK" ] && {
-	if [ -n "$LOGFILE" ]; then AOPTS="$AOPTS -l '$LOGFILE'"
-	else AOPTS="$AOPTS -l-"; fi
-	AOPTS="$AOPTS -p'$PIDFILE'"
-	trace "forking: %s" "sh '$0' '$TARGET' $NOPTS$AOPTS"
-	{ sleep 0.25 ; sh -c "sh '$0' '$TARGET' $NOPTS$AOPTS" ;} &
-	exit 0
-    }
-    ### Generate systemd service file here
-    echo "SYSTEMDSERVICENAME=$SYSTEMDSERVICENAME"
-    exit 0;
+### Forking
+[ -n "$FORK" ] && {
+    if [ -n "$LOGFILE" ]; then AOPTS="$AOPTS -l '$LOGFILE'"
+    else AOPTS="$AOPTS -l-"; fi
+    AOPTS="$AOPTS -p'$PIDFILE'"
+    if [ -x "$0" ]; then
+	trace "forking: %s" "'$0' '$TARGET' -D$NOPTS$AOPTS"
+	{ sleep 0.25 ; eval "exec '$0' '$TARGET' -D$NOPTS$AOPTS" ;} &
+    else
+	trace "forking: %s" "/bin/sh '$0' '$TARGET' -D$NOPTS$AOPTS"
+	{ sleep 0.25 ;eval "exec /bin/sh '$0' '$TARGET' -D$NOPTS$AOPTS" ;} &
+    fi
+    exit 0
 }
+
 printf $$ > "$PIDFILE"
-trace PID=$$
+debug "PID=$$ BASENAME=$nwwatchdog COMM=`cat  /proc/$$/comm`"
+
 debug "\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s" \
       "~~~ SETTINGS ~~~" \
       "TARGET='$TARGET'" \
@@ -851,33 +922,3 @@ while true; do
 done
 exit 0
 
-###
-# below is the backlight --install code for reference
-[ "--install" = "$OP" ] && {
-    [ `id -u` -eq 0 ] || USAGE "# '$backlight --install' must be run as root"
-    GRP=video
-    [ -n "$VAL" ] && GRP=$VAL
-    grep -E "^$GRP:" /etc/group >/dev/null || USAGE "# group '$GRP' not found in /etc/group"
-    chgrp $GRP /sys/class/backlight/*/brightness ; chmod g+w /sys/class/backlight/*/brightness
-    echo
-    ls -l /sys/class/backlight/*/brightness
-    echo
-    [ -d /etc/systemd/system ] || { echo "WARNING '/etc/systemd/system/' does not exists, systemd backlightgroup.service not installed."; exit 0;}
-    cat>/etc/systemd/system/backlightgroup.service<<EOF
-[Unit]
-Description=Permission for group $GRP to set backlight brightness
-After=syslog.target
-
-[Service]
-Type=oneshot
-ExecStart=/bin/sh -c '/bin/chgrp $GRP /sys/class/backlight/*/brightness ; /bin/chmod g+w /sys/class/backlight/*/brightness'
-RemainAfterExit=no
-
-[Install]
-WantedBy=sysinit.target
-EOF
-    systemctl enable backlightgroup.service || USAGE "# failed to enable the backlightgroup.service"
-    systemctl start backlightgroup.service || USAGE "# failed to start the backlightgroup.service"
-    systemctl status --no-pager backlightgroup.service
-    exit 0
-}
