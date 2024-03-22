@@ -1,22 +1,31 @@
 #!/bin/sh
+#
+#       nw-watchdog is a higly configurable network watchdog written
+#       in posix shell script for use in Linux.
+# 
+#       Get the latest version from https://github.com/fraxflax/nw-watchdog
+#
+#       nw-watchdog is free software written by Fredrik Ax <frax@axnet.nu>.
+#       Feel free to modify and/or (re)distribute it in any way you like.
+#       It comes with ABSOLUTELY NO WARRANTY.
+#
 
-# frax-FIXME:
+# frax - FIXME / TODO:
 #
-# implement log-truncating upon reached logsize 
+# * implement log-truncating upon reached logsize 
 #
-# if run as systemd service,
+# * check nexthop with arp before ping
+#
+# * initial error / warn when run as systemd service,
 # dienl and warnnl might not a good approach for reporting on initial problems
 # (or is it ok to use stderr as log?)
 # ... dieUSAGEpager would be no good at least ... I guess ....
 # test it!
-# 
 # think about using this approach instead:
 # to be able to log errors if started as service, but
 # read in all options beforehand and then then check them afterwards,
 # starting with logfile
 # use /dev/stderr as logfile if errnous logfile-option
-#
-# check nexthop with arp before ping
 #
 
 ##############################################################################
