@@ -17,7 +17,7 @@
 #
 # * check nexthop with arp before ping
 #
-# * check that all dependecies are available before used
+# * go through dependecies ensuring we got them all
 # 
 # * initial error / warn when run as systemd service,
 # dienl and warnnl might not a good approach for reporting on initial problems
@@ -34,6 +34,8 @@
 #
 # * The big one: IPv6 support
 # 
+# * MAYBE: Support multiple targets in one instance ????
+#
 ##############################################################################
 # DEFAULTS                             
 ##############################################################################
@@ -376,7 +378,7 @@ for x in $DEPENDENCIES; do which $x>/dev/null || lacking="$lacking $x"; done
 test -n "$lacking" && {
     cat<<EOW>/dev/stderr
 
-WARNING!
+DEPENDENCY ERROR!
 
 The following executable(s) are lacking in your PATH:
    $lacking
