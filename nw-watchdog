@@ -7,15 +7,18 @@
 #
 #       nw-watchdog is free software written by Fredrik Ax <frax@axnet.nu>.
 #       Feel free to modify and/or (re)distribute it in any way you like.
+#       (It's always nice to be mentioned though ;-) )
 #       It comes with ABSOLUTELY NO WARRANTY.
-#
-
+# 
+# 
 # frax - FIXME / TODO:
 #
 # * implement log-truncating upon reached logsize 
 #
 # * check nexthop with arp before ping
 #
+# * check that all dependecies are available before used
+# 
 # * initial error / warn when run as systemd service,
 # dienl and warnnl might not a good approach for reporting on initial problems
 # (or is it ok to use stderr as log?)
@@ -28,8 +31,9 @@
 # use /dev/stderr as logfile if errnous logfile-option
 #
 # * Go through USAGE and provide some more EXAMPLES
+#
+# * The big one: IPv6 support
 # 
-
 ##############################################################################
 # DEFAULTS                             
 ##############################################################################
@@ -58,10 +62,13 @@ SYSTEMDSERVICENAME=''                  # --install-systemd
 
 nwwatchdog=`basename "$0"` 2>/dev/null || nwwatchdog=nw-watchdog
 
+# Let's put the "standard" path first to be sure we get the standard untilities we need
+PATH="/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
+DEPENDENCIES="awk cat cut date getent grep ip ping printf sed sleep touch" 
+
 USAGE() {
     [ -n "$1" ] && printf "$@"
 
-    DEPS="fprintd-verify pgrep pkill ps sed setsid" 
     COLS=72; _b_=''; ___=''; __=''; which tput>/dev/null && { COLS=`tput cols`; _b_=`tput bold`; ___=`tput smul`; __=`tput sgr0`; }
     FMT=cat; which fmt>/dev/null && FMT="fmt -s -w $COLS"
     $FMT<<EOU
@@ -74,10 +81,13 @@ ${_b_}SYNOPSIS $__
         $_b_$nwwatchdog$__ [ OPTIONS ] ${___}TARGET$__
 
 ${_b_}DESCRIPTION $__
-       $_b_$nwwatchdog$__ is a higly configurable network watchdog written in posix shell script for use in Linux. It monitors the network connectivity to a specified target and/or the next hop towards that target, alerting upon lost connectivity explaining what is wrong. It can handle resetting the source interface and will detect topology changes and, if allowed, reconfigure itself accordingly. It's intended to run as a daemon and has an option to install itself as a systemd service.  If you want to monitor the connectivity to several targets, you can run several instances of $nwwatchdog using different $_b_--pidfile$__ option arguments.
+       $_b_$nwwatchdog$__ is a higly configurable network watchdog written in posix shell script for use in Linux, depending only on Linux most standard tools that are normally installed by default in all distributions (also see the ${_b_}DEPENDENCIES$__ section).
+
+       It monitors the network connectivity to a specified target and/or the next hop towards that target, alerting upon lost connectivity explaining what is wrong. It can handle resetting the source interface and will detect topology changes and, if allowed, reconfigure itself accordingly. It's intended to run as a daemon and has an option to install itself as a systemd service.  If you want to monitor the connectivity to several targets, you can run several instances of $nwwatchdog using different $_b_--pidfile$__ option arguments.
 
        $_b_$nwwatchdog$__ is free software written by Fredrik Ax <frax@axnet.nu>.
        Feel free to modify and/or (re)distribute it in any way you like.
+       ... it's always nice to be mentioned though ;-)
        It comes with ABSOLUTELY NO WARRANTY.
 
        Get the latest version from https://github.com/fraxflax/nw-watchdog
@@ -291,7 +301,7 @@ ${_b_}OPTIONS$__ (with ARGUMENT)
 	    systemctl disable nw-watchdog-${___}SERVICENAME$__.service
 	    rm /etc/systemd/system/nw-watchdog-${___}SERVICENAME$__.service
 
-${_b_}EXAMPLES:$__
+${_b_}EXAMPLES$__
 
         some text explaining the first example:
     	$_b_$nwwatchdog$__ -D 1.2.3.4
@@ -351,12 +361,33 @@ EOU
 EOU
     $FMT<<EOU
 
-${_b_}DEPENDENCIES:$__
-
+${_b_}DEPENDENCIES$__
+        $nwwatchdog depends on the following tools being available in the path
+        (some, like printf, are most probably shell-builtin no matter what your /bin/sh points to):
 EOU
-
+    for dep in $DEPENDENCIES; do
+		printf "        * ${_b_}%s$__\n" "$dep"
+    done
+    
     [ -n "$1" ] && printf "$@"
 }
+lacking=
+for x in $DEPENDENCIES; do which $x>/dev/null || lacking="$lacking $x"; done
+test -n "$lacking" && {
+    cat<<EOW>/dev/stderr
+
+WARNING!
+
+The following executable(s) are lacking in your PATH:
+   $lacking
+preventing $nwwatchdog from continuing.
+
+(PATH=$PATH)
+
+EOW
+    exit 1
+}
+
 USAGEpager() {
     if which less >/dev/null 2>&1; then
 	USAGE "$@" | less -R 
@@ -576,12 +607,12 @@ log() {
 error() {
     [ $V -ge 1 ] || return
     local PATN="$1" ; shift
-    log "ERROR: $PATN" "$@"
+    log "  ERROR: $PATN" "$@"
 }
 warn() {
     [ $V -ge 2 ] || return
-    local PATN="WARNING: $1" ; shift
-    log "$PATN" "$@"
+    local PATN="$1" ; shift
+    log "WARNING: $PATN" "$@"
 }
 die() {
     local PATN="$1 ... aborting!" ; shift
@@ -592,22 +623,22 @@ die() {
 alert() {
     [ $V -ge 3 ] || return
     local PATN="$1" ; shift
-    log "ALERT: $PATN" "$@"
+    log "  ALERT: $PATN" "$@"
 }
 info() {
     [ $V -ge 4 ] || return
-    local PATN="INFO: $1" ; shift
-    log "$PATN" "$@"
+    local PATN="$1" ; shift
+    log "   INFO: $PATN" "$@"
 }
 trace() {
     [ $V -ge 5 ] || return
-    local PATN="TRACE: $1" ; shift
-    log "$PATN" "$@"
+    local PATN="$1" ; shift
+    log "  TRACE: $PATN" "$@"
 }
 debug() {
     [ $V -ge 6 ] || return
-    local PATN="DEBUG: $1" ; shift
-    log "$PATN" "$@"
+    local PATN="$1" ; shift
+    log "  DEBUG: $PATN" "$@"
 }
 
 # Clean up zero-padding if TARGET is an IP address
