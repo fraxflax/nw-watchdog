@@ -75,10 +75,10 @@ ${_b_}DESCRIPTION $__
        $_b_$nwwatchdog$__ is a higly configurable network watchdog written in posix shell script for use in Linux. It monitors the network connectivity to a specified target and/or the next hop towards that target, alerting upon lost connectivity explaining what is wrong. It can handle resetting the source interface and will detect topology changes and, if allowed, reconfigure itself accordingly. It's intended to run as a daemon and has an option to install itself as a systemd service.  If you want to monitor the connectivity to several targets, you can run several instances of $nwwatchdog using different $_b_--pidfile$__ option arguments.
 
        $_b_$nwwatchdog$__ is free software written by Fredrik Ax <frax@axnet.nu>.
-       Get the latest version from https://github...../nw-watchdog. frax-FIXME
        Feel free to modify and/or (re)distribute it in any way you like.
        It comes with ABSOLUTELY NO WARRANTY.
 
+       Get the latest version from https://github.com/fraxflax/nw-watchdog
 
 ${_b_}TARGET $__
        The mandatory argument ${___}TARGET$__ is the target (destination) to monitor the connection to. ${___}TARGET$__ can be an IP address or a resolvable hostname / FQDN. If it's a hostname / FQDN, it will be resolved to an IP address (first one found) at startup and the resolved IP address will be used for the monitoring. Upon failed ping-checks the name will be resolved again and if it resolves to a new IP address, that will be used for the monitoring from there on.
