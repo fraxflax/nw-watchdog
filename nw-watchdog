@@ -63,30 +63,26 @@ ALERTCMD='if which wall >/dev/null; then exec wall; else cat 1>&2; fi'
                                        # --alert | -a
 SYSTEMDSERVICENAME=''                  # --install-systemd
 
-nwwatchdog=`basename "$0"` 2>/dev/null || nwwatchdog=nw-watchdog
-
-# Let's put the "standard" path first to be sure we get the standard untilities we need
-PATH="/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
-DEPENDENCIES="awk cat cut date getent grep ip ping printf sed sleep touch" 
-which which >/dev/null 2>&1 || {
-    echo "'which' is not available in your PATH!"  1>&2
-    echo "... aborting!"  1>&2
-    exit 1
-}
-for x in $DEPENDENCIES; do which $x>/dev/null || lacking="$lacking $x"; done
-[ -n "$lacking" ] && {
-    echo ' ' 1>&2
-    echo 'DEPENDENCY ERROR' 1>&2
-    echo 'The following executable(s) are lacking in your PATH:' 1>&2
-    echo "   $lacking" 1>&2
-    echo "preventing $nwwatchdog from continuing." 1>&2
-    echo ' ' 1>&2
+# Let's put the "standard" paths first in PATH to ensure we get the standard utilities we need
+PATH="/sbin:/bin:/usr/sbin:/usr/bin:$PATH"
+DEPENDENCIES="basename cat cut date getent grep ip ping printf readlink sed sleep touch" 
+deperr() { 
     echo "(PATH=$PATH)" 1>&2
     echo ' ' 1>&2
-EOW
+    echo '~~~~~~~~~~~~~~~~' 1>&2
+    echo 'DEPENDENCY ERROR' 1>&2
+    echo '~~~~~~~~~~~~~~~~' 1>&2
+    echo 'The following executable(s) are lacking in your PATH:' 1>&2
+    echo "   $@" 1>&2
+    echo '... aborting!' 1>&2
+    echo ' ' 1>&2
     exit 1
 }
+which which >/dev/null 2>&1 || deperr which
+for x in $DEPENDENCIES; do which $x>/dev/null || lacking="$lacking $x"; done
+[ -n "$lacking" ] && deperr $lacking
 
+nwwatchdog=`basename "$0"` 2>/dev/null || nwwatchdog=nw-watchdog
 USAGE() {
     [ -n "$1" ] && printf "$@"
     COLS=72; _b_=''; ___=''; __=''; which tput>/dev/null && { COLS=`tput cols`; _b_=`tput bold`; ___=`tput smul`; __=`tput sgr0`; }
@@ -650,7 +646,7 @@ printf "%s" "$TARGET" | grep -qE '^((0*[0-9]?[0-9]|1[0-9][0-9]|2([0-4][0-9]|5[0-
     && TARGET=`printf "%s" "$TARGET" | sed -E 's/(^|\.)0+([1-9]+)/\1\2/g'`
 resolve_target() {
     trace "Resolving target '%s' (cached='%s')" "$TARGET" "$TADDR"
-    TADDR=`getent ahostsv4 "$TARGET" | head -1 | awk '{print $1}'`
+    TADDR=`getent ahostsv4 "$TARGET" | head -1 | sed -E 's/^\s*([0-9.]+)\s.*/\1/'`
     trace "Resolved target '%s' to '%s'" "$TARGET" "$TADDR"
     [ -n "$TADDR" ] || return 1
     return 0
@@ -731,7 +727,7 @@ nexthop() {
 	    [ "$NIFC" = "lo" ] && {
 		local ADDR=`printf '%s' "$TADDR" | sed -E 's/\./\\\\./g'`
 		[ -n "`ip addr | grep -E "inet $ADDR( |\/)"`" ] && {
-		    LIFC="`ip addr | grep -B9999 -E "inet $ADDR( |\/)" | grep -oE '^[0-9]+:\s+[^@:]+' | tail -1 | awk '{print $2}'`"
+		    LIFC="`ip addr | grep -B9999 -E "inet $ADDR( |\/)" | grep -oE '^[0-9]+:\s+[^@:]+' | tail -1 | sed -E 's/.*\s//'`"
 		    [ -n "$LIFC" ] && {
 			debug "Found $TADDR on local interface '$LIFC' (overriding '$NIFC')"
 			NIFC="$LIFC"
