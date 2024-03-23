@@ -412,9 +412,8 @@ dienl() {
 }
 
 # Parse arguments
-SOPTS='[hNPARDvd]' # Short options without arguments
 xTARGET='';xV='';xIFC='';xLOGFILE='';xLOGSIZE='';xPIDFILE='';xSLOWUPTIMEOUT='';xSLEEP='';xGRACE='';xMAXNOLINK='';xIFCUPT='';xIFCDOWNT='';xALERTCMD='';xSYSTEMDSERVICENAME=''
-
+SOPTS='[hNPARDvd]' # Short options without arguments
 while [ $# -gt 0 ]; do
     ARG="$1"; shift
     case "$ARG" in
@@ -452,8 +451,8 @@ while [ $# -gt 0 ]; do
 	    FORK=''
 	    ;;
 	-${SOPTS}*) # single out short options without arguments
-	    A=`printf "%s" "$ARG" | sed -E 's/(..)(.*)/\1/'`
-	    B=`printf "%s" "$ARG" | sed -E 's/(..)(.*)/-\2/'`
+	    A=`printf "%s" "$ARG" | grep -oE '^..'`
+	    B=-`printf "%s" "$ARG" | cut -c3-`
 	    set -- "$A" "$B" "$@"
 	    ;;
 	-V*|--verbosity-level*)
