@@ -15,17 +15,6 @@
 #
 # * make sure all dependecies are checked
 # 
-# * initial error / warn when run as systemd service,
-# dienl and warnnl might not a good approach for reporting on initial problems
-# (or is it ok to use stderr as log?)
-# ... dieUSAGEpager would be no good at least ... I guess ....
-# test it!
-# think about using this approach instead:
-# to be able to log errors if started as service, but
-# read in all options beforehand and then then check them afterwards,
-# starting with logfile
-# use /dev/stderr as logfile if errnous logfile-option
-#
 # * Go through USAGE and provide some more EXAMPLES
 #
 # * The big one: IPv6 support
@@ -82,8 +71,9 @@ for x in $DEPENDENCIES; do which $x>/dev/null || lacking="$lacking $x"; done
 nwwatchdog=`basename "$0"` 2>/dev/null || nwwatchdog=nw-watchdog
 USAGE() {
     [ -n "$1" ] && printf "$@"
-    COLS=72; _b_=''; ___=''; __=''; which tput>/dev/null && { COLS=`tput cols`; _b_=`tput bold`; ___=`tput smul`; __=`tput sgr0`; }
-    FMT=cat; which fmt>/dev/null && FMT="fmt -w $COLS -s"
+    COLS=0; _b_=''; ___=''; __=''; which tput>/dev/null && { COLS=`tput cols`; _b_=`tput bold`; ___=`tput smul`; __=`tput sgr0`; }
+    [ "$COLS" -gt 72 ] >/dev/null 2>&1 || COLS=72
+    FMT=cat; which fmt>/dev/null && FMT="fmt -s -w $COLS"
     $FMT -s<<EOU
 
 ${_b_}NAME $__
@@ -445,16 +435,6 @@ dieUSAGEpager() {
     USAGEpager "$PATN" "$@"
     exit 1
 }
-warnnl() {
-    local PATN="$1" ; shift
-    printf "\nWARNING:\n$PATN\n\n" "$@" 1>&2
-}
-dienl() {
-    local PATN="$1 ... aborting!" ; shift
-    printf "\nERROR: $PATN\n\n" "$@" 1>&2
-    exit 1
-}
-
 # Parse arguments
 xTARGET='';xV='';xIFC='';xLOGFILE='';xLOGSIZE='';xPIDFILE='';xSLOWUPTIMEOUT='';xSLEEP='';xGRACE='';xMAXNOLINK='';xIFCUPT='';xIFCDOWNT='';xALERTCMD='';xSYSTEMDSERVICENAME=''
 SOPTS='[hNPARDvd]' # Short options without arguments
@@ -629,6 +609,18 @@ done
 							   "(can't use --no-ping-target and --no-ping-nexthop at the same time)"
 [ -n "$TARGET" ] || dieUSAGEpager "%s\n%s" \
 				  "Target not specified!" "Specify IP address or resolvable hostname."
+warnnl() {
+    [ $V -ge 2 ] || return
+    local PATN="$1" ; shift
+    printf "WARNING: $PATN\n" "$@" 1>&2
+    printf "\n\nWARNING\n$nwwatchdog '$TARGET'\n$PATN\n\n\n" "$@" | sh -c "$ALERTCMD"
+}
+dienl() {
+    local PATN="$1 ... aborting!" ; shift
+    printf "\nERROR: $PATN\n\n" "$@" 1>&2
+    printf "\n\n$nwwatchdog $TARGET ERROR:\n   $PATN\n\n\n" "$@" | sh -c "$ALERTCMD"
+    exit 1
+}
 [ "$LOGFILE" = '-' ] && { LOGFILE=''; LOGSIZE=0 ; LOGSIZEb=0 ;}
 [ -n "$LOGFILE" ] && {
     touch "$LOGFILE" 2>/dev/null || \
@@ -643,7 +635,7 @@ esac
 LOGSIZEb=$((LOGSIZEb*1024))
 
 log() {   
-    PATN="%s  $1"; shift
+    local PATN="%s  $1"; shift
     logentry=$(printf "$PATN" "`date '+%Y-%m-%d %H:%M:%S %z'`" "$@")
     if [ -n "$LOGFILE" ]; then
     	[ "$LOGSIZEb" -gt 0 ] && {
@@ -679,7 +671,7 @@ error() {
     [ $V -ge 1 ] || return
     local PATN="$1" ; shift
     log "  ERROR: $PATN" "$@"
-    printf "\n\n$nwwatchdog $TARGET ERROR:\n   $PATN\n\n\n" "$@" | sh -c "$ALERTCMD"
+    printf "\n\nERROR:\n$nwwatchdog '$TARGET'\n$PATN\n\n\n" "$@" | sh -c "$ALERTCMD"
 }
 die() {
     local PATN="$1 ... aborting!" ; shift
@@ -690,13 +682,13 @@ warn() {
     [ $V -ge 2 ] || return
     local PATN="$1" ; shift
     log "WARNING: $PATN" "$@"
-    printf "\n\n$nwwatchdog $TARGET WARNING:\n   $PATN\n\n\n" "$@" | sh -c "$ALERTCMD"
+    printf "\n\nWARNING:\n$nwwatchdog '$TARGET'\n$PATN\n\n\n" "$@" | sh -c "$ALERTCMD"
 }
 alert() {
     [ $V -ge 3 ] || return
     local PATN="$1" ; shift
     log "  ALERT: $PATN" "$@"
-    printf "\n\n$nwwatchdog $TARGET ALERT:\n   $PATN\n\n\n" "$@" | sh -c "$ALERTCMD"
+    printf "\n\nALERT\n$nwwatchdog '$TARGET'\n$PATN\n\n\n" "$@" | sh -c "$ALERTCMD"
 }
 info() {
     [ $V -ge 4 ] || return
@@ -725,7 +717,15 @@ resolve_target() {
     trace "Resolved target '%s' to '%s'" "$TARGET" "$TADDR"
     return 0
 }
-resolve_target || dieUSAGEpager "Target '$TARGET' does not resolve to an IPv4 address."
+TADDR=''
+while [ -z "$TADDR" ]; do
+    resolve_target ||
+	warn "Target '%s' does not resolve to an IPv4 address. Make sure name resoloution funtions on the system\n\t%s\n\t%s" \
+	     "$TARGET" \
+	     '... or stop this instance and start it again using a valid hostname / FQDN or IP address' \
+	     "... sleeping for $GRACE seconds."
+    sleep $GRACE
+done
 
 ifreset() {
     [ -n "$IFCUPDOWN" ] || {
