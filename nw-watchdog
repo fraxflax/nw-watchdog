@@ -13,11 +13,7 @@
 # 
 # frax - FIXME / TODO:
 #
-# * implement log-truncating upon reached logsize 
-#
-# * check nexthop with arp before ping
-#
-# * go through dependecies ensuring we got them all
+# * make sure all dependecies are checked
 # 
 # * initial error / warn when run as systemd service,
 # dienl and warnnl might not a good approach for reporting on initial problems
@@ -36,8 +32,9 @@
 # 
 # * MAYBE: Support multiple targets in one instance ????
 #
+#
 ##############################################################################
-# DEFAULTS                             
+# DEFAULTS (can be overridden by config file, options always have precedence)
 ##############################################################################
 TARGET=''                              # TARGET (destination) 
 
@@ -65,7 +62,7 @@ SYSTEMDSERVICENAME=''                  # --install-systemd
 
 # Let's put the "standard" paths first in PATH to ensure we get the standard utilities we need
 PATH="/sbin:/bin:/usr/sbin:/usr/bin:$PATH"
-DEPENDENCIES="basename cat cut date getent grep ip ping printf readlink sed sleep touch" 
+DEPENDENCIES="basename cat cut date getent grep head id ip ping printf readlink sed sleep stat tail touch wc" 
 deperr() { 
     echo "(PATH=$PATH)" 1>&2
     echo ' ' 1>&2
@@ -86,8 +83,8 @@ nwwatchdog=`basename "$0"` 2>/dev/null || nwwatchdog=nw-watchdog
 USAGE() {
     [ -n "$1" ] && printf "$@"
     COLS=72; _b_=''; ___=''; __=''; which tput>/dev/null && { COLS=`tput cols`; _b_=`tput bold`; ___=`tput smul`; __=`tput sgr0`; }
-    FMT=cat; which fmt>/dev/null && FMT="fmt -s -w $COLS"
-    $FMT<<EOU
+    FMT=cat; which fmt>/dev/null && FMT="fmt -w $COLS -s"
+    $FMT -s<<EOU
 
 ${_b_}NAME $__
         $nwwatchdog - Network Watchdog
@@ -117,14 +114,16 @@ ${_b_}OPTIONS $__(no arguments)
     $_b_--help | -h $__
         Shows this help in a pager ( less | more ) if available.
 
-    $_b_--no-ping-nexthop | -N | --no-ping-gateway | -G $__
-        Do not try to ping nexthop ( usually the gateway ). Only connectivity to target itself is checked. It can be useful if gateway (next hop) is not setup to reply to ping.
-        In future versions there might be an option to do arp-checks instead of ping.
+    $_b_--no-ping-target | -P $__
+    	If the target is the nexthop (on the same subnet or a peer-to-peer address), reachability of the target is checked by arp cache status and ping.
+	If the target is not on the same subnet as the source, the reachability of the target is checked by pinging it in a certain pattern (see $_b_--slow-up-timeout$__ for details.
+	$_b_--no-ping-target$__ disables the ping-checks for the target. Only connectivity to the nexthop for the target is checked.
+        It can be useful if target does filter ping or is unreachable and we still want to monitor the status of the source interface and nexthop.
         Only one of $_b_--no-ping-nexthop$__ and $_b_--no-ping-target$__ can be specified.
 
-    $_b_--no-ping-target | -P $__
-        Do not try to ping target. Only connectivity to the nexthop for the target is checked.
-        It can be useful if target does not reply to ping or is not reachable and we still want to monitor the path.
+    $_b_--no-ping-nexthop | -N | --no-ping-gateway | -G $__
+    	By default, if the connectivity to the target cannot be verified, the reachability of the nexthop (usually a gateway) is checked, firstly by checking it's status in the arp cache and then by pinging it, rechecking the arp cache status upon failed ping. 
+        $_b_--no-ping-nexthop$__ disbles the reachaility check for the nexthop so only connectivity to target itself is checked. It can be useful if the nexthop is a peer-to-peer address and not setup to reply to ping.
         Only one of $_b_--no-ping-nexthop$__ and $_b_--no-ping-target$__ can be specified.
 
     $_b_--no-ipaddr-alert | -A $__
@@ -142,7 +141,7 @@ ${_b_}OPTIONS $__(no arguments)
         Cannot be combined with $_b_--verbosity-level$__.
 
     $_b_--debug | -d $__
-        Shortcut for: $_b_--verbosity-level=6$__ $_b_--logfile=-$__ $_b_--logsize=0$__ $_b_--pidfile=/dev/null$__ $_b_--slow-up-timeout=1$__ $_b_--sleep=3$__ $_b_--ifup-grace=10$__ $_b_--foreground$__ 
+        Shortcut for: $_b_--verbosity-level=6 --logfile=- --logsize=0 --pidfile=/dev/null --slow-up-timeout=1 --sleep=3 --ifup-grace=10 --alert='cat' --foreground$__ 
 
         If it's combined with any of the options it provides shortcuts for, the specified option will take precedence over the $_b_--debug$__ shortcut.
 
@@ -151,6 +150,20 @@ ${_b_}OPTIONS $__(no arguments)
 ${_b_}OPTIONS$__ (with ARGUMENT)
         These opions takes a single argument each and may be specified in any order. Specify with equalsign or space or no space between option and argument. They can only be grouped last with the shortform of the NO-ARGUMENT-OPTIONS above (e.g. -PAV5).
 
+EOU
+#    $_b_--config | -c$__ ${___}filename$__
+#    	If not specified, ${_b_}/etc/nw-watchdog.conf$__ is used if present and readable.
+#	If filename specified but file not found, it will be generated based on current settings (as defined by defaults and current commandline options).
+#
+#	The config file syntax is posix shell script syntax for declaring environment variables
+#	and may override any default values.
+#	
+#	No other variables or code is allowed in the file.
+#	Empty lines and comments (as in shell-script) are ignored.
+#
+#	See each option for the corresponding environment variable name.
+#	
+$FMT<<EOU
     $_b_--verbosity-level | -V$__ ${___}level$__
         Default: $V
         Integer greater than or equal to zero.
@@ -170,13 +183,13 @@ ${_b_}OPTIONS$__ (with ARGUMENT)
         Also see the $_b_--alert$__ option.
 
         ${_b_}4$__ - info (default)
-        Same as level 4, but also logs some more info about what's going on.
+        Same as level 3, but also logs some useful information on what's going on, such as topology changes, some test failures forcing more testing,  interface resets, etc
 
         ${_b_}5$__ - trace
-        Logs even more info about what's happening, when it's sleeping, etc
+        Logs even more info about which action is currently performed, including, all secondary tests that are run, when sleeping longer than usual, etc.
 
         ${_b_}6$__ - debug
-        Logs even more internal details and debug info.
+        Logs even more internal details, e.g. SETTINGS used, all tests performed, all sleeps, and other debug info.
 
     ${_b_}--interface | -i$__ ${___}interface$__
         Where ${___}interface$__ is the name of the source interface to initially use.
@@ -198,8 +211,16 @@ ${_b_}OPTIONS$__ (with ARGUMENT)
 
     $_b_--logsize | -z$__ ${___}size$__
         Default: $LOGSIZE
-	Integer greater than or equal to zero.
-        Max size (in kilobytes) that logfile will grow to. If exceeded the oldest entries will be removed. 0 for unlimited logfile size (which you would want if you rotate the log).
+
+	If the logfile grows beyond this size, the oldest entries will be removed.
+
+	You can use suffixes K, M, G for kilo / mega / giga bytes. (No suffix is same as K).
+	Set to 0 for unlimited logfile size (which you would want if you do log rotation). 
+
+	If the logfile is set to '-' (stdout) this option is ignored.
+
+	If ${_b_}flock$__ is available, the logfile will be locked before written to or shrinked, otherwise there is a slight risk of loglines being lost if two or more instances of $_b_$nwwatchdog$__ are concurently running using the same logfile and at least one of them have $_b_--logsize$__ set to a value larger than 0.
+
 
     $_b_--pidfile | -p$__ ${___}pidfile$__
         Default: '$PIDFILE'
@@ -209,14 +230,16 @@ ${_b_}OPTIONS$__ (with ARGUMENT)
         Default: $SLOWUPTIMEOUT
         Integer greater than zero.
 
-        The pingtest to check if a target is up is performed in several steps. First a "quick-up" test is done sending one single ICMP echo packet waiting for the reply in 1 second. If that fails, a more thourough "slow-up" test sending 5 ICMP echos is done. This parameter controls how long we wait for each packet before timing out and sending the next packet. The default (7) takes height for the fact that some idle VPN interfaces can take up to 30 seconds to get traffic through after re-negotiating encryption, exchanging encryptions keys, renewed authentcation, etc, etc, so all in all the "slow-up" test can take up to 35 seconds before timing out (if the connection it's up and active it takes only little more than it takes to get the first reply).
+        The pingtest to check if a target is up is performed in several steps. First a "quick-up" test sends one single ICMP echo packet waiting for the reply for no more than 1 second. If that fails, a more thourough "slow-up" test sends 5 ICMP echos. This parameter controls how long to wait for each packet before timing out and sending the next packet. Using the default setting, the "slow-up" test takes up to $SLOWUPTIMEOUT * 5 seconds before failing, but if the connection is up, thanks to using adaptive ping (sending next echo packet as soon as the reply of the previous one is received), the entire slow-up test will not take notably longer than 5 * the RTT to the target.
 
+	Summary:
+	$_b_--slow-up-timeout$__ controls he TIMEOUT for waiting on each packet in the slow-up test.
         5 packets are always sent in the slow-up test.
-        The packets are sent adaptively, meaning that as soon as a reply is received the next packet is sent without delay, shortening the test time if the connection is up, to as quickly as the target can reply. (Not to flood the target, no more than 5 packets will be sent adaptively.)
-        The TIMEOUT for waiting on each packet is this parameter and the
+        The packets are sent adaptively, meaning that as soon as a reply is received the next packet is sent without delay.
         DEADLINE = TIMEOUT * 5
-        Giving a DEADLINE of 5 * 7 = 35 seconds in the default case.
         
+        $_b_--slow-up-timeout=7$__ is useful for monitoring VPN connections via interfaces that need a long wake-up time if idle (due to regotiation of encryption, exchanging keys, reauthentication, etc).
+
         $_b_--slow-up-timeout=3$__ is useful for monitoring connections to targets with low - medium latency via interfaces that does not need a long wake-up time (e.g. ethernet interfaces).
 
         $_b_--slow-up-timeout=1$__ is suitable to use for monitoring local targets (e.g. nexthop) on ethernet carried subnets.
@@ -378,12 +401,33 @@ EOU
     $FMT<<EOU
 
 ${_b_}DEPENDENCIES$__
-        $nwwatchdog depends on the following tools being available in the path
-        (some, like printf, are most probably shell-builtin no matter what your /bin/sh points to):
+        $nwwatchdog depends on the below executables being available in "/sbin:/bin:/usr/sbin:/usr/bin:\$PATH" or being shell-builtin. A check is done at startup and if any of these tools are missing, $nwwatchdog will exit with an error telling which are lacking.
+	
 EOU
     for dep in $DEPENDENCIES; do
-		printf "        * ${_b_}%s$__\n" "$dep"
-    done    
+		printf "        - ${_b_}%s$__\n" "$dep"
+    done
+    $FMT<<EOU
+
+        If certain utilities are available $_b_$nwwatchdog$__ will use them to enhance its functionality, these are:
+
+	- ${_b_}flock$__
+            If available the logfile will be locked before truncated or written to.
+	    If not available, there is a slight risk of loglines being lost if two or more instances of $_b_$nwwatchdog$__ are concurently running using the same logfile and at least one of them have $_b_--logsize$__ set to a value larger than 0.
+
+	- ${_b_}wall$__
+	If available it will be used as default $_b_--alert$__ command and otherwise alerting will be done to stderr by default.
+
+	- ${_b_}tput$__
+	Is used to determine the terminal width and output bold and underlined text in this help message if available.
+
+	- ${_b_}fmt$__
+	Is used to format the help message if available.
+
+	- ${_b_}less$__ or ${_b_}more$__
+	Are used to page the help message if available.
+
+EOU
     [ -n "$1" ] && printf "$@"
 }
 USAGEpager() {
@@ -445,9 +489,10 @@ while [ $# -gt 0 ]; do
 	    [ -z "$xV" ] && V=6 
 	    [ -z "$xLOGFILE" ] &&  { LOGFILE=''; LOGSIZE=0; }
 	    [ -z "$xPIDFILE" ] && PIDFILE='/dev/null'
-	    [ -z "xSLOWUPTIMEOUT" ] && SLOWUPTIMEOUT=1
-	    [ -z "xSLEEP" ] && SLEEP=3
-	    [ -z "xGRACE" ] && GRACE=10
+	    [ -z "$xSLOWUPTIMEOUT" ] && SLOWUPTIMEOUT=1
+	    [ -z "$xSLEEP" ] && SLEEP=3
+	    [ -z "$xGRACE" ] && GRACE=10
+	    [ -z "$xALERTCMD" ] && ALERTCMD='cat'
 	    FORK=''
 	    ;;
 	-${SOPTS}*) # single out short options without arguments
@@ -495,7 +540,7 @@ while [ $# -gt 0 ]; do
 	    if [ "$ARG" = "-z" -o "$ARG" = "--logsize" ]; then LOGSIZE="$1"; shift
 	    elif printf "%s" "$ARG" | grep -qEe '-(-logsize|z)=.*' ; then LOGSIZE="${ARG#*=}"
 	    else LOGSIZE=`printf "%s" "$ARG" | sed -E 's/-(-logsize|z)//'`; fi
-	    [ "$LOGSIZE" -ge 0 ] 2>/dev/null || dieUSAGEpager "Invalid logsize '$LOGSIZE' (must be integer >= 0)"
+	    printf "%s" "$LOGSIZE" | grep -iqE '^[1-9]+[0-9]*[KMG]*$' || dieUSAGEpager "Invalid logsize '$LOGSIZE'"
 	    xLOGSIZE=1
 	    ;;
 	-p*|--pidfile*)
@@ -582,23 +627,42 @@ while [ $# -gt 0 ]; do
 done
 [ -z "$PINGTARGET" -a -z "$PINGNEXTHOP" ] && dieUSAGEpager "You must allow pinging of target and/or nexthop!\n%s" \
 							   "(can't use --no-ping-target and --no-ping-nexthop at the same time)"
-
 [ -n "$TARGET" ] || dieUSAGEpager "%s\n%s" \
 				  "Target not specified!" "Specify IP address or resolvable hostname."
-
-[ "$LOGFILE" = '-' ] && LOGFILE=''
+[ "$LOGFILE" = '-' ] && { LOGFILE=''; LOGSIZE=0 ; LOGSIZEb=0 ;}
 [ -n "$LOGFILE" ] && {
     touch "$LOGFILE" 2>/dev/null || \
-	dienl "%s\n%s" "Cannot write to logfile '$LOGFILE'." "Run as user with access or specify another --logfile."
+	dienl "%s\n%s" "Cannot write to logfile '$LOGFILE'." "Fix permissions, run as user with access or specify another --logfile."
 }
-#~~~
-log() {
-    #[ "$LOGSIZE" -gt 0 ] && [ -f "$LOGFILE" ] && [ `stat -c %s $LOGFILE` -gt $LOGSIZE ] && mv $LOGFILE $LOGFILE.old
-    local PATN="$1\n" ; shift
-    if [ -n "$LOGFILE" ]; then
-	printf "%s  $PATN" "`date '+%Y-%m-%d %H:%M:%S %z'`" "$@" >>$LOGFILE
+LOGSIZEb="$LOGSIZE"
+case "$LOGSIZEb" in
+    *[Kk]) LOGSIZEb=`printf "%s" "$LOGSIZEb" | sed -E 's/[Kk]$//'`;;
+    *[Mm]) LOGSIZEb=`printf "%s" "$LOGSIZEb" | sed -E 's/[Mm]$//'`; LOGSIZEb=$((LOGSIZEb*1024));;
+    *[Gg]) LOGSIZEb=`printf "%s" "$LOGSIZEb" | sed -E 's/[Gg]$//'`; LOGSIZEb=$((LOGSIZEb*1048576));;
+esac
+LOGSIZEb=$((LOGSIZEb*1024))
+
+log() {   
+    PATN="%s  $1"; shift
+    logentry=$(printf "$PATN" "`date '+%Y-%m-%d %H:%M:%S %z'`" "$@")
+    if [ -n "$LOGFILE" ] && which flock >/dev/null 2>&1; then
+	[ "$LOGSIZEb" -gt 0 ] && {
+	    # Remove top 10 lines until log file is smaller than LOGSIZEb,
+	    # silently skip if we can't lock the file
+	    local skip=''
+	    while [ -z "$skip" -a `stat --printf='%s' $LOGFILE` -gt $LOGSIZEb ]; do
+		flock -w1 "$LOGFILE" -c "cp '$LOGFILE' '$LOGFILE.$$' ; tail -n +11 '$LOGFILE.$$' >'$LOGFILE'" || skip=y
+	    done
+	}
+	flock -w1 "$LOGFILE" -c "printf '%s\n' \"$logentry\" >>'$LOGFILE'" || {
+		warnnl "Could not lock logfile temporarily logging to '%s'\n" "$LOGFILE.$$"
+		TLOGFILE="$LOGFILE"
+		LOGFILE="$LOGFILE.$$"
+		printf "%s\n" "$logentry" >>"$LOGFILE"
+		LOGFILE="$TLOGFILE"
+	    }
     else
-	printf "%s  $PATN" "`date '+%Y-%m-%d %H:%M:%S %z'`" "$@"
+	printf "%s\n" "$logentry"
     fi
 }
 error() {
@@ -640,14 +704,15 @@ debug() {
     log "  DEBUG: $PATN" "$@"
 }
 
+debug "Resolving, or if already IP address, cleaning zero-padding of, target '%s'" "$TARGET"
 # Clean up zero-padding if TARGET is an IP address
 printf "%s" "$TARGET" | grep -qE '^((0*[0-9]?[0-9]|1[0-9][0-9]|2([0-4][0-9]|5[0-5]))\.){3}(0*[0-9]?[0-9]|1[0-9][0-9]|2([0-4][0-9]|5[0-5]))$' \
     && TARGET=`printf "%s" "$TARGET" | sed -E 's/(^|\.)0+([1-9]+)/\1\2/g'`
 resolve_target() {
     trace "Resolving target '%s' (cached='%s')" "$TARGET" "$TADDR"
     TADDR=`getent ahostsv4 "$TARGET" | head -1 | sed -E 's/^\s*([0-9.]+)\s.*/\1/'`
-    trace "Resolved target '%s' to '%s'" "$TARGET" "$TADDR"
     [ -n "$TADDR" ] || return 1
+    trace "Resolved target '%s' to '%s'" "$TARGET" "$TADDR"
     return 0
 }
 resolve_target || dieUSAGEpager "Target '$TARGET' does not resolve to an IPv4 address."
@@ -657,29 +722,38 @@ ifreset() {
 	info 'Not resetting interface due to --no-interface-reset.'
     	return 0
     }
-    [ -n "$IFC" ] || return 2
+    [ -n "$IFC" ] || die "Internal ERROR: No interface to reset!"
     info "Resetting '$IFC'."
-    debug "%s: %s" "$IFCDOWN" "$IFCDD"
-    IFCDD=`sh -c "$IFCDOWN" 2>&1`
+    IFCDD=`sh -c "$IFCDOWN" 2>&1`; EXITCODE=$?
+    debug "'%s' exited with $EXITCODE and output: '%s'" "$IFCDOWN" "$IFCDD"
     sleep 1
-    debug "%s: %s" "$IFCUP" "$IFCUD"
-    IFCUD=`sh -c "$IFCUP" 2>&1` || return 1
+    IFCUD=`sh -c "$IFCUP" 2>&1`|| {
+	EXITCODE=$?
+	debug "'%s' exited with $EXITCODE and output: '%s'" "$IFCUP" "$IFCUD"
+	warn "%s\n\t%s" \
+	     "Could not reset interface '$IFC'." \
+	     "Check your --if-up and --if-down commands and/or privilegdes of effective user (userid=`id -u`)."
+	[ -n "$1" ] && return 1
+    }	
+    debug "'%s' exited with $EXITCODE and output: '%s'" "$IFCUP" "$IFCUD"
     trace "Sleeping for $GRACE seconds."
     sleep $GRACE
-    return 0
+    return $EXITCODE
 }
 
 linkcheck() {
-    [ -n "$IFC" ] || return 2
+    [ -n "$IFC" ] || die "Internal ERROR: No interface to check link for!"
     NOLINK=0
     while true; do
-	ip link show $IFC >/dev/null 2>&1 && {
-	    IPADDRS=''; ip addr show dev $IFC | grep -qE 'inet6? .* scope global' && IPADDRS=y
-	    [ -n "$IPADDRS" -a -n "$IPADDRALRT" ] \
-		|| alert "%s\n\t%s" \
-			 "There is no IPv4 or IPv6 global scope ip address on interface '$IFC'!" \
-			 "If that is ok, you can disable these alerts with --no-ipaddr-alert."
-	    return 0
+	ip link show $IFC>/dev/null 2>&1 && {
+	    ip link show $IFC | grep -oq 'state DOWN' || {
+		IPADDRS=''; ip addr show dev $IFC | grep -qE 'inet6? .* scope global' && IPADDRS=y
+		[ -n "$IPADDRS" -a -n "$IPADDRALRT" ] \
+		    || alert "%s\n\t%s" \
+			     "There is no IPv4 or IPv6 global scope ip address on interface '$IFC'!" \
+			     "If that is ok, you can disable these alerts with --no-ipaddr-alert."
+		return 0
+	    }
 	}
 	NOLINK=$((NOLINK+1))
 	[ $MAXNOLINK -gt 0 -a $NOLINK -gt $MAXNOLINK ] && {
@@ -689,28 +763,7 @@ linkcheck() {
 	    return 1
 	}
 	info "No link on $IFC... reset attempt $NOLINK out of $MAXNOLINK (0=infinite)"
-	[ -n "$1" ] && \
-	    warnnl "Interface '%s' has no link, trying to reset it\n\t%s\n\t%s\n\t%s" \
-		   "$IFC" \
-		   "waiting for $GRACE seconds for link to come up" \
-		   "attempt $NOLINK of $MAXNOLINK (0=infinite)" \
-		   "(abort and use --interface or --force-interface to bring it up automatically)"
-	ifreset
-	case "$?" in
-	    2) die "Internal ERROR: No interface to reset!" ;;       
-	    1) if [ -n "$1" ]; then
-		   die "%s\n\t%s" \
-		       "Could not bring up interface '$IFC'." \
-		       "Check your --if-up and --if-down commands."
-	       else 
-		   warn "%s\n\t%s" \
-			"Could not reset interface '$IFC'." \
-			"Check your --if-up and --if-down commands."
-		   trace "Sleeping for $GRACE seconds"
-		   sleep $GRACE
-	       fi
-	       ;;
-	esac
+	ifreset "$1" 
     done
 }
 
@@ -720,7 +773,7 @@ nexthop() {
 	NNEXTHOP="`ip route get $TADDR | grep -oE 'via [^ ]*' | cut -d' ' -f2`"
 	[ -z "$NNEXTHOP" ] && {
 	    NNEXTHOP="$TADDR"
-	    debug "No nexthop detected (same subnet, IPSec Policy Routing or host-local address), using target as nexthop... "
+	    debug "No nexthop detected (ok if same subnet (incl. host-local addr) or peer-to-peer addr), using target as nexthop... "
 	    # If it's a host-local address 'ip route get' will give lo as source interface even if addr is on different interface
 	    # which will cause 'ping -I$IFC' to fail, so let's figure which the interface with the address is instead
 	    [ "$NIFC" = "lo" ] && {
@@ -752,12 +805,13 @@ nexthop() {
 	    NEXTHOP="$NNEXTHOP"
 	    return 0
 	else
-	    alert "Conflicting topology detected, route to target '%s' (%s) is on interface '%s', but forced Interface is '%s'" \
+	    alert "Conflicting topology detected, route to target '%s' (%s) is on interface '%s', but --force-interface='%s'" \
 		  "$TARGET" "$TADDR" "$NIFC" "$STATICIFC"
 	    return 0
 	fi
     else
 	info "No route to target '%s' (%s) available." "$TARGET" "$TADDR"
+	debug "Hanging on to interface '%s'." "$IFC"
 	return 1
     fi
 }
@@ -771,10 +825,10 @@ nexthop() {
     [ -z "$IFCUPDOWN" ] && NOPTS="${NOPTS}R"
 
     AOPTS="V$V -t$SLOWUPTIMEOUT -s$SLEEP -g$GRACE -n$MAXNOLINK -u'$IFCUPT' -U'$IFCDOWNT' -a'$ALERTCMD' -z$LOGSIZE" 
-    [ -z "$STATICIFC" -a -n "$xIFC" ] && AOPTS="$AOPS -i '$IFC'"
-    [ -n "$STATICIFC" ] && AOPTS="$AOPS -I '$IFC'"
+    [ -z "$STATICIFC" -a -n "$xIFC" ] && AOPTS="$AOPTS -i '$IFC'"
+    [ -n "$STATICIFC" ] && AOPTS="$AOPTS -I'$IFC'"
+    debug "NOPTS=%s\nAOPTS=%s\n" "$NOPTS" "$AOPTS" 
 }
-
 ### Systemd service creation
 [ -n "$SYSTEMDSERVICENAME" ] && {
     printf "%s" "$SYSTEMDSERVICENAME" | grep -qEe '^[a-zA-Z0-9_-]+$' || \
@@ -809,74 +863,25 @@ EOF
 
 }
 
-nexthop || {
-    if [ -n "$IFC" ]; then
-	linkcheck initial
-	nexthop || { ifreset ; nexthop ; }
-    else
-	die "No interface specified and no route to target '%s' (%s) available, make sure interface is up,\n\t%s" \
-	    "$TARGET" "$TADDR" 'or use --interface or --force-interface to bring it up automatically.'
-    fi
-}
-
-
-[ -n "$PIDFILE" ] || PIDFILE=/run/nw-watchdog.pid
-touch "$PIDFILE" 2>/dev/null || die "%s\n%s" "Cannot write to pidfile '$PIDFILE'." "Run as user with access or specify another --pidfile"
-PID=`cat "$PIDFILE"`
-[ "$PID" -qt 0 ] 2>/dev/null && [ -d /proc/$PID ] && dienl "Process already running with pid $PID"
-
-### Forking
-[ -n "$FORK" ] && {
-    if [ -n "$LOGFILE" ]; then AOPTS="$AOPTS -l '$LOGFILE'"
-    else AOPTS="$AOPTS -l-"; fi
-    AOPTS="$AOPTS -p'$PIDFILE'"
-    if [ -x "$0" ]; then
-	trace "forking: %s" "'$0' '$TARGET' -D$NOPTS$AOPTS"
-	{ sleep 0.25 ; eval "exec '$0' '$TARGET' -D$NOPTS$AOPTS" ;} &
-    else
-	trace "forking: %s" "/bin/sh '$0' '$TARGET' -D$NOPTS$AOPTS"
-	{ sleep 0.25 ;eval "exec /bin/sh '$0' '$TARGET' -D$NOPTS$AOPTS" ;} &
-    fi
-    exit 0
-}
-
-printf $$ > "$PIDFILE"
-debug "PID=$$ BASENAME=$nwwatchdog COMM=`cat  /proc/$$/comm`"
-
-debug "\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s" \
-      "~~~ SETTINGS ~~~" \
-      "TARGET='$TARGET'" \
-      "PINGNEXTHOP='$PINGNEXTHOP'" \
-      "PINGTARGET='$PINGTARGET'" \
-      "IPADDRALRT='$IPADDRALRT'" \
-      "IFCUPDOWN='$IFCUPDOWN'" \
-      "FORK='$FORK'" \
-      "V='$V'" \
-      "IFC='$IFC'" \
-      "STATICIFC='$STATICIFC'" \
-      "LOGFILE='$LOGFILE'" \
-      "LOGSIZE='$LOGSIZE'" \
-      "PIDFILE='$PIDFILE'" \
-      "SLOWUPTIMEOUT='$SLOWUPTIMEOUT'" \
-      "SLEEP='$SLEEP'" \
-      "GRACE='$GRACE'" \
-      "MAXNOLINK='$MAXNOLINK'" \
-      "IFCUPT='$IFCUPT'" \
-      "IFCDOWNT='$IFCDOWNT'" \
-      "ALERTCMD='$ALERTCMD'"
-
 isup() {
     local ADDR="$1"
 
+    [ "$ADDR" = "$NEXTHOP" ] && {
+	# addr is on local subnet (incl. host-local addrs) or peer-to-peer address 
+	ip neigh get dev $IFC $ADDR 2>&1 | grep -q 'REACHABLE' && { debug "$ADDR is arp1-up on $IFC" ; return 0 ;}
+	ping -q -w2 -c1 -I$IFC $ADDR >/dev/null 2>&1 && { debug "$ADDR is arp-ping-up on $IFC" ; return 0 ;} # also refreshes arp-cache
+	ip neigh get dev $IFC $ADDR 2>&1 | grep -q 'REACHABLE' && { debug "$ADDR is arp2-up on $IFC" ; return 0 ;}
+    }
+    
     # quick check if line is already up
     ping -q -w1 -c1 -I$IFC $ADDR >/dev/null 2>&1 && {
-	debug 'quick-up ok'
+	debug "$ADDR is quick-up via $IFC"
 	return 0
     }
-    trace 'quickup failed ... trying slow-up ...'
+    trace 'quick-up failed ... trying slow-up ...'
     
     ping -qA -w$SUDEADLINE -W$SLOWUPTIMEOUT -c$SUCOUNT -I$IFC $ADDR >/dev/null 2>&1 && {
-	trace 'slow-up ok'
+	trace "$ADDR is slow-up via $IFC"
 	return 0
     }
 
@@ -890,75 +895,155 @@ isup() {
 
     # double check that we're up (the above could potentially
     # (but unlikely due to -A) return 1 or 2 even if we're up)
+    trace 'slow-up failed or ambigious result ... verifying ...'
     ping -q -w2 -c1 -I$IFC $ADDR >/dev/null  2>&1 && {
-	trace 'verify-up ok'
+	trace '$ADDR is verified-up via $IFC'
 	return 0
     }
     # We don't get traffic through
-    debug 'not-up'
-    [ -n "$2" ] && {
-	local OADDR=$TADDR
-	if resolve_target; then
-	    [ "$OADDR" = "$TADDR" ] || {
-		info "Target '$TARGET' now resolves to '$TADDR', instead of '$OADDR'."
-		nexthop && isup "$TADDR" && return 0;
+    debug "$ADDR not-up via $IFC"
+
+    [ "$2" = "noresolve" ] && return 1
+    local OADDR=$TADDR
+    if resolve_target; then
+	[ "$OADDR" = "$TADDR" ] || {
+	    info "Target '$TARGET' now resolves to '$TADDR', instead of '$OADDR'."
+	    nexthop && {
+		if [ "$ADDR" = "$OADDR" ]; then # it was target that failed, test again with new TADDR
+		    ADDR=$TADDR
+		else # it was nexthop that failed, test again with new NEXTHOP
+		    ADDR=$NEXTHOP;
+		fi
+		isup "$ADDR" noresolve && return 0;
 	    }
-	else
-	    TADDR=$OADDR
-	    alert "Target '%s' no longer resolves to an ip address, will keep using '$TADDR'." "$TARGET"
-	fi
-    }
+	}
+    else
+	TADDR=$OADDR
+	alert "Target '%s' no longer resolves to an ip address, will keep using '$TADDR'." "$TARGET"
+    fi
     return 1
 }
+
+[ -n "$PIDFILE" ] || PIDFILE=/run/nw-watchdog.pid
+touch "$PIDFILE" 2>/dev/null || die "%s\n%s" "Cannot write to pidfile '$PIDFILE'." \
+				    "Specify another --pidfile or check permissions or privileges of effective user (userid=`id -u`)"
+PID=`cat "$PIDFILE"`
+[ "$PID" -qt 0 ] 2>/dev/null && [ -d /proc/$PID ] && die "Process already running with pid $PID"
+
+### Forking
+[ -n "$FORK" ] && {
+    if [ -n "$LOGFILE" ]; then AOPTS="$AOPTS -l '$LOGFILE'"
+    else AOPTS="$AOPTS -l-"; fi
+    AOPTS="$AOPTS -p'$PIDFILE'"
+    if [ -x "$0" ]; then
+	trace "forking: %s" "'$0' '$TARGET' -D$NOPTS$AOPTS" 
+	{ sleep 0.25 ; eval "exec '$0' '$TARGET' -D$NOPTS$AOPTS" ;} &
+    else
+	trace "forking: %s" "sh '$0' '$TARGET' -D$NOPTS$AOPTS"
+	{ sleep 0.25 ;eval "exec sh '$0' '$TARGET' -D$NOPTS$AOPTS" ;} &
+    fi
+    exit 0
+}
+
+printf $$ > "$PIDFILE"
+debug "PID=$$ BASENAME=$nwwatchdog COMM=`cat /proc/$$/comm`"
+
+debug "\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s" \
+      "~~~ SETTINGS ~~~" \
+      "TARGET='$TARGET'" \
+      "PINGNEXTHOP='$PINGNEXTHOP'" \
+      "PINGTARGET='$PINGTARGET'" \
+      "IPADDRALRT='$IPADDRALRT'" \
+      "IFCUPDOWN='$IFCUPDOWN'" \
+      "FORK='$FORK'" \
+      "V='$V'" \
+      "IFC='$IFC'" \
+      "STATICIFC='$STATICIFC'" \
+      "LOGFILE='$LOGFILE'" \
+      "LOGSIZE='$LOGSIZE' ($LOGSIZEb bytes)" \
+      "PIDFILE='$PIDFILE'" \
+      "SLOWUPTIMEOUT='$SLOWUPTIMEOUT'" \
+      "SLEEP='$SLEEP'" \
+      "GRACE='$GRACE'" \
+      "MAXNOLINK='$MAXNOLINK'" \
+      "IFCUPT='$IFCUPT'" \
+      "IFCDOWNT='$IFCDOWNT'" \
+      "ALERTCMD='$ALERTCMD'"
+
+if [ -n "$IFC" ]; then
+    IFCUP=`printf "%s" "$IFCUPT" | sed -E "s/\%\{IFC\}/$IFC/g"`
+    IFCDOWN=`printf "%s" "$IFCDOWNT" | sed -E "s/\%\{IFC\}/$IFC/g"`
+    ALERTCMD=`printf "%s" "$ALERTCMD" | sed -E "s/\%\{IFC\}/$IFC/g"`
+    linkcheck && {
+	nexthop || {
+	    ifreset
+	    nexthop
+	}
+    }
+else
+    nexthop
+    EXITCODE==$?
+    while [ $EXITCODE -ne 0 ]; do
+	    warn "No interface specified and no route to target '%s' (%s) available, make sure interface comes up,\n\t%s\n\t%s" \
+		 "$TARGET" "$TADDR" \
+		 'or stop this instance and start it again using --interface or --force-interface to bring it up automatically.' \
+		 "... sleeping for $GRACE seconds."
+	    sleep $GRACE
+	    nexthop
+	    EXITCODE=$?
+    done
+fi
+	    
 
 while true; do
     if [ -n "$PINGTARGET" ]; then
 	while isup $TADDR; do
+	    debug "target '%s' (%s) is up, sleeping for $SLEEP seconds." "$TARGET" "$TADDR"
 	    sleep $SLEEP
 	done
 	info "Not getting replies from target '%s' (%s), checking link and topology." "$TARGET" "$TADDR"
-	if linkcheck && nexthop; then 
-	    isup "$TADDR" resolve || {
- 		if [ -n "$PINGNEXTHOP" ]; then 
-		    if isup "$NEXTHOP"; then
-			alert "Not getting replies from target '%s' (%s) on interface '%s', but nexthop '%s' replies." \
-			      "$TARGET" "$TADDR" "$IFC" "$NEXTHOP"
-			info "Sleeping for %d seconds." "$GRACE"
-			sleep $GRACE
-		    else
-			alert "Not getting replies from target '%s' (%s) on interface '%s', nor from nexthop '%s', resetting interface." \
-			      "$TARGET" "$TADDR" "$IFC" "$NEXTHOP"
-			ifreset
-		    fi
-		else
-		    alert "Not getting replies from target '%s' (%s) on interface '%s', resetting interface." "$TARGET" "$TADDR" "$IFC"
-		    ifreset
-		fi
+	if linkcheck && nexthop; then
+	    isup "$TADDR" || {
+	    	if [ -n "$PINGNEXTHOP" ]; then 
+	    	    if isup "$NEXTHOP" noresolve; then
+	    		alert "Not getting replies from target '%s' (%s) on interface '%s', but nexthop '%s' is reachable... sleeping for %d seconds." \
+	    		      "$TARGET" "$TADDR" "$IFC" "$NEXTHOP" $GRACE
+	    		sleep $GRACE
+	    	    else
+	    		alert "Not getting replies from target '%s' (%s) on interface '%s', and nexthop '%s' is not reachable.\n\t%s" \
+	    		      "$TARGET" "$TADDR" "$IFC" "$NEXTHOP" \
+			      'Resetting interface.'
+	    		ifreset
+	    	    fi
+	    	else
+	    	    alert "Not getting replies from target '%s' (%s) on interface '%s'.\n\t%s" "$TARGET" "$TADDR" "$IFC" \
+			  'Resetting interface.'
+	    	    ifreset
+	    	fi
 	    }
 	else
 	    alert "Not getting replies from target '%s' (%s) and no route to target available, resetting interface '%s'." \
 		  "$TARGET" "$TADDR" "$IFC"
 	    ifreset
 	fi
-
+	    
     else
 	while isup $NEXTHOP; do
+	    debug "nexthop (%s) for target '%s' (%s) is up, sleeping for $SLEEP seconds." "$NEXTHOP" "$TARGET" "$TADDR"
 	    sleep $SLEEP
 	done
-	info "Not getting replies from nexthop '%s' (for --no-ping-target '%s' (%s)) on interface '%s', checking link and nexthop." \
+	info "nexthop '%s' (for --no-ping-target '%s' (%s)) on interface '%s', not reachable, checking link and nexthop." \
 	     "$NEXTHOP" "$TARGET" "$TADDR" "$IFC"
-	if linkcheck && nexthop; then 
+	if linkcheck && resolve_target && nexthop; then 
 	    isup "$NEXTHOP" || {
-		alert "Not getting replies from nexthop '%s' (for --no-ping-target '%s' (%s)), resetting interface '%s'." \
+		alert "nexthop '%s' (for --no-ping-target '%s' (%s)), not reachable, resetting interface '%s'." \
 		      "$NEXTHOP" "$TARGET" "$TADDR" "$IFC"
 		ifreset
 	    }
 	else
 	    alert "No route to --no-ping-target '%s' (%s). Resetting interface '%s'." "$TARGET" "$TADDR" "$IFC"
 	    ifreset
-	    
 	fi
     fi
 done
-exit 0
-
+die "Internal error: EOF"
