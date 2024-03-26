@@ -131,11 +131,12 @@ ${_b_}OPTIONS $__(no arguments)
         Cannot be combined with $_b_--verbosity-level$__.
 
     $_b_--debug | -d $__
-        Shortcut for: $_b_--verbosity-level=6 --logfile=- --logsize=0 --pidfile=/dev/null --slow-up-timeout=1 --sleep=3 --ifup-grace=10 --alert='cat' --foreground$__ 
+        Shortcut for: $_b_--verbosity-level=6 $_b_--logfile=- $_b_--logsize=0 $_b_--pidfile=/dev/null $_b_--slow-up-timeout=1 $_b_--sleep=3 $_b_--ifup-grace=5 $_b_--alert='cat' $_b_--foreground$__ 
 
         If it's combined with any of the options it provides shortcuts for, the specified option will take precedence over the $_b_--debug$__ shortcut.
 
-        $_b_--debug$__ cannot be combined with $_b_--install-systemd$__.
+	This option cannot be combined with $_b_--install-systemd$__ (but it would be wise to test the configuration with $_b_--debug$__ before installing as a systemd service).
+
 
 ${_b_}OPTIONS$__ (with ARGUMENT)
         These opions takes a single argument each and may be specified in any order. Specify with equalsign or space or no space between option and argument. They can only be grouped last with the shortform of the NO-ARGUMENT-OPTIONS above (e.g. -PAV5).
@@ -467,7 +468,7 @@ while [ $# -gt 0 ]; do
 	    [ -z "$xPIDFILE" ] && PIDFILE='/dev/null'
 	    [ -z "$xSLOWUPTIMEOUT" ] && SLOWUPTIMEOUT=1
 	    [ -z "$xSLEEP" ] && SLEEP=3
-	    [ -z "$xGRACE" ] && GRACE=10
+	    [ -z "$xGRACE" ] && GRACE=5
 	    [ -z "$xALERTCMD" ] && ALERTCMD='cat'
 	    FORK=''
 	    ;;
