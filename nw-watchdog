@@ -645,22 +645,32 @@ LOGSIZEb=$((LOGSIZEb*1024))
 log() {   
     PATN="%s  $1"; shift
     logentry=$(printf "$PATN" "`date '+%Y-%m-%d %H:%M:%S %z'`" "$@")
-    if [ -n "$LOGFILE" ] && which flock >/dev/null 2>&1; then
-	[ "$LOGSIZEb" -gt 0 ] && {
-	    # Remove top 10 lines until log file is smaller than LOGSIZEb,
-	    # silently skip if we can't lock the file
-	    local skip=''
-	    while [ -z "$skip" -a `stat --printf='%s' $LOGFILE` -gt $LOGSIZEb ]; do
-		flock -w1 "$LOGFILE" -c "cp '$LOGFILE' '$LOGFILE.$$' ; tail -n +11 '$LOGFILE.$$' >'$LOGFILE'" || skip=y
-	    done
+    if [ -n "$LOGFILE" ]; then
+    	[ "$LOGSIZEb" -gt 0 ] && {
+    	    # Remove top 10 lines until log file is smaller than LOGSIZEb,
+    	    # silently skip if we can't lock the file
+     	    if which flock >/dev/null 2>&1; then
+    		local skip=''
+    		while [ -z "$skip" -a `stat --printf='%s' $LOGFILE` -gt $LOGSIZEb ]; do
+    		    flock -w1 "$LOGFILE" -c "cp '$LOGFILE' '$LOGFILE.$$' ; tail -n +11 '$LOGFILE.$$' >'$LOGFILE'; rm '$LOGFILE.$$'" || skip=y
+    		done
+	    else
+    		while [ `stat --printf='%s' $LOGFILE` -gt $LOGSIZEb ]; do
+    		    cp "$LOGFILE" "$LOGFILE.$$" ; tail -n +11 "$LOGFILE.$$" > "$LOGFILE" ; rm "$LOGFILE.$$"
+    		done
+	    fi
 	}
-	flock -w1 "$LOGFILE" -c "printf '%s\n' \"$logentry\" >>'$LOGFILE'" || {
-		warnnl "Could not lock logfile temporarily logging to '%s'\n" "$LOGFILE.$$"
-		TLOGFILE="$LOGFILE"
-		LOGFILE="$LOGFILE.$$"
-		printf "%s\n" "$logentry" >>"$LOGFILE"
-		LOGFILE="$TLOGFILE"
-	    }
+     	if which flock >/dev/null 2>&1; then
+    	    flock -w1 "$LOGFILE" -c "printf '%s\n' \"$logentry\" >>'$LOGFILE'" || {
+    		warnnl "Could not lock logfile temporarily logging to '%s'\n" "$LOGFILE.$$"
+    		TLOGFILE="$LOGFILE"
+    		LOGFILE="$LOGFILE.$$"
+    		printf "%s\n" "$logentry" >>"$LOGFILE"
+    		LOGFILE="$TLOGFILE"
+    	    }
+    	else
+    	    printf "%s\n" "$logentry" >>"$LOGFILE"
+    	fi
     else
 	printf "%s\n" "$logentry"
     fi
@@ -932,7 +942,7 @@ PID=`cat "$PIDFILE"`
 
 ### Forking
 [ -n "$FORK" ] && {
-    if [ -n "$LOGFILE" ]; then AOPTS="$AOPTS -l '$LOGFILE'"
+    if [ -n "$LOGFILE" ]; then AOPTS="$AOPTS -l'$LOGFILE'"
     else AOPTS="$AOPTS -l-"; fi
     AOPTS="$AOPTS -p'$PIDFILE'"
     if [ -x "$0" ]; then
