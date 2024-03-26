@@ -843,7 +843,7 @@ WantedBy=sysinit.target
 EOF
     systemctl daemon-reload || die "failed to reload systemd"
     systemctl enable nw-watchdog-$SYSTEMDSERVICENAME.service || die "failed to enable the $SYSTEMDSERVICENAME.service"
-    systemctl start nw-watchdog-$SYSTEMDSERVICENAME.service || die "failed to start the $SYSTEMDSERVICENAME.service"
+    systemctl restart nw-watchdog-$SYSTEMDSERVICENAME.service || die "failed to start the $SYSTEMDSERVICENAME.service"
     systemctl status --no-pager nw-watchdog-$SYSTEMDSERVICENAME.service
     exit 0
 
