@@ -991,7 +991,7 @@ if [ -n "$IFC" ]; then
     }
 else
     nexthop
-    EXITCODE==$?
+    EXITCODE=$?
     while [ $EXITCODE -ne 0 ]; do
 	    warn "No interface specified and no route to target '%s' (%s) available, make sure interface comes up,\n\t%s\n\t%s" \
 		 "$TARGET" "$TADDR" \
