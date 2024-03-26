@@ -386,13 +386,14 @@ EOU
 	$_b_$nwwatchdog$__ 10.0.0.1 \\
 EOU
     cat<<'EOU'
+	  --no-ping-nexthop \
 	  --verbosity-level=3 \
 	  --alert='mailx -a "From: nwwatchdog@`hostname -f`" -s "wireguard wg0" admin@`cat /etc/mailname`' \
 	  --force-interface=wg0 \
 	  --ifcup='ip link add wg0 type wireguard ;
                    ip link set wg0 up ;
                    wg setconf wg0 /etc/wireguard/wg0.conf ;
-                   ip address add 10.0.0.2 peer 10.0.0.2 dev wg0 ;
+                   ip address add 10.0.0.2 peer 10.0.0.1 dev wg0 ;
 	           getent ahostsv4 wgserver.my.dom | grep -oE "^[0-9.]+" | uniq
                    | while read addr; do
                        ip route add $addr/32 via `ip route show default | head -1 | cut -d" " -f3` ;
@@ -403,7 +404,9 @@ EOU
 	  --install-systemd=wg0     
 EOU
     $FMT<<EOU
+    We use $_b_--no-ping-nexthop$__ as the nexthop is the same as the target peer-to-peer address we monitor the connection for (in reality we don't need to specify it as it is the default behaviour if the target address is the same as the nexthop address).
     $___${_b_}OBSERVE$__ that the entire --ifcup='...' command need to be on a single line without line breaks (linebreaks added here for readability).
+    
 
 ${_b_}DEPENDENCIES$__
         $nwwatchdog depends on the below executables being available in "/sbin:/bin:/usr/sbin:/usr/bin:\$PATH" or being shell-builtin. A check is done at startup and if any of these tools are missing, $nwwatchdog will exit with an error telling which are lacking.
