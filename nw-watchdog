@@ -12,7 +12,10 @@
 # 
 # 
 # frax - FIXME / TODO:
-#
+# 
+# * add support making it easier to implement e-mail alerts to be sent only once for down and once for up
+#   giving each alert an identifier and each identifyer having a 'trigged' and 'solved' state i.e.
+# 
 # * make sure all dependecies are checked
 # 
 # * Go through USAGE and provide some more EXAMPLES
@@ -252,9 +255,9 @@ $FMT<<EOU
         A word of warning: If set to 0 and interface is not up / goes down, infinite retries to bring the interface up will be made before checking topology. Only set it to 0 if you are sure that the specified interface should always be used and you want to make sure it's up before starting to monitor the connection.
         Typically, you would want to also use $_b_--force-interface$__ when using $_b_--max-nolink=0$__.
 
-    $_b_--ifcup | -u $__
+    $_b_--ifcup | -u $__ ${___}STRING$__ 
         Default: '$IFCUPT'
-        Command(s) run with 'sh -c' to bring the interface up.
+        ${___}STRING$__ will be passed to 'sh -c' to bring the interface up.
 	%{IFC} will be dynmaically replaced with the interface name currently in use as source interface.
 
 	Examples:
@@ -277,9 +280,9 @@ $FMT<<EOU
               --ifcup='ipsec up connection-name'
 	      (see ${_b_}EXAMPLES$__  below for a more extensive IPSec example using vti tunnel interface)
 
-    $_b_--ifcdown | -U $__
-        Default: '$IFCDOWNT'
-        Command(s) run with 'sh -c' to bring the interface down.
+    $_b_--ifcdown | -U $__ ${___}STRING$__
+        Default: '$IFCDOWNT' 
+        ${___}STRING$__ will be passed to 'sh -c' to bring the interface down.
 	%{IFC} will be dynmaically replaced with the interface name currently in use as source interface.
 
 	Examples:
@@ -302,14 +305,29 @@ $FMT<<EOU
               --ifcup='ipsec down connection-name'
 	      (see ${_b_}EXAMPLES$__  below for a more extensive IPSec example using vti tunnel interface)
 
-    $_b_--alert | -a $__
+    $_b_--alert | -a $__ ${___}STRING$__
     	Default: '$ALERTCMD'
-        Command(s) to which the errors, warnings and alerts messages will be piped, executed with 'sh -c'.
-	%{IFC} will be dynmaically replaced with the interface name currently in use as source interface.
+        Errors, warnings and alerts messages will be piped to: sh -c '${___}STRING$__'
+	%{IFC} in ${___}STRING$__ will be dynmaically replaced with the interface name currently in use as source interface.
 	Set to '-' to disable alerting (alerts will still be logged if --verbosity-level is 3 or higher).
 
 	Example of howto email the alert messages using mailx (mailutils) with a custom from address:
-	    --alert='mailx -a 'From: nwwatchdog@this.hst' -s "nwwatchdog alert" my@email.adr'
+	    --alert='mailx -a "From: nw-watchdog@this.hst" -s "nwwatchdog alert %{IFC}" my@email.adr'
+
+	(((
+	IN THE FUTURE THE ALERTING VARIABLES MIGHT BE EXTENDED WITH THESE:
+
+	%{ID}  - the id of the alert (to be able to identify UP/DOWN alerts that belong together)
+
+	%{CATEGORY} - the category of the alert, DOWN for lost conenctivity and UP for restored connectivity, ERROR for permanent errors, WARNING for things that might need reconfiguration
+
+	%{IFC} - the interface name
+
+	%{TARGET} - the target for which the connection is monitored
+
+	a helper script ${_b_}nw-alert-email$__ will be provided inteded as a wrapper for email alerting, that will be able to handle these variables
+	and show howto send just one email for each DOWN alert and then another for the corresponding UP alert.
+        )))
 
     $_b_--install-systemd$__ ${___}SERVICENAME$__ 
         Will write a systemd service file /etc/systemd/system/nw-watchdog-${___}SERVICENAME$__.service file launching $nwwatchdog as a daemon with
