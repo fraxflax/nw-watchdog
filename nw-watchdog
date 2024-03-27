@@ -353,16 +353,34 @@ ${_b_}EXAMPLES$__
 
 	${___}ISP gateway monitoring:$__
 
-    	$_b_$nwwatchdog $_b_--interval=60 $_b_--no-ping-target $__${___}1.2.3.4$__ $_b_--interface=$__${___}eth0$__ $_b_--slow-up-timeout=1 $_b_--ifup-grace=300$__
+        $_b_$nwwatchdog$__ 1.2.3.4 $_b_\\
+EOU
+printf "        %s\n        %s\n        %s\n        %s\n        %s\n" \
+       "  $_b_--interval=${__}60 $_b_\\" \
+       "  $_b_--no-ping-target $_b_\\" \
+       "  $_b_--interface=${__}eth0 $_b_\\" \
+       "  $_b_--slow-up-timeout=${__}1 $_b_\\" \
+       "  $_b_--ifup-grace=${__}300"
 
-	Checking once a minute ($_b_--interval=60$__) that we have connectivity to the Internet Service Provider's gateway without actually pinging anything on the Internet ($_b_--no-ping-target $__${___}1.2.3.4$__) ... any Intenet address will do) allowing interface and topology detection (not using --force-interface or --max-no-link=0) but still, if down, bring the supposed initial interface towards the ISP up on startup ($_b_--interface=$__${___}eth0$__) expecting the ISP gateway to have an RTT below 1 second ($_b_--slow-up-timeout=1$__) and allowing the interface to be down for up to 5 minutes before considering it a permanent error rechecking topology ($_b_--ifup-grace=300$__).
+$FMT<<EOU
+
+	Checking once a minute ($_b_--interval=${__}60) that we have connectivity to the Internet Service Provider's gateway without actually pinging anything on the Internet ($_b_--no-ping-target$__ & 1.2.3.4 ... any Intenet address will do) allowing interface and topology detection (not using --force-interface or --max-no-link=0) but still, if down, bring the supposed initial interface towards the ISP up on startup ($_b_--interface=${__}eth0) expecting the ISP gateway to have an RTT below 1 second ($_b_--slow-up-timeout=${__}1) and allowing the interface to be down for up to 5 minutes before considering it a permanent error rechecking topology ($_b_--ifup-grace=${__}300).
 
 
 	${___}ISP gateway monitoring with forced interface:$__
 
-    	$_b_$nwwatchdog $_b_--no-ping-target $__${___}1.2.3.4$__ $_b_--force-interface=$__${___}eth0$__ $_b_--slow-up-timeout=1 $_b_--ifup-grace=30 $_b_--max-no-link=0 $_b_--interval=10$__
+        $_b_$nwwatchdog$__ 1.2.3.4 $_b_\\
+EOU
+printf "        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n" \
+       "  $_b_--no-ping-target \\" \
+       "  $_b_--force-interface=${__}eth0 $_b_\\" \
+       "  $_b_--slow-up-timeout=${__}1 $_b_\\" \
+       "  $_b_--ifup-grace=${__}30 $_b_\\" \
+       "  $_b_--max-no-link=${__}0 $_b_\\" \
+       "  $_b_--interval=${__}10$__"
+$FMT<<EOU
 
-        Same as above but enforcing the use of the eth0 interface as we know that the ISP gateway should always be reachable via that interface and that is the only Internet facing interface we have. It must be brought up on startup if not already up and there is no use rechecking the topology if it's not up ($_b_--force-interface=$__${___}eth0$__), so if down, we retry to reset it every 30 seconds ($_b_--ifup-grace=30$__) forever ($_b_--max-no-link=0$__), checking the connectivity every 10 seconds ($_b_--interval=10$__).
+        Same as above but enforcing the use of the eth0 interface as we know that the ISP gateway should always be reachable via that interface and that is the only Internet facing interface we have. It must be brought up on startup if not already up and there is no use rechecking the topology if it's not up ($_b_--force-interface=${__}eth0), so if down, we retry to reset it every 30 seconds ($_b_--ifup-grace=${__}30) forever ($_b_--max-no-link=${__}0), checking the connectivity every 10 seconds ($_b_--interval=${__}10).
 
 
 	${___}Management of Strongswan IPSec with VTI tunnel interface:$__
@@ -377,43 +395,43 @@ ${_b_}EXAMPLES$__
 
 	Firstly, we setup the nw-watchdog systemd service for the wireguard server connection which we reach via the default route:
 
-	$_b_$nwwatchdog$__ wgserver.domain.dom \\
+	$_b_$nwwatchdog$__ wgserver.domain.dom $_b_\\
 EOU
-    cat<<'EOU'
-          --verbosity-level=3 \
-	  --alert='mailx -a "From: nwwatchdog@`hostname -f`" -s "wgserver via %{IFC}" admin@`cat /etc/mailname`' \
-	  --slow-up-timeout=3 \
-	  --ifup-grace=20 \
-	  --install-systemd=wgserver
-EOU
+printf "        %s\n        %s\n        %s\n        %s\n        %s\n" \
+       "  $_b_--verbosity-level=${__}3 $_b_\\" \
+       "  $_b_--alert=$__'mailx -a \"From: nwwatchdog@\`hostname -f\`\" -s \"wgserver via %{IFC}\" admin@\`cat /etc/mailname\`' $_b_\\" \
+       "  $_b_--slow-up-timeout=${__}3 $_b_\\" \
+       "  $_b_--ifup-grace=${__}20 $_b_\\" \
+       "  $_b_--install-systemd=${__}wgserver"
     $FMT<<EOU
 
 	Then we setup the monitor for the wireguard full tunnel which will also create and configure and bring the tunnel up (if not already) upon start of the sytemd service, making sure we have a /32 routes to all of the wireguard server's ip addresses that the hostname resolves to.
 	Note: It would be smoother to use a script and --ifcup=/path/script, but it can also be done like this:
 
-	$_b_$nwwatchdog$__ 10.0.0.1 \\
+	$_b_$nwwatchdog$__ 10.0.0.1 $_b_\\
 EOU
-    cat<<'EOU'
-	  --no-ping-nexthop \
-	  --verbosity-level=3 \
-	  --alert='mailx -a "From: nwwatchdog@`hostname -f`" -s "wireguard wg0" admin@`cat /etc/mailname`' \
-	  --force-interface=wg0 \
-	  --ifcup='ip link add wg0 type wireguard ;
-                   ip link set wg0 up ;
-                   wg setconf wg0 /etc/wireguard/wg0.conf ;
-                   ip address add 10.0.0.2 peer 10.0.0.1 dev wg0 ;
-	           getent ahostsv4 wgserver.my.dom | grep -oE "^[0-9.]+" | uniq
-                   | while read addr; do
-                       ip route add $addr/32 via `ip route show default | head -1 | cut -d" " -f3` ;
-                   done ; 
-                   ip route add 0.0.0.0/1 via 10.0.0.1 dev wg0 src 10.0.0.2 ; 
-		   ip route add 128.0.0.0/1 via 10.0.0.1 dev wg0 src 10.0.0.2 2>/dev/null' \
-          --ifcdown='ip link del wg0' \
-	  --install-systemd=wg0     
+printf "        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n" \
+       "  $_b_--no-ping-nexthop \\" \
+       "  $_b_--verbosity-level=${__}3 $_b_\\" \
+       "  $_b_--alert=$__'mailx -a \"From: nwwatchdog@\`hostname -f\`\" -s \"wireguard wg0\" admin@\`cat /etc/mailname\`' $_b_\\" \
+       "  $_b_--force-interface=${__}wg0 $_b_\\" \
+       "  $_b_--ifcup=$__'ip link add wg0 type wireguard ;" \
+       "           ip link set wg0 up ;" \
+       "           wg setconf wg0 /etc/wireguard/wg0.conf ;" \
+       "           ip address add 10.0.0.2 peer 10.0.0.1 dev wg0 ;" \
+       "           getent ahostsv4 wgserver.my.dom | grep -oE \"^[0-9.]+\" | uniq" \
+       "           | while read addr; do" \
+       "               ip route add \$addr/32 via \`ip route show default | head -1 | cut -d\" \" -f3\` ;" \
+       "             done ;" \
+       "           ip route add 0.0.0.0/1 via 10.0.0.1 dev wg0 src 10.0.0.2 ;" \
+       "           ip route add 128.0.0.0/1 via 10.0.0.1 dev wg0 src 10.0.0.2 2>/dev/null'$__ $_b_\\" \
+       "  $_b_--ifcdown=$__'ip link del wg0' $_b_\\" \
+       "  $_b_--install-systemd=${__}wg0"
 EOU
     $FMT<<EOU
+
     We use $_b_--no-ping-nexthop$__ as the nexthop is the same as the target peer-to-peer address we monitor the connection for (in reality we don't need to specify it as it is the default behaviour if the target address is the same as the nexthop address).
-    $___${_b_}OBSERVE$__ that the entire --ifcup='...' command need to be on a single line without line breaks (linebreaks added here for readability).
+    $___${_b_}OBSERVE$__ that the entire $_b_--ifcup=$__'...' command need to be on a single line without line breaks (linebreaks added above for readability).
     
 
 ${_b_}DEPENDENCIES$__
