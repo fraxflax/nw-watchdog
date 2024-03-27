@@ -351,21 +351,29 @@ $FMT<<EOU
 
 ${_b_}EXAMPLES$__
 
-        some text explaining the first example:
-    	$_b_$nwwatchdog$__ -D 1.2.3.4
+	${___}ISP gateway monitoring:$__
 
-        some text explaining the second example:
-	$_b_$nwwatchdog$__ -D 1.2.3.4
+    	$_b_$nwwatchdog $_b_--interval=60 $_b_--no-ping-target $__${___}1.2.3.4$__ $_b_--interface=$__${___}eth0$__ $_b_--slow-up-timeout=1 $_b_--ifup-grace=300$__
 
-        some text explaining the last example:
-	$_b_$nwwatchdog$__ -D 1.2.3.4
-        ... some more text clarifying the above
+	Checking once a minute ($_b_--interval=60$__) that we have connectivity to the Internet Service Provider's gateway without actually pinging anything on the Internet ($_b_--no-ping-target $__${___}1.2.3.4$__) ... any Intenet address will do) allowing interface and topology detection (not using --force-interface or --max-no-link=0) but still, if down, bring the supposed initial interface towards the ISP up on startup ($_b_--interface=$__${___}eth0$__) expecting the ISP gateway to have an RTT below 1 second ($_b_--slow-up-timeout=1$__) and allowing the interface to be down for up to 5 minutes before considering it a permanent error rechecking topology ($_b_--ifup-grace=300$__).
+
+
+	${___}ISP gateway monitoring with forced interface:$__
+
+    	$_b_$nwwatchdog $_b_--no-ping-target $__${___}1.2.3.4$__ $_b_--force-interface=$__${___}eth0$__ $_b_--slow-up-timeout=1 $_b_--ifup-grace=30 $_b_--max-no-link=0 $_b_--interval=10$__
+
+        Same as above but enforcing the use of the eth0 interface as we know that the ISP gateway should always be reachable via that interface and that is the only Internet facing interface we have. It must be brought up on startup if not already up and there is no use rechecking the topology if it's not up ($_b_--force-interface=$__${___}eth0$__), so if down, we retry to reset it every 30 seconds ($_b_--ifup-grace=30$__) forever ($_b_--max-no-link=0$__), checking the connectivity every 10 seconds ($_b_--interval=10$__).
+
+
+	${___}Management of Strongswan IPSec with VTI tunnel interface:$__
+
+        --ifcup='ipsec up connection-name ; ip tunnel add $IFACE mode vti local 4.3.2.1 remote 1.2.3.4 ttl 255 key 111 ; ip....
 
 	strongswan ipsec (with iproute2 for vti tunnel interface): 
-              --ifcup='ipsec up connection-name ; ip tunnel add $IFACE mode vti local 4.3.2.1 remote 1.2.3.4 ttl 255 key 111 ; ip....
 
 
-	Here's an more extensive example of how one can use $nwwatchdog to setup and monitor a wireguard full tunnel, also monitoring the connectivity to the wireguard server, running both whatchdogs as systemd services getting alerts via e-mail:
+	${___}Wireguard full tunnel management:$__
+	This is a more extensive example of how one can use $nwwatchdog to setup and monitor a wireguard full tunnel, also monitoring the connectivity to the wireguard server, running both whatchdogs as systemd services getting alerts via e-mail:
 
 	Firstly, we setup the nw-watchdog systemd service for the wireguard server connection which we reach via the default route:
 
