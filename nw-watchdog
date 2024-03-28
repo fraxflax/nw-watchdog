@@ -840,7 +840,7 @@ nexthop() {
 	else
 	    alert "Conflicting topology detected, route to target '%s' (%s) is on interface '%s', but --force-interface='%s'" \
 		  "$TARGET" "$TADDR" "$NIFC" "$STATICIFC"
-	    return 0
+	    return 1
 	fi
     else
 	info "No route to target '%s' (%s) available." "$TARGET" "$TADDR"
@@ -1031,10 +1031,12 @@ if [ -n "$IFC" ]; then
     IFCUP=`printf "%s" "$IFCUPT" | sed -E "s/\%\{IFC\}/$IFC/g"`
     IFCDOWN=`printf "%s" "$IFCDOWNT" | sed -E "s/\%\{IFC\}/$IFC/g"`
     ALERTCMD=`printf "%s" "$ALERTCMD" | sed -E "s/\%\{IFC\}/$IFC/g"`
-    linkcheck && {
-	nexthop || {
-	    ifreset
-	    nexthop
+    nexthop || {
+	linkcheck && {
+	    nexthop || {
+		ifreset
+		nexthop
+	    }
 	}
     }
 else
