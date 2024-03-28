@@ -1061,7 +1061,7 @@ while true; do
 	    sleep $SLEEP
 	done
 	info "Not getting replies from target '%s' (%s), checking link and topology." "$TARGET" "$TADDR"
-	if linkcheck && nexthop; then
+	if nexthop || { linkcheck && nexthop ;}; then
 	    isup "$TADDR" || {
 	    	if [ -n "$PINGNEXTHOP" ]; then 
 	    	    if isup "$NEXTHOP" noresolve; then
@@ -1093,8 +1093,8 @@ while true; do
 	done
 	info "nexthop '%s' (for --no-ping-target '%s' (%s)) on interface '%s', not reachable, checking link and nexthop." \
 	     "$NEXTHOP" "$TARGET" "$TADDR" "$IFC"
-	if linkcheck && resolve_target && nexthop; then 
-	    isup "$NEXTHOP" || {
+	if { resolve_target && nexthop ;} || { linkcheck && resolve_target && nexthop ;}; then
+	    isup "$NEXTHOP" noresolve || {
 		alert "nexthop '%s' (for --no-ping-target '%s' (%s)), not reachable, resetting interface '%s'." \
 		      "$NEXTHOP" "$TARGET" "$TADDR" "$IFC"
 		ifreset
