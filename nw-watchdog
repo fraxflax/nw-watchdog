@@ -34,6 +34,7 @@ PINGNEXTHOP=y                          # --no-ping-nexthop | -N | --no-ping-gate
 PINGTARGET=y                           # --no-ping-target | -P
 IPADDRALRT=y                           # --no-ipaddr-alert | -A
 IFCUPDOWN=y                            # --no-interface-reset | -R
+CONTINUOUSTOPOLOGYDETECT=y             # --no-continuous-topology-detect | -T
 FORK=y                                 # --foreground | --no-daemonize | -D
 
 V=4				       # --verbosity-level | -V
@@ -126,6 +127,12 @@ ${_b_}OPTIONS $__(no arguments)
         Do not try to bring down and up interface after failed connectivity checks.
         (Do not try to "repair" the connection", just monitor it.)
 
+    $_b_--no-continuous-topology-detect | -T $__
+        Normaly the topology (resolving the ip address of the target, detecting which source interface to use and the ip address of the nexthop towards the target) is detected at startup and continuously monitored for changes.
+	$_b_--no-continuous-topology-detect$__ disables the topology detection for as long as the target replies (or in combination with $_b_--no-ping-target$__ for as long as the nexthop is reachable). The topology will only be detected at startup and if the TARGET does not reply or if the NEXTHOP cannot be reached, meaning that routing changes making the TARGET or NEXTHOP unreachable will not be detected as long as the TARGET can be reached using the old topology.
+
+	$_b_--force-interface$__ inmplies $_b_--no-continuous-topology-detect$__.
+    				       
     $_b_--foreground | --no-daemonize | -D $__
         Do not daemonize, run in foreground.
 
@@ -197,6 +204,7 @@ $FMT<<EOU
         Where ${___}interface$__ is the name of the source interface to always use.
         Packets will always be sent from this interface, forwadring table will be ignored as well as conflicting topology changes.
         This is useful for monitoring the preferred path and making sure it's up, but does not really tell if you have connectivity to the target or not. In most cases you would want to use $_b_--interface$__ instead of this option or not specify any interface at all.
+	Implies $_b_--no-continuous-topology-detect$__.
         Cannot be combined with $_b_--interface$__.
 
     $_b_--logfile | -l$__ ${___}logfile$__
@@ -317,16 +325,24 @@ $FMT<<EOU
 	(((
 	IN THE FUTURE THE ALERTING VARIABLES MIGHT BE EXTENDED WITH THESE:
 
-	%{ID}  - the id of the alert (to be able to identify UP/DOWN alerts that belong together)
-
-	%{CATEGORY} - the category of the alert, DOWN for lost conenctivity and UP for restored connectivity, ERROR for permanent errors, WARNING for things that might need reconfiguration
-
 	%{IFC} - the interface name
 
 	%{TARGET} - the target for which the connection is monitored
 
-	a helper script ${_b_}nw-alert-email$__ will be provided inteded as a wrapper for email alerting, that will be able to handle these variables
-	and show howto send just one email for each DOWN alert and then another for the corresponding UP alert.
+	%{TADDR} - the IP address of the TARGET
+
+	%{NEXTHOP}  - the IP address of the NEXTHOP towards target
+
+	%{STATE} - the state of the alert:
+	- UP for restored connectivity to TARGET (implies REACHABLE)
+	- DOWN for lost conenctivity to TARGET
+	- UNREACHABLE for lost conenctivity to NEXTHOP (implies DOWN)
+	- REACHABLE for restored connectivity to NEXTHOP
+	- ERROR for permanent errors
+	- WARNING for things that might need reconfiguration
+
+	A helper script ${_b_}nw-alert-email$__ will be provided inteded as a wrapper for email alerting, that will be able to handle these variables
+	and show howto send just one email for each DOWN/UNREACHABLE TARGET alert and then another for the corresponding UP TARGET alert (and/or REACHABLE in case of --no-ping-target).
         )))
 
     $_b_--install-systemd$__ ${___}SERVICENAME$__ 
@@ -481,7 +497,7 @@ dieUSAGEpager() {
 }
 # Parse arguments
 xTARGET='';xV='';xIFC='';xLOGFILE='';xLOGSIZE='';xPIDFILE='';xSLOWUPTIMEOUT='';xSLEEP='';xGRACE='';xMAXNOLINK='';xIFCUPT='';xIFCDOWNT='';xALERTCMD='';xSYSTEMDSERVICENAME=''
-SOPTS='[hNPARDvd]' # Short options without arguments
+SOPTS='[hNPARTDvd]' # Short options without arguments
 while [ $# -gt 0 ]; do
     ARG="$1"; shift
     case "$ARG" in
@@ -497,6 +513,9 @@ while [ $# -gt 0 ]; do
 	    ;;
 	-A|--no-ipaddr-alert)
 	    IPADDRALRT=''
+	    ;;
+	-T|--no-continuous-topology-detect)
+	    CONTINUOUSTOPOLOGYDETECT=''
 	    ;;
 	-R|--no-interface-reset)
 	    IFCUPDOWN=''
@@ -670,6 +689,7 @@ dienl() {
     touch "$LOGFILE" 2>/dev/null || \
 	dienl "%s\n%s" "Cannot write to logfile '$LOGFILE'." "Fix permissions, run as user with access or specify another --logfile."
 }
+
 LOGSIZEb="$LOGSIZE"
 case "$LOGSIZEb" in
     *[Kk]) LOGSIZEb=`printf "%s" "$LOGSIZEb" | sed -E 's/[Kk]$//'`;;
@@ -677,6 +697,8 @@ case "$LOGSIZEb" in
     *[Gg]) LOGSIZEb=`printf "%s" "$LOGSIZEb" | sed -E 's/[Gg]$//'`; LOGSIZEb=$((LOGSIZEb*1048576));;
 esac
 LOGSIZEb=$((LOGSIZEb*1024))
+
+test -n "$STATICIFC" && CONTINUOUSTOPOLOGYDETECT=''
 
 log() {   
     local PATN="%s  $1"; shift
@@ -821,7 +843,7 @@ nexthop() {
 	    }
 	}
 	if [ "$IFC" = "$NIFC" -a "$NEXTHOP" = "$NNEXTHOP" ]; then
-	    trace "No topology changes detected. IFC='%s' NEXTHOP='%s'" "$IFC" "$NEXTHOP"
+	    debug "No topology changes detected. IFC='%s' NEXTHOP='%s'" "$IFC" "$NEXTHOP"
 	    return 0
 	elif [ -z "$STATICIFC" ]; then
 	    info "Detected topology: IFC='%s' -> '%s' ; NEXTHOP='%s' -> '%s'" "$IFC" "$NIFC" "$NEXTHOP" "$NNEXTHOP"
@@ -897,10 +919,18 @@ EOF
 }
 
 resolve_target() {
-    trace "Resolving target '%s' (cached='%s')" "$TARGET" "$TADDR"
+    local OADDR="$TADDR"
     TADDR=`getent ahostsv4 "$TARGET" | head -1 | sed -E 's/^\s*([0-9.]+)\s.*/\1/'`
-    [ -n "$TADDR" ] || return 1
-    trace "Resolved target '%s' to '%s'" "$TARGET" "$TADDR"
+    [ -n "$TADDR" ] || {
+	TADDR=$OADDR
+	info "Failed to resolve target '%s', keeping '%s'" "$TARGET" "$TADDR"
+	return 1
+    }
+    if [ "$OADDR" = "$TADDR" ]; then
+	debug "Resolved target '%s' to '%s', already in cache." "$TARGET" "$TADDR"
+    else
+	info "Target (%s) resolved to %s (instead of '%s')." "$TARGET" "$TADDR" "$OADDR"
+    fi
     return 0
 }
 
@@ -989,12 +1019,13 @@ PID=`cat "$PIDFILE"`
 printf $$ > "$PIDFILE"
 debug "PID=$$ BASENAME=$nwwatchdog COMM=`cat /proc/$$/comm`"
 
-debug "\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s" \
+debug "\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s" \
       "~~~ SETTINGS ~~~" \
       "TARGET='$TARGET'" \
       "PINGNEXTHOP='$PINGNEXTHOP'" \
       "PINGTARGET='$PINGTARGET'" \
       "IPADDRALRT='$IPADDRALRT'" \
+      "CONTINUOUSTOPOLOGYDETECT='$CONTINUOUSTOPOLOGYDETECT'" \
       "IFCUPDOWN='$IFCUPDOWN'" \
       "FORK='$FORK'" \
       "V='$V'" \
@@ -1056,11 +1087,14 @@ fi
 
 while true; do
     if [ -n "$PINGTARGET" ]; then
+	trace "Continuously checking if target is up..."
+	[ -n "$CONTINUOUSTOPOLOGYDETECT" ] && trace "... and for changes in topology"
 	while isup $TADDR; do
 	    debug "target '%s' (%s) is up, sleeping for $SLEEP seconds." "$TARGET" "$TADDR"
 	    sleep $SLEEP
+	    [ -n "$CONTINUOUSTOPOLOGYDETECT" ] && { resolve_target; nexthop ;}
 	done
-	info "Not getting replies from target '%s' (%s), checking link and topology." "$TARGET" "$TADDR"
+	info "No reply from target '%s' (%s), checking link and topology." "$TARGET" "$TADDR"
 	if nexthop || { linkcheck && nexthop ;}; then
 	    isup "$TADDR" || {
 	    	if [ -n "$PINGNEXTHOP" ]; then 
@@ -1087,9 +1121,12 @@ while true; do
 	fi
 	    
     else
+	trace "Continuously checking if nexthop is reachable..."
+	[ -n "$CONTINUOUSTOPOLOGYDETECT" ] && trace "... and for changes in topology"
 	while isup $NEXTHOP; do
 	    debug "nexthop (%s) for target '%s' (%s) is up, sleeping for $SLEEP seconds." "$NEXTHOP" "$TARGET" "$TADDR"
 	    sleep $SLEEP
+	    [ -n "$CONTINUOUSTOPOLOGYDETECT" ] && { resolve_target; nexthop ;}
 	done
 	info "nexthop '%s' (for --no-ping-target '%s' (%s)) on interface '%s', not reachable, checking link and nexthop." \
 	     "$NEXTHOP" "$TARGET" "$TADDR" "$IFC"
