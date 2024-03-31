@@ -49,7 +49,7 @@ GRACE=40                               # --ifup-grace | -g
 MAXNOLINK=1                            # --max-nolink | -n
 IFCUPT='ifup %{IFC}'                   # --ifcup | -u
 IFCDOWNT='ifdown %{IFC}'               # --ifcdown | -U
-ALERTCMD='if which wall >/dev/null; then exec wall; else cat 1>&2; fi'
+ALERTCMDT='if which wall >/dev/null; then exec wall; else cat 1>&2; fi'
                                        # --alert | -a
 SYSTEMDSERVICENAME=''                  # --install-systemd
 
@@ -314,16 +314,10 @@ $FMT<<EOU
 	      (see ${_b_}EXAMPLES$__  below for a more extensive IPSec example using vti tunnel interface)
 
     $_b_--alert | -a $__ ${___}STRING$__
-    	Default: '$ALERTCMD'
-        Errors, warnings and alerts messages will be piped to: sh -c '${___}STRING$__'
-	%{IFC} in ${___}STRING$__ will be dynmaically replaced with the interface name currently in use as source interface.
-	Set to '-' to disable alerting (alerts will still be logged if --verbosity-level is 3 or higher).
+    	Default: '$ALERTCMDT'
 
-	Example of howto email the alert messages using mailx (mailutils) with a custom from address:
-	    --alert='mailx -a "From: nw-watchdog@this.hst" -s "nwwatchdog alert %{IFC}" my@email.adr'
-
-	(((
-	IN THE FUTURE THE ALERTING VARIABLES MIGHT BE EXTENDED WITH THESE:
+	Errors, warnings and alerts regarding change of state will be piped to: sh -c '${___}STRING$__'
+	Within ${___}STRING$__ the following placeholders can be used:		
 
 	%{IFC} - the interface name
 
@@ -341,9 +335,10 @@ $FMT<<EOU
 	- ERROR for permanent errors
 	- WARNING for things that might need reconfiguration
 
-	A helper script ${_b_}nw-alert-email$__ will be provided inteded as a wrapper for email alerting, that will be able to handle these variables
-	and show howto send just one email for each DOWN/UNREACHABLE TARGET alert and then another for the corresponding UP TARGET alert (and/or REACHABLE in case of --no-ping-target).
-        )))
+	The alert command will be launched for every ERROR and WARNING states, but otherwise only once for each change of state to/from DOWN/UP/UNREACHABLE/REACHABLE.
+
+	EXAMPLE of how to email the alert messages using mailx (mailutils) with a custom from address:
+	    --alert='mailx -a "From: nw-watchdog@this.hst" -s "nwwatchdog alert %{IFC}" my@email.adr'
 
     $_b_--install-systemd$__ ${___}SERVICENAME$__ 
         Will write a systemd service file /etc/systemd/system/nw-watchdog-${___}SERVICENAME$__.service file launching $nwwatchdog as a daemon with
@@ -496,7 +491,7 @@ dieUSAGEpager() {
     exit 1
 }
 # Parse arguments
-xTARGET='';xV='';xIFC='';xLOGFILE='';xLOGSIZE='';xPIDFILE='';xSLOWUPTIMEOUT='';xSLEEP='';xGRACE='';xMAXNOLINK='';xIFCUPT='';xIFCDOWNT='';xALERTCMD='';xSYSTEMDSERVICENAME=''
+xTARGET='';xV='';xIFC='';xLOGFILE='';xLOGSIZE='';xPIDFILE='';xSLOWUPTIMEOUT='';xSLEEP='';xGRACE='';xMAXNOLINK='';xIFCUPT='';xIFCDOWNT='';xALERTCMDT='';xSYSTEMDSERVICENAME=''
 SOPTS='[hNPARTDvd]' # Short options without arguments
 while [ $# -gt 0 ]; do
     ARG="$1"; shift
@@ -535,7 +530,7 @@ while [ $# -gt 0 ]; do
 	    [ -z "$xSLOWUPTIMEOUT" ] && SLOWUPTIMEOUT=1
 	    [ -z "$xSLEEP" ] && SLEEP=3
 	    [ -z "$xGRACE" ] && GRACE=5
-	    [ -z "$xALERTCMD" ] && ALERTCMD='cat'
+	    [ -z "$xALERTCMDT" ] && ALERTCMDT='cat'
 	    FORK=''
 	    ;;
 	-${SOPTS}*) # single out short options without arguments
@@ -647,12 +642,12 @@ while [ $# -gt 0 ]; do
 	    xIFCDOWNT=1;
 	    ;;
 	-a*|--alert*)
-	    [ -z "$xALERTCMD" ] || dieUSAGEpager "alert specified multiple times\n%s" \
+	    [ -z "$xALERTCMDT" ] || dieUSAGEpager "alert specified multiple times\n%s" \
 						 "(exclusively use '-a', or '--alert' only once)"
-	    if [ "$ARG" = "-a" -o "$ARG" = "--alert" ]; then ALERTCMD="$1"; shift
-	    elif printf "%s" "$ARG" | grep -qEe '-(-alert|a)=.*' ; then ALERTCMD="${ARG#*=}"
-	    else ALERTCMD=`printf "%s" "$ARG" | sed -E 's/-(-alert|a)//'`; fi
-	    xALERTCMD=1;
+	    if [ "$ARG" = "-a" -o "$ARG" = "--alert" ]; then ALERTCMDT="$1"; shift
+	    elif printf "%s" "$ARG" | grep -qEe '-(-alert|a)=.*' ; then ALERTCMDT="${ARG#*=}"
+	    else ALERTCMDT=`printf "%s" "$ARG" | sed -E 's/-(-alert|a)//'`; fi
+	    xALERTCMDT=1;
 	    ;;
 	--install-systemd*)
 	    [ -z "$xSYSTEMDSERVICENAME" ] || dieUSAGEpager "install-systemd specified multiple times\n%s" \
@@ -672,24 +667,15 @@ done
 							   "(can't use --no-ping-target and --no-ping-nexthop at the same time)"
 [ -n "$TARGET" ] || dieUSAGEpager "%s\n%s" \
 				  "Target not specified!" "Specify IP address or resolvable hostname."
-warnnl() {
-    [ $V -ge 2 ] || return
-    local PATN="$1" ; shift
-    printf "WARNING: $PATN\n" "$@" 1>&2
-    printf "\n\nWARNING\n$nwwatchdog '$TARGET'\n$PATN\n\n\n" "$@" | sh -c "$ALERTCMD"
-}
-dienl() {
-    local PATN="$1 ... aborting!" ; shift
-    printf "\nERROR: $PATN\n\n" "$@" 1>&2
-    printf "\n\n$nwwatchdog $TARGET ERROR:\n   $PATN\n\n\n" "$@" | sh -c "$ALERTCMD"
-    exit 1
-}
 [ "$LOGFILE" = '-' ] && { LOGFILE=''; LOGSIZE=0 ; LOGSIZEb=0 ;}
 [ -n "$LOGFILE" ] && {
-    touch "$LOGFILE" 2>/dev/null || \
-	dienl "%s\n%s" "Cannot write to logfile '$LOGFILE'." "Fix permissions, run as user with access or specify another --logfile."
+    touch "$LOGFILE" 2>/dev/null || {
+	printf "\nERROR: %s\n%s" \
+	       "Cannot write to logfile '$LOGFILE'." \
+	       "Fix permissions, run as user with access or specify another --logfile." 1>&2
+	exit 1
+    }
 }
-
 LOGSIZEb="$LOGSIZE"
 case "$LOGSIZEb" in
     *[Kk]) LOGSIZEb=`printf "%s" "$LOGSIZEb" | sed -E 's/[Kk]$//'`;;
@@ -720,7 +706,9 @@ log() {
 	}
      	if which flock >/dev/null 2>&1; then
     	    flock -w1 "$LOGFILE" -c "printf '%s\n' \"$logentry\" >>'$LOGFILE'" || {
-    		warnnl "Could not lock logfile temporarily logging to '%s'\n" "$LOGFILE.$$"
+		[ $V -ge 2 ] && {
+		    printf "WARNING: Could not lock logfile temporarily logging to '%s'\n" "$LOGFILE.$$" 1>&2
+		}
     		TLOGFILE="$LOGFILE"
     		LOGFILE="$LOGFILE.$$"
     		printf "%s\n" "$logentry" >>"$LOGFILE"
@@ -732,6 +720,56 @@ log() {
     else
 	printf "%s\n" "$logentry"
     fi
+}
+ALERTSTATE='initial'
+alert() {
+    [ $V -ge 3 ] || return
+    STATE="$1"; shift
+    
+    # Do not log or alert repeated UP/DOWN/REACHABLE/UNREACHABLE states
+    # unless loglevel is 6 (debug) or higher
+
+    [ "$ALERTSTATE" = "initial" ] && { [ "$STATE" = "UP" -o "$STATE" = "REACHABLE" ] && return ;}
+    [ "$STATE" != "ERROR" -a "$STATE" != "WARNING" -a "$STATE" = "$ALERTSTATE" ] && return
+    
+    ALERTCMD=`printf "%s" "$ALERTCMDT" | sed -E "s/\%\{STATE\}/$STATE/g" | sed -E "s/\%\{LASTSTATE\}/$ALERTSTATE/g"` 
+    if [ -n "$TARGET" ]; then
+	ALERTCMD=`printf "%s" "$ALERTCMD" | sed -E "s/\%\{TARGET\}/$TARGET/g"`
+    else
+	ALERTCMD=`printf "%s" "$ALERTCMD" | sed -E "s/\%\{TARGET\}/unspecified-target/g"`
+    fi
+
+    if [ -n "$IFC" ]; then
+	ALERTCMD=`printf "%s" "$ALERTCMD" | sed -E "s/\%\{IFC\}/$IFC/g"`
+    else
+	ALERTCMD=`printf "%s" "$ALERTCMD" | sed -E "s/\%\{IFC\}/topology-not-yet-detected/g"`
+    fi
+
+    if [ -n "$TADDR" ]; then
+	ALERTCMD=`printf "%s" "$ALERTCMD" | sed -E "s/\%\{TADDR\}/$TADDR/g"`
+    else
+	ALERTCMD=`printf "%s" "$ALERTCMD" | sed -E "s/\%\{TADDR\}/unresolved-target/g"`
+    fi
+
+    if [ -n "$NEXTHOP" ]; then
+	ALERTCMD=`printf "%s" "$ALERTCMD" | sed -E "s/\%\{NEXTHOP\}/$NEXTHOP/g"`
+    else
+	ALERTCMD=`printf "%s" "$ALERTCMD" | sed -E "s/\%\{NEXTHOP\}/topology-not-yet-detected/g"`
+    fi
+
+    local PATN="$1" ; shift
+
+    printf "\n\n$nwwatchdog $STATE ALERT!!!\n$PATN\n\n\n" "$@" | sh -c "$ALERTCMD"
+
+    case "$STATE" in
+	"ERROR") LSTATE="  ERROR:";;
+	"WARNINIG") LSTATE="WARNING:";;
+	*)
+	    ALERTSTATE="$STATE"
+	    LSTATE="   ALERT: $STATE -"
+	    ;;
+    esac
+    log "$LSTATE $PATN" "$@"
 }
 error() {
     [ $V -ge 1 ] || return
@@ -749,12 +787,6 @@ warn() {
     local PATN="$1" ; shift
     log "WARNING: $PATN" "$@"
     printf "\n\nWARNING:\n$nwwatchdog '$TARGET'\n$PATN\n\n\n" "$@" | sh -c "$ALERTCMD"
-}
-alert() {
-    [ $V -ge 3 ] || return
-    local PATN="$1" ; shift
-    log "  ALERT: $PATN" "$@"
-    printf "\n\nALERT\n$nwwatchdog '$TARGET'\n$PATN\n\n\n" "$@" | sh -c "$ALERTCMD"
 }
 info() {
     [ $V -ge 4 ] || return
@@ -804,9 +836,9 @@ linkcheck() {
 	    ip link show $IFC | grep -oq 'state DOWN' || {
 		IPADDRS=''; ip addr show dev $IFC | grep -qE 'inet6? .* scope global' && IPADDRS=y
 		[ -n "$IPADDRS" -a -n "$IPADDRALRT" ] \
-		    || alert "%s\n\t%s" \
-			     "There is no IPv4 or IPv6 global scope ip address on interface '$IFC'!" \
-			     "If that is ok, you can disable these alerts with --no-ipaddr-alert."
+		    || warn "%s\n\t%s" \
+			    "There is no IPv4 or IPv6 global scope ip address on interface '$IFC'!" \
+			    "If that is ok, you can disable these alerts with --no-ipaddr-alert."
 		return 0
 	    }
 	}
@@ -848,10 +880,9 @@ nexthop() {
 	elif [ -z "$STATICIFC" ]; then
 	    info "Detected topology: IFC='%s' -> '%s' ; NEXTHOP='%s' -> '%s'" "$IFC" "$NIFC" "$NEXTHOP" "$NNEXTHOP"
 	    IFC="$NIFC"
+	    NEXTHOP="$NNEXTHOP"
 	    IFCUP=`printf "%s" "$IFCUPT" | sed -E "s/\%\{IFC\}/$IFC/g"`
 	    IFCDOWN=`printf "%s" "$IFCDOWNT" | sed -E "s/\%\{IFC\}/$IFC/g"`
-	    ALERTCMD=`printf "%s" "$ALERTCMD" | sed -E "s/\%\{IFC\}/$IFC/g"`
-	    NEXTHOP="$NNEXTHOP"
 	    return 0
 	elif [ "$STATICIFC" = "$NIFC" ]; then
 	    info "Detected topology on forced interface '%s': NEXTHOP='%s' -> '%s'" "$IFC" "$NEXTHOP" "$NNEXTHOP"
@@ -860,8 +891,8 @@ nexthop() {
 	    NEXTHOP="$NNEXTHOP"
 	    return 0
 	else
-	    alert "Conflicting topology detected, route to target '%s' (%s) is on interface '%s', but --force-interface='%s'" \
-		  "$TARGET" "$TADDR" "$NIFC" "$STATICIFC"
+	    warn "Conflicting topology detected, route to target '%s' (%s) is on interface '%s', but --force-interface='%s'" \
+		 "$TARGET" "$TADDR" "$NIFC" "$STATICIFC"
 	    return 1
 	fi
     else
@@ -879,7 +910,7 @@ nexthop() {
     [ -z "$IPADDRALRT" ] && NOPTS="${NOPTS}A"
     [ -z "$IFCUPDOWN" ] && NOPTS="${NOPTS}R"
 
-    AOPTS="V$V -t$SLOWUPTIMEOUT -s$SLEEP -g$GRACE -n$MAXNOLINK -u'$IFCUPT' -U'$IFCDOWNT' -a'$ALERTCMD' -z$LOGSIZE" 
+    AOPTS="V$V -t$SLOWUPTIMEOUT -s$SLEEP -g$GRACE -n$MAXNOLINK -u'$IFCUPT' -U'$IFCDOWNT' -a'$ALERTCMDT' -z$LOGSIZE" 
     [ -z "$STATICIFC" -a -n "$xIFC" ] && AOPTS="$AOPTS -i '$IFC'"
     [ -n "$STATICIFC" ] && AOPTS="$AOPTS -I'$IFC'"
     debug "NOPTS=%s\nAOPTS=%s\n" "$NOPTS" "$AOPTS" 
@@ -990,7 +1021,7 @@ isup() {
 	}
     else
 	TADDR=$OADDR
-	alert "Target '%s' no longer resolves to an ip address, will keep using '$TADDR'." "$TARGET"
+	warn "Target '%s' no longer resolves to an ip address, will keep using '$TADDR'." "$TARGET"
     fi
     return 1
 }
@@ -1040,7 +1071,7 @@ debug "\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\
       "MAXNOLINK='$MAXNOLINK'" \
       "IFCUPT='$IFCUPT'" \
       "IFCDOWNT='$IFCDOWNT'" \
-      "ALERTCMD='$ALERTCMD'"
+      "ALERTCMDT='$ALERTCMDT'"
 
 debug "Resolving, or if already IP address, cleaning zero-padding of, target '%s'" "$TARGET"
 # Clean up zero-padding if TARGET is an IP address
@@ -1061,7 +1092,6 @@ done
 if [ -n "$IFC" ]; then
     IFCUP=`printf "%s" "$IFCUPT" | sed -E "s/\%\{IFC\}/$IFC/g"`
     IFCDOWN=`printf "%s" "$IFCDOWNT" | sed -E "s/\%\{IFC\}/$IFC/g"`
-    ALERTCMD=`printf "%s" "$ALERTCMD" | sed -E "s/\%\{IFC\}/$IFC/g"`
     nexthop || {
 	linkcheck && {
 	    nexthop || {
@@ -1090,32 +1120,33 @@ while true; do
 	trace "Continuously checking if target is up..."
 	[ -n "$CONTINUOUSTOPOLOGYDETECT" ] && trace "... and for changes in topology"
 	while isup $TADDR; do
-	    debug "target '%s' (%s) is up, sleeping for $SLEEP seconds." "$TARGET" "$TADDR"
+	    alert UP "Target '%s' (%s) is up." "$TARGET" "$TADDR"
+	    debug "Target '%s' ($TADDR) is up. Sleeping for $SLEEP seconds." "$TARGET"
 	    sleep $SLEEP
 	    [ -n "$CONTINUOUSTOPOLOGYDETECT" ] && { resolve_target; nexthop ;}
 	done
-	info "No reply from target '%s' (%s), checking link and topology." "$TARGET" "$TADDR"
+	trace "No reply from target '%s' (%s), checking link and topology." "$TARGET" "$TADDR"
 	if nexthop || { linkcheck && nexthop ;}; then
 	    isup "$TADDR" || {
 	    	if [ -n "$PINGNEXTHOP" ]; then 
 	    	    if isup "$NEXTHOP" noresolve; then
-	    		alert "Not getting replies from target '%s' (%s) on interface '%s', but nexthop '%s' is reachable... sleeping for %d seconds." \
+	    		alert DOWN "Not getting replies from target '%s' (%s) on interface '%s', but nexthop '%s' is reachable... sleeping for %d seconds." \
 	    		      "$TARGET" "$TADDR" "$IFC" "$NEXTHOP" $GRACE
 	    		sleep $GRACE
 	    	    else
-	    		alert "Not getting replies from target '%s' (%s) on interface '%s', and nexthop '%s' is not reachable.\n\t%s" \
+	    		alert UNREACHABLE "Not getting replies from target '%s' (%s) on interface '%s', and nexthop '%s' is not reachable.\n\t%s" \
 	    		      "$TARGET" "$TADDR" "$IFC" "$NEXTHOP" \
 			      'Resetting interface.'
 	    		ifreset
 	    	    fi
 	    	else
-	    	    alert "Not getting replies from target '%s' (%s) on interface '%s'.\n\t%s" "$TARGET" "$TADDR" "$IFC" \
+	    	    alert DOWN "Not getting replies from target '%s' (%s) on interface '%s'.\n\t%s" "$TARGET" "$TADDR" "$IFC" \
 			  'Resetting interface.'
 	    	    ifreset
 	    	fi
 	    }
 	else
-	    alert "Not getting replies from target '%s' (%s) and no route to target available, resetting interface '%s'." \
+	    alert UNREACHABLE "Not getting replies from target '%s' (%s) and no route to target available, resetting interface '%s'." \
 		  "$TARGET" "$TADDR" "$IFC"
 	    ifreset
 	fi
@@ -1124,20 +1155,21 @@ while true; do
 	trace "Continuously checking if nexthop is reachable..."
 	[ -n "$CONTINUOUSTOPOLOGYDETECT" ] && trace "... and for changes in topology"
 	while isup $NEXTHOP; do
-	    debug "nexthop (%s) for target '%s' (%s) is up, sleeping for $SLEEP seconds." "$NEXTHOP" "$TARGET" "$TADDR"
+	    alert REACHABLE "Nexthop '%s' for target '%s' (%s) is reachable." "$NEXTHOP" "$TARGET" "$TADDR" 
+	    debug "Nexthop '%s' for target '%s' (%s) is reachable. Sleeping for $SLEEP seconds." "$NEXTHOP" "$TARGET" "$TADDR" 
 	    sleep $SLEEP
 	    [ -n "$CONTINUOUSTOPOLOGYDETECT" ] && { resolve_target; nexthop ;}
 	done
-	info "nexthop '%s' (for --no-ping-target '%s' (%s)) on interface '%s', not reachable, checking link and nexthop." \
+	trace "nexthop '%s' (for --no-ping-target '%s' (%s)) on interface '%s', not reachable, checking link and nexthop." \
 	     "$NEXTHOP" "$TARGET" "$TADDR" "$IFC"
 	if { resolve_target && nexthop ;} || { linkcheck && resolve_target && nexthop ;}; then
 	    isup "$NEXTHOP" noresolve || {
-		alert "nexthop '%s' (for --no-ping-target '%s' (%s)), not reachable, resetting interface '%s'." \
+		alert UNREACHABLE "nexthop '%s' (for --no-ping-target '%s' (%s)), not reachable, resetting interface '%s'." \
 		      "$NEXTHOP" "$TARGET" "$TADDR" "$IFC"
 		ifreset
 	    }
 	else
-	    alert "No route to --no-ping-target '%s' (%s). Resetting interface '%s'." "$TARGET" "$TADDR" "$IFC"
+	    alert UNREACHBLE "No route to --no-ping-target '%s' (%s). Resetting interface '%s'." "$TARGET" "$TADDR" "$IFC"
 	    ifreset
 	fi
     fi
