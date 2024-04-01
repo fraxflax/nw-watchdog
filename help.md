@@ -12,18 +12,18 @@ It monitors the network connectivity to a specified target and/or the next hop t
 __nw-watchdog__ is free software written by Fredrik Ax \<frax@axnet.nu\>.<br>
 Feel free to modify and/or (re)distribute it in any way you like.<br>
 ... it's always nice to be mentioned though ;-)<br>
-It comes with ABSOLUTELY NO WARRANTY.<br>
+It comes with ABSOLUTELY NO WARRANTY.
 
 Get the latest version from https://github.com/fraxflax/nw-watchdog
 
 __TARGET__<br>
 The mandatory argument <u>TARGET</u> is the target (destination) to monitor the connection to. <u>TARGET</u> can be an IP address or a resolvable hostname / FQDN. If it's a hostname / FQDN, it will be resolved to an IP address (first one found) at startup and the resolved IP address will be used for the monitoring. Upon failed ping-checks the name will be resolved again and if it resolves to a new IP address, that will be used for the monitoring from there on.
 
-__OPTIONS__(no arguments)
-       These options take no arguments, and may be specified in any order. They can be grouped (e.g. -vAP) in their short form, also having one of the OPTIONS that takes arguments last.
+__OPTIONS__(no arguments)<br>
+These options take no arguments, and may be specified in any order. They can be grouped (e.g. -vAP) in their short form, also having one of the OPTIONS that takes arguments last.
 
-    __--help | -h__
-        Shows this help, using \$PAGER if set to an executable, otherwise 'less' or 'more' if available in "/sbin:/bin:/usr/sbin:/usr/bin:\$PATH"
+__--help | -h__
+	Shows this help, using \$PAGER if set to an executable, otherwise 'less' or 'more' if available in "/sbin:/bin:/usr/sbin:/usr/bin:\$PATH"
 	(Use PAGER=cat to avoid using a pager).
 
     __--no-ping-target | -P__
