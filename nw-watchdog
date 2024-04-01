@@ -13,16 +13,9 @@
 # 
 # frax - FIXME / TODO:
 # 
-# * add support making it easier to implement e-mail alerts to be sent only once for down and once for up
-#   giving each alert an identifier and each identifyer having a 'trigged' and 'solved' state i.e.
-# 
-# * make sure all dependecies are checked
-# 
-# * Go through USAGE and provide some more EXAMPLES
-#
-# * The big one: IPv6 support
-# 
 # * MAYBE: Support multiple targets in one instance ????
+# 
+# * The big one: IPv6 support
 #
 #
 ##############################################################################
@@ -35,7 +28,7 @@ PINGTARGET=y                           # --no-ping-target | -P
 IPADDRALRT=y                           # --no-ipaddr-alert | -A
 IFCUPDOWN=y                            # --no-interface-reset | -R
 CONTINUOUSTOPOLOGYDETECT=y             # --no-continuous-topology-detect | -T
-FORK=y                                 # --foreground | --no-daemonize | -D
+FORK=y                                 # --foreground | -f | --no-daemonize | -D
 
 V=4				       # --verbosity-level | -V
 IFC=''                                 # --interface | -i
@@ -74,12 +67,20 @@ for x in $DEPENDENCIES; do which $x>/dev/null || lacking="$lacking $x"; done
 
 nwwatchdog=`basename "$0"` 2>/dev/null || nwwatchdog=nw-watchdog
 USAGE() {
-    [ -n "$1" ] && printf "$@"
-    COLS=0; _b_=''; ___=''; __=''; which tput>/dev/null && { COLS=`tput cols`; _b_=`tput bold`; ___=`tput smul`; __=`tput sgr0`; }
-    [ "$COLS" -gt 72 ] >/dev/null 2>&1 || COLS=72
+    TPUTOK=1
+    which tput>/dev/null 2>&1 && {
+	    TPUTOK=0
+	    COLS=`tput cols` 2>/dev/null || TPUTOK=$((TPUTOK+1))
+	    _b_=`tput bold`  2>/dev/null || TPUTOK=$((TPUTOK+1))
+	    ___=`tput smul`  2>/dev/null || TPUTOK=$((TPUTOK+1))
+	    #__=`tput sgr0`  2>/dev/null || TPUTOK=$((TPUTOK+1)) 'tput sgr0' in combination with 'less -R' does not work on all terminal
+	    __=`printf '\033[0m'`                              #  types, so always use the universal ANSI reset escape sequence instead 
+	}                                                      #  ( '\033[Om' instead of '\033[m^O' )
+    [ $TPUTOK -eq 0 ] || { COLS=72; _b_=''; ___=''; __=''; }
     FMT=cat; which fmt>/dev/null && FMT="fmt -s -w $COLS"
-    $FMT -s<<EOU
-
+    [ -n "$1" ] && printf "$@"
+    $FMT<<EOU
+$__
 ${_b_}NAME $__
         $nwwatchdog - Network Watchdog
 
@@ -106,19 +107,24 @@ ${_b_}OPTIONS $__(no arguments)
        These options take no arguments, and may be specified in any order. They can be grouped (e.g. -vAP) in their short form, also having one of the OPTIONS that takes arguments last.
 
     $_b_--help | -h $__
-        Shows this help in a pager ( less | more ) if available.
+        Shows this help, using \$PAGER if set to an executable, otherwise 'less' or 'more' if available in "/sbin:/bin:/usr/sbin:/usr/bin:\$PATH"
+	(Use PAGER=cat to avoid using a pager).
 
     $_b_--no-ping-target | -P $__
     	If the target is the nexthop (on the same subnet or a peer-to-peer address), reachability of the target is checked by arp cache status and ping.
-	If the target is not on the same subnet as the source, the reachability of the target is checked by pinging it in a certain pattern (see $_b_--slow-up-timeout$__ for details.
+	If the target is not on the same subnet as the source, the reachability of the target is checked by pinging it in a certain pattern (see $_b_--slow-up-timeout$__ for details).
+
 	$_b_--no-ping-target$__ disables the ping-checks for the target. Only connectivity to the nexthop for the target is checked.
-        It can be useful if target does filter ping or is unreachable and we still want to monitor the status of the source interface and nexthop.
-        Only one of $_b_--no-ping-nexthop$__ and $_b_--no-ping-target$__ can be specified.
+        It can be useful if target does not reply to ping, or if it desirable to only alert if there is no route to the target or nexthop is unreachable.
+
+        $_b_--no-ping-target$__ cannot be used in combination with $_b_--no-ping-nexthop$__.
 
     $_b_--no-ping-nexthop | -N | --no-ping-gateway | -G $__
     	By default, if the connectivity to the target cannot be verified, the reachability of the nexthop (usually a gateway) is checked, firstly by checking it's status in the arp cache and then by pinging it, rechecking the arp cache status upon failed ping. 
+
         $_b_--no-ping-nexthop$__ disbles the reachaility check for the nexthop so only connectivity to target itself is checked. It can be useful if the nexthop is a peer-to-peer address and not setup to reply to ping.
-        Only one of $_b_--no-ping-nexthop$__ and $_b_--no-ping-target$__ can be specified.
+
+        $_b_--no-ping-nexthop$__ cannot be used in combination with $_b_--no-ping-target$__.
 
     $_b_--no-ipaddr-alert | -A $__
         Do not alert for not finding any global scope ip addresses on the source interface.
@@ -129,16 +135,17 @@ ${_b_}OPTIONS $__(no arguments)
 
     $_b_--no-continuous-topology-detect | -T $__
         Normaly the topology (resolving the ip address of the target, detecting which source interface to use and the ip address of the nexthop towards the target) is detected at startup and continuously monitored for changes.
+
 	$_b_--no-continuous-topology-detect$__ disables the topology detection for as long as the target replies (or in combination with $_b_--no-ping-target$__ for as long as the nexthop is reachable). The topology will only be detected at startup and if the TARGET does not reply or if the NEXTHOP cannot be reached, meaning that routing changes making the TARGET or NEXTHOP unreachable will not be detected as long as the TARGET can be reached using the old topology.
 
-	$_b_--force-interface$__ inmplies $_b_--no-continuous-topology-detect$__.
+	$_b_--force-interface$__ implies $_b_--no-continuous-topology-detect$__.
     				       
-    $_b_--foreground | --no-daemonize | -D $__
-        Do not daemonize, run in foreground.
+    $_b_--foreground | -f | --no-daemonize | -D $__
+        Do not fork / daemonize, run in foreground.
 
     $_b_--verbose | -v $__
         Shortcut for $_b_--verbosity-level=5$__
-        Cannot be combined with $_b_--verbosity-level$__.
+        If used in combination with $_b_--verbosity-level$__, the specified verbosity level will take precedence. 
 
     $_b_--debug | -d $__
         Shortcut for: $_b_--verbosity-level=6 $_b_--logfile=- $_b_--logsize=0 $_b_--pidfile=/dev/null $_b_--slow-up-timeout=1 $_b_--sleep=3 $_b_--ifup-grace=5 $_b_--alert='cat' $_b_--foreground$__ 
@@ -149,7 +156,7 @@ ${_b_}OPTIONS $__(no arguments)
 
 
 ${_b_}OPTIONS$__ (with ARGUMENT)
-        These opions takes a single argument each and may be specified in any order. Specify with equalsign or space or no space between option and argument. They can only be grouped last with the shortform of the NO-ARGUMENT-OPTIONS above (e.g. -PAV5).
+        These opions takes a single argument each and may be specified in any order. Specify with equalsign or space or no space between option and argument. They can only be grouped together with the shortform of the NO-ARGUMENT-OPTIONS above, and must be last in such groupings (e.g. -PAV5).
 
 EOU
 #    $_b_--config | -c$__ ${___}filename$__
@@ -167,8 +174,8 @@ EOU
 $FMT<<EOU
     $_b_--verbosity-level | -V$__ ${___}level$__
         Default: $V
-        Integer greater than or equal to zero.
-        Determines how much info is logged to the logfile.
+	${___}level$__ must be an integer greater than or equal to zero.
+        Determines how much info is logged to the logfile and which alerts are triggered.
 
         ${_b_}0$__ - none
         No output to logfile and no alerts trigged at all ... pretty useless unless you just want to keep traffic going keeping a connecting alive without any alerts.
@@ -180,7 +187,7 @@ $FMT<<EOU
         Also logs and alerts on warnings about configuration, etc.
 
         ${_b_}3$__ - alert
-        Log and alerts on connectivity failures, interface down, and other things disrupting the monitored connection, as well as on warnings and errors.
+        Log and alert on irreparable connectivity failures, interface down, and other things disrupting the monitored connection, as well as on warnings and errors.
         Also see the $_b_--alert$__ option.
 
         ${_b_}4$__ - info (default)
@@ -193,19 +200,25 @@ $FMT<<EOU
         Logs even more internal details, e.g. SETTINGS used, all tests performed, all sleeps, and other debug info.
 
     ${_b_}--interface | -i$__ ${___}interface$__
-        Where ${___}interface$__ is the name of the source interface to initially use.
-        If not specified it will be determined from the FIB by looking at the route to the target. The reason to specify it even so would be to have $nwwatchdog bring it up if it's down when starting.
+    	Default: none
+        ${___}interface$__ is the name of the source interface to initially use.
 
         The interface may dynamically change due to topology detection. If you want to force the use of a specific interface, use $_b_--force-interface$__ instead.
 
-        Cannot be combined with $_b_--force-interface$__.
+        If neither of ${_b_}--interface$__ or $_b_--force-interface$__ is specified the source interface it will be determined from the FIB by looking at the route to the target. The reason to specify it even so, would be to have $nwwatchdog bring it up if it's down when starting.
+
+        $_b_--interface$__ cannot be combined with $_b_--force-interface$__.
 
     $_b_--force-interface | -I$__ ${___}interface$__
-        Where ${___}interface$__ is the name of the source interface to always use.
-        Packets will always be sent from this interface, forwadring table will be ignored as well as conflicting topology changes.
-        This is useful for monitoring the preferred path and making sure it's up, but does not really tell if you have connectivity to the target or not. In most cases you would want to use $_b_--interface$__ instead of this option or not specify any interface at all.
+    	Default: none
+        ${___}interface$__ is the name of the source interface to always use.
+
+        Packets will always be sent from this interface. The forwadring table will be ignored as well as conflicting topology changes.
+        This is useful for monitoring the preferred path and making sure it's up. It does not check if you have connectivity to the target via any other path.
+
 	Implies $_b_--no-continuous-topology-detect$__.
-        Cannot be combined with $_b_--interface$__.
+
+	$_b_--force-interface$__ cannot be combined with $_b_--interface$__.
 
     $_b_--logfile | -l$__ ${___}logfile$__
         Default: '$LOGFILE'
@@ -223,22 +236,21 @@ $FMT<<EOU
 
 	If ${_b_}flock$__ is available, the logfile will be locked before written to or shrinked, otherwise there is a slight risk of loglines being lost if two or more instances of $_b_$nwwatchdog$__ are concurently running using the same logfile and at least one of them have $_b_--logsize$__ set to a value larger than 0.
 
-
     $_b_--pidfile | -p$__ ${___}pidfile$__
         Default: '$PIDFILE'
         Pidfile to use.
 
     $_b_--slow-up-timeout | -t$__ ${___}seconds$__
         Default: $SLOWUPTIMEOUT
-        Integer greater than zero.
+        ${___}seconds$__ must be an integer greater than zero.
 
-        The pingtest to check if a target is up is performed in several steps. First a "quick-up" test sends one single ICMP echo packet waiting for the reply for no more than 1 second. If that fails, a more thourough "slow-up" test sends 5 ICMP echos. This parameter controls how long to wait for each packet before timing out and sending the next packet. Using the default setting, the "slow-up" test takes up to $SLOWUPTIMEOUT * 5 seconds before failing, but if the connection is up, thanks to using adaptive ping (sending next echo packet as soon as the reply of the previous one is received), the entire slow-up test will not take notably longer than 5 * the RTT to the target.
+        The check whether the target is up or not, is performed in several steps.
+	First a "quick-up" test sends one single ICMP echo packet waiting for the reply for no more than 1 second. If that fails, a more thourough "slow-up" test sends 5 ICMP echos.
 
-	Summary:
 	$_b_--slow-up-timeout$__ controls he TIMEOUT for waiting on each packet in the slow-up test.
         5 packets are always sent in the slow-up test.
-        The packets are sent adaptively, meaning that as soon as a reply is received the next packet is sent without delay.
-        DEADLINE = TIMEOUT * 5
+        The packets are sent adaptively, meaning that as soon as a reply is received the next packet is sent without delay, giving slow-up a total time of 5 * RTT to the target if the connection is up.
+        The DEADLINE = TIMEOUT * 5 is the maximum time the slow-up test will take if the target is down.
         
         $_b_--slow-up-timeout=7$__ is useful for monitoring VPN connections via interfaces that need a long wake-up time if idle (due to regotiation of encryption, exchanging keys, reauthentication, etc).
 
@@ -246,20 +258,24 @@ $FMT<<EOU
 
         $_b_--slow-up-timeout=1$__ is suitable to use for monitoring local targets (e.g. nexthop) on ethernet carried subnets.
 
-    $_b_--interval | --sleep | -s$__ ${___}seconds$__
+    $_b_--sleep | -s | --interval$__ ${___}seconds$__
         Default: $SLEEP
-        Integer greater than zero.
+        ${___}seconds$__ must be an integer greater than zero.
+
         How many seconds to sleep after sucessful ping check. 
 
     $_b_--ifup-grace | -g$__ ${___}seconds$__
         Default: $GRACE
-        Integer greater than zero.
+        ${___}seconds$__ must be an integer greater than zero.
+
         How many seconds to sleep before next check after interface has been reset.
 
     $_b_--max-nolink | -n$__ ${___}number$__
         Default: $MAXNOLINK
-        Integer greater than or equal to zero.
+        ${___}number$__ must be an integer greater than or equal to zero.
+
         Maximum number of consecutive failed link checks in which the interface have been reset (brought down and up again) before doing new topology check.
+
         A word of warning: If set to 0 and interface is not up / goes down, infinite retries to bring the interface up will be made before checking topology. Only set it to 0 if you are sure that the specified interface should always be used and you want to make sure it's up before starting to monitor the connection.
         Typically, you would want to also use $_b_--force-interface$__ when using $_b_--max-nolink=0$__.
 
@@ -335,12 +351,15 @@ $FMT<<EOU
 	- ERROR for permanent errors
 	- WARNING for things that might need reconfiguration
 
-	The alert command will be launched for every ERROR and WARNING states, but otherwise only once for each change of state to/from DOWN/UP/UNREACHABLE/REACHABLE.
+	The alert command will be launched for every ERROR and WARNING, even repeated ones.
+	For the other states (UP, DOWN, UNREACHABLE, REACHABLE) the alert command will be launched only upon state change.
+	E.g. if the state goes from UP to DOWN the alert is triggered but if the next check is also DOWN, no further alert will be sent (until the state changes again).
 
 	EXAMPLE of how to email the alert messages using mailx (mailutils) with a custom from address:
-	    --alert='mailx -a "From: nw-watchdog@this.hst" -s "nwwatchdog alert %{IFC}" my@email.adr'
+	    --alert='mailx -a "From: nw-watchdog@this.hst" -s "nw-watchdog %{STATE} alert for %{TARGET} via %{IFC}" my@email.adr'
 
-    $_b_--install-systemd$__ ${___}SERVICENAME$__ 
+    $_b_--install-systemd$__ ${___}SERVICENAME$__
+
         Will write a systemd service file /etc/systemd/system/nw-watchdog-${___}SERVICENAME$__.service file launching $nwwatchdog as a daemon with
         $_b_--pidfile$__=/run/nw-watchdog-${___}SERVICENAME$__.pid$__
         $_b_--lofile$__=/var/log/nw-watchdog-${___}SERVICENAME$__.log$__
@@ -375,7 +394,7 @@ printf "        %s\n        %s\n        %s\n        %s\n        %s\n" \
 
 $FMT<<EOU
 
-	Checking once a minute ($_b_--interval=${__}60) that we have connectivity to the Internet Service Provider's gateway without actually pinging anything on the Internet ($_b_--no-ping-target$__ & 1.2.3.4 ... any Intenet address will do) allowing interface and topology detection (not using --force-interface or --max-no-link=0) but still, if down, bring the supposed initial interface towards the ISP up on startup ($_b_--interface=${__}eth0) expecting the ISP gateway to have an RTT below 1 second ($_b_--slow-up-timeout=${__}1) and allowing the interface to be down for up to 5 minutes before considering it a permanent error rechecking topology ($_b_--ifup-grace=${__}300).
+	Checking once a minute ($_b_--interval=${__}60) that we have connectivity to the Internet Service Provider's gateway without actually pinging anything on the Internet ($_b_--no-ping-target$__ 1.2.3.4 ... any Intenet address will do) allowing interface and topology detection (not using --force-interface or --max-no-link=0) but still, if down, bring the supposed initial interface towards the ISP up on startup ($_b_--interface=${__}eth0) expecting the ISP gateway to have an RTT below 1 second ($_b_--slow-up-timeout=${__}1) and allowing the interface to be down for up to 5 minutes before considering it a permanent error rechecking topology ($_b_--ifup-grace=${__}300).
 
 
 	${___}ISP gateway monitoring with forced interface:$__
@@ -396,28 +415,70 @@ $FMT<<EOU
 
 	${___}Management of Strongswan IPSec with VTI tunnel interface:$__
 
-        --ifcup='ipsec up connection-name ; ip tunnel add $IFACE mode vti local 4.3.2.1 remote 1.2.3.4 ttl 255 key 111 ; ip....
+	Firstly, we setup the nw-watchdog systemd service for monitoring the connectivity to the IPSec peers public address (1.2.3.4 in this example), emailing alerts to the admin.
 
-	strongswan ipsec (with iproute2 for vti tunnel interface): 
+        $_b_$nwwatchdog$__ 1.2.3.4 $_b_\\
+EOU
+printf "        %s\n        %s\n        %s\n        %s\n        %s\n" \
+       "  $_b_--verbosity-level=${__}3 $_b_\\" \
+       "  $_b_--alert=$__'mailx -a \"From: nwwatchdog@\`hostname -f\`\" -s \"IPSec Peer 1.2.3.4 %{STATE} via %{IFC}\" admin@\`cat /etc/mailname\`' $_b_\\" \
+       "  $_b_--slow-up-timeout=${__}2 $_b_\\" \
+       "  $_b_--ifup-grace=${__}10 $_b_\\" \
+       "  $_b_--interval=${__}10$__"
+$FMT<<EOU
+
+	Then we setup the monitor for the IPSec VTI tunnel which will also be created, configured and brought up.
+	Note: It would be smoother to use a script and $_b_--ifcup=${__}/path/script, but it can also be done like this:
+
+	$_b_$nwwatchdog$__ 169.254.0.1 $_b_\\
+EOU
+printf "        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n" \
+       "  $_b_--alert=$__'mailx -a \"From: nwwatchdog@\`hostname -f\`\" -s \"IPSec connection-name %{STATE} via %{IFC}\" admin@\`cat /etc/mailname\`' $_b_\\" \
+       "  $_b_--force-interface=${__}ipsec0 $_b_\\" \
+       "  $_b_--slow-up-timeout=${__}5 $_b_\\" \
+       "  $_b_--ifup-grace=${__}25 $_b_\\" \
+       "  $_b_--ifcup=$__'ipsec up connection-name ; " \
+       "           ip tunnel add %{IFC} mode vti local 4.3.2.1 remote 1.2.3.4 ttl 255 key 111 ; " \
+       "           ip addr add dev %{IFC} 169.254.0.2 remote 169.254.0.1; " \
+       "           ip link set %{IFC} up multicast on mtu 1424 state UP;" \
+       "           ip route add 10.10.0.0/20 via 169.254.0.1 dev %{IFC}'$__ $_b_\\" \
+       "  $_b_--ifcdown=$__'ipsec down connection-name ; ip tunnel del %{IFC}' $_b_\\" 
+$FMT<<EOU
+
+	$___${_b_}OBSERVE$__ that the entire $_b_--ifcup=$__'...' command need to be on a single line without line breaks (linebreaks added above for readability).
+
+	We use $_b_--ifup-grace=25$__ to allow enough time for IPSec to establish the connection upon start and interface reset.
+	$_b_--slow-up-timeout=5$__ (making the deadline 25 seconds for the slow-up ping test) should be enough for an idle IPSec conmnection to wakeup and start forwarding packets when monitored.
+
+	In the above example we monitor the connectivity to the peer address inside the VTI tunnel, which is also the nexthop.
+        If we are interested in the connectivity to something in the remote network routed via the tunnel we could use that as a target instead of the peer address:
+
+	$_b_$nwwatchdog$__ 10.10.1.1 $_b_ ...
+	and the rest of the options exactly the same.
+
+	Now we would get alerts if 10.10.1.1 is down.
+	In all other ways the effect would be the same as using 169.254.0.1 as target.
+	Even with target 10.10.1.1, the nexthop (169.254.0.1) will also be monitored (we are NOT using --no-ping-nexthop) and the interface will NOT be reset as long as the nexthop is reachable.
 
 
 	${___}Wireguard full tunnel management:$__
-	This is a more extensive example of how one can use $nwwatchdog to setup and monitor a wireguard full tunnel, also monitoring the connectivity to the wireguard server, running both whatchdogs as systemd services getting alerts via e-mail:
 
-	Firstly, we setup the nw-watchdog systemd service for the wireguard server connection which we reach via the default route:
+	This is an example of how one can use $nwwatchdog to setup and monitor a wireguard full tunnel, also monitoring the connectivity to the wireguard server, running both whatchdogs as systemd services getting alerts via e-mail:
+
+	Firstly, we setup the nw-watchdog systemd service for the wireguard server which we reach via the default route:
 
 	$_b_$nwwatchdog$__ wgserver.domain.dom $_b_\\
 EOU
 printf "        %s\n        %s\n        %s\n        %s\n        %s\n" \
        "  $_b_--verbosity-level=${__}3 $_b_\\" \
-       "  $_b_--alert=$__'mailx -a \"From: nwwatchdog@\`hostname -f\`\" -s \"wgserver via %{IFC}\" admin@\`cat /etc/mailname\`' $_b_\\" \
+       "  $_b_--alert=$__'mailx -a \"From: nwwatchdog@\`hostname -f\`\" -s \"wgserver %{STATE} via %{IFC}\" admin@\`cat /etc/mailname\`' $_b_\\" \
        "  $_b_--slow-up-timeout=${__}3 $_b_\\" \
        "  $_b_--ifup-grace=${__}20 $_b_\\" \
        "  $_b_--install-systemd=${__}wgserver"
     $FMT<<EOU
 
 	Then we setup the monitor for the wireguard full tunnel which will also create and configure and bring the tunnel up (if not already) upon start of the sytemd service, making sure we have a /32 routes to all of the wireguard server's ip addresses that the hostname resolves to.
-	Note: It would be smoother to use a script and --ifcup=/path/script, but it can also be done like this:
+	Note: It would be smoother to use a script and $_b_--ifcup=${__}/path/script, but it can also be done like this:
 
 	$_b_$nwwatchdog$__ 10.0.0.1 $_b_\\
 EOU
@@ -438,11 +499,12 @@ printf "        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n
        "           ip route add 128.0.0.0/1 via 10.0.0.1 dev wg0 src 10.0.0.2 2>/dev/null'$__ $_b_\\" \
        "  $_b_--ifcdown=$__'ip link del wg0' $_b_\\" \
        "  $_b_--install-systemd=${__}wg0"
-EOU
+
     $FMT<<EOU
 
-    We use $_b_--no-ping-nexthop$__ as the nexthop is the same as the target peer-to-peer address we monitor the connection for (in reality we don't need to specify it as it is the default behaviour if the target address is the same as the nexthop address).
     $___${_b_}OBSERVE$__ that the entire $_b_--ifcup=$__'...' command need to be on a single line without line breaks (linebreaks added above for readability).
+
+    We use $_b_--no-ping-nexthop$__ as the nexthop is the same as the target peer-to-peer address we monitor the connection for (in reality we don't need to specify it as it is the default behaviour if the target address is the same as the nexthop address).
     
 
 ${_b_}DEPENDENCIES$__
@@ -470,14 +532,17 @@ EOU
 	Is used to format the help message if available.
 
 	- ${_b_}less$__ (or ${_b_}more$__)
-	Is used to page this help.
+	Is used to page this help unless \$PAGER is set to something else.
 
 EOU
     [ -n "$1" ] && printf "$@"
 }
 USAGEpager() {
-    if which less >/dev/null 2>&1; then
-	USAGE "$@" | less -R 
+    if which "$PAGER" >/dev/null 2>&1; then
+	LESS="$LESS -R"; export LESS # make sure less, if used, passes ANSI color escape sequences to terminal
+	USAGE "$@" | "$PAGER"
+    elif which less >/dev/null 2>&1; then
+	USAGE "$@" | less -R
     elif which more >/dev/null 2>&1; then
 	USAGE "$@" | more
     else
@@ -492,7 +557,7 @@ dieUSAGEpager() {
 }
 # Parse arguments
 xTARGET='';xV='';xIFC='';xLOGFILE='';xLOGSIZE='';xPIDFILE='';xSLOWUPTIMEOUT='';xSLEEP='';xGRACE='';xMAXNOLINK='';xIFCUPT='';xIFCDOWNT='';xALERTCMDT='';xSYSTEMDSERVICENAME=''
-SOPTS='[hNPARTDvd]' # Short options without arguments
+SOPTS='[hNPARTfDvd]' # Short options without arguments
 while [ $# -gt 0 ]; do
     ARG="$1"; shift
     case "$ARG" in
@@ -515,13 +580,11 @@ while [ $# -gt 0 ]; do
 	-R|--no-interface-reset)
 	    IFCUPDOWN=''
 	    ;;
-	-D|--no-daemonize|--foreground)
+	-D|--no-daemonize|-f|--foreground)
 	    FORK=''
 	    ;;
 	-v|--verbose)
-	    [ -z "$xV" ] || dieUSAGEpager "verbosity-level specified multiple times\n%s" \
-					  "(exclusively use '-v', '--verbose', '-V' or '--verbosity-level' only once)"
-	    xV=1; V=5
+	    [ -z "$xV" ] && V=5
 	    ;;
 	-d|--debug)
 	    [ -z "$xV" ] && V=6 
@@ -533,14 +596,14 @@ while [ $# -gt 0 ]; do
 	    [ -z "$xALERTCMDT" ] && ALERTCMDT='cat'
 	    FORK=''
 	    ;;
-	-${SOPTS}*) # single out short options without arguments
+	-${SOPTS}*) # single out ("ungroup") short options without arguments
 	    A=`printf "%s" "$ARG" | grep -oE '^..'`
 	    B=-`printf "%s" "$ARG" | cut -c3-`
 	    set -- "$A" "$B" "$@"
 	    ;;
 	-V*|--verbosity-level*)
 	    [ -z "$xV" ] || dieUSAGEpager "verbosity-level specified multiple times\n%s" \
-					  "(exclusively use '-v', '-V' or '--verbosity-level' only once)"
+					  "(exclusively use '-V' or '--verbosity-level' only once)"
 	    if [ "$ARG" = "-V" -o "$ARG" = "--verbosity-level" ]; then V="$1"; shift
 	    elif printf "%s" "$ARG" | grep -qEe '-(-verbosity-level|V)=.*' ; then V="${ARG#*=}"
 	    else V=`printf "%s" "$ARG" | sed -E 's/-(-verbosity-level|V)//'`; fi
