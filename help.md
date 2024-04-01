@@ -23,12 +23,12 @@ __OPTIONS__(no arguments)<br>
 These options take no arguments, and may be specified in any order. They can be grouped (e.g. -vAP) in their short form, also having one of the OPTIONS that takes arguments last.
 
 __--help | -h__<br>
-	Shows this help, using \$PAGER if set to an executable, otherwise 'less' or 'more' if available in "/sbin:/bin:/usr/sbin:/usr/bin:\$PATH"
-	(Use PAGER=cat to avoid using a pager).
+Shows this help, using \$PAGER if set to an executable, otherwise 'less' or 'more' if available in "/sbin:/bin:/usr/sbin:/usr/bin:\$PATH"<br>
+(Use PAGER=cat to avoid using a pager).
 
-    __--no-ping-target | -P__
-    	If the target is the nexthop (on the same subnet or a peer-to-peer address), reachability of the target is checked by arp cache status and ping.
-	If the target is not on the same subnet as the source, the reachability of the target is checked by pinging it in a certain pattern (see __--slow-up-timeout__ for details).
+__--no-ping-target | -P__<br>
+If the target is the nexthop (on the same subnet or a peer-to-peer address), reachability of the target is checked by arp cache status and ping.<br>
+If the target is not on the same subnet as the source, the reachability of the target is checked by pinging it in a certain pattern (see __--slow-up-timeout__ for details).
 
 	__--no-ping-target__ disables the ping-checks for the target. Only connectivity to the nexthop for the target is checked.
         It can be useful if target does not reply to ping, or if it desirable to only alert if there is no route to the target or nexthop is unreachable.
