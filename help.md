@@ -77,71 +77,71 @@ If the target is not on the same subnet as the source, the reachability of the t
 
 ---
 __OPTIONS__ (with ARGUMENT)<br>
-        These opions takes a single argument each and may be specified in any order. Specify with equalsign or space or no space between option and argument. They can only be grouped together with the shortform of the NO-ARGUMENT-OPTIONS above, and must be last in such groupings (e.g. -PAV5).
+        These opions takes a single argument each and may be specified in any order. Specify with equalsign or space or no space between option and argument. They can only be grouped together with the shortform of the NO-ARGUMENT-OPTIONS above, and must be last in such groupings (e.g. `-PAV5`).
 
-    __--verbosity-level | -V__ <u>level</u>
-        Default: 4
-	<u>level</u> must be an integer greater than or equal to zero.
-        Determines how much info is logged to the logfile and which alerts are triggered.
+- __--verbosity-level | -V__ <u>level</u><br>
+  Default: 4<br>
+  <u>level</u> must be an integer greater than or equal to zero.
+  Determines how much info is logged to the logfile and which alerts are triggered.
 
-        __0__ - none
-        No output to logfile and no alerts trigged at all ... pretty useless unless you just want to keep traffic going keeping a connecting alive without any alerts.
+	__0__ - none<br>
+	No output to logfile and no alerts trigged at all ... pretty useless unless you just want to keep traffic going keeping a connecting alive without any alerts.
 
-        __1__ - error
-        Only logs and alerts on errors causing the nw-watchdog not to function as intended.
+	__1__ - error<br>
+	Only logs and alerts on errors causing the nw-watchdog not to function as intended.
 
-        __2__ - warning
-        Also logs and alerts on warnings about configuration, etc.
+	__2__ - warning<br>
+	Also logs and alerts on warnings about configuration, etc.
 
-        __3__ - alert
-        Log and alert on irreparable connectivity failures, interface down, and other things disrupting the monitored connection, as well as on warnings and errors.
-        Also see the __--alert__ option.
+	__3__ - alert<br>
+	Log and alert on irreparable connectivity failures, interface down, and other things disrupting the monitored connection, as well as on warnings and errors.<br>
+	Also see the `--alert` option.
 
-        __4__ - info (default)
-        Same as level 3, but also logs some useful information on what's going on, such as topology changes, some test failures forcing more testing,  interface resets, etc
+	__4__ - info (default)<br>
+	Same as level 3, but also logs some useful information on what's going on, such as topology changes, some test failures forcing more testing,  interface resets, etc
 
-        __5__ - trace
-        Logs even more info about which action is currently performed, including, all secondary tests that are run, when sleeping longer than usual, etc.
+	__5__ - trace<br>
+	Logs even more info about which action is currently performed, including, all secondary tests that are run, when sleeping longer than usual, etc.
 
-        __6__ - debug
-        Logs even more internal details, e.g. SETTINGS used, all tests performed, all sleeps, and other debug info.
+	__6__ - debug<br>
+	Logs even more internal details, e.g. SETTINGS used, all tests performed, all sleeps, and other debug info.
 
-    __--interface | -i__ <u>interface</u>
-    	Default: none
-        <u>interface</u> is the name of the source interface to initially use.
+- __--interface | -i__ <u>interface</u><br>
+  Default: none<br>
+  <u>interface</u> is the name of the source interface to initially use.
 
-        The interface may dynamically change due to topology detection. If you want to force the use of a specific interface, use __--force-interface__ instead.
+	The interface may dynamically change due to topology detection. If you want to force the use of a specific interface, use __--force-interface__ instead.
 
-        If neither of __--interface__ or __--force-interface__ is specified the source interface it will be determined from the FIB by looking at the route to the target. The reason to specify it even so, would be to have nw-watchdog bring it up if it's down when starting.
+	If neither of `--interface` or `--force-interface` is specified the source interface it will be determined from the FIB by looking at the route to the target. The reason to specify it even so, would be to have nw-watchdog bring it up if it's down when starting.
 
-        __--interface__ cannot be combined with __--force-interface__.
+	`--interface` cannot be combined with `--force-interface`.
 
-    __--force-interface | -I__ <u>interface</u>
-    	Default: none
-        <u>interface</u> is the name of the source interface to always use.
+- __--force-interface | -I__ <u>interface</u><br>
+  Default: none<br>
+  <u>interface</u> is the name of the source interface to always use.
 
-        Packets will always be sent from this interface. The forwadring table will be ignored as well as conflicting topology changes.
-        This is useful for monitoring the preferred path and making sure it's up. It does not check if you have connectivity to the target via any other path.
+	Packets will always be sent from this interface. The forwadring table will be ignored as well as conflicting topology changes.<br>
+	This is useful for monitoring the preferred path and making sure it's up. It does not check if you have connectivity to the target via any other path.
 
-	Implies __--no-continuous-topology-detect__.
+	Implies `--no-continuous-topology-detect`.
 
-	__--force-interface__ cannot be combined with __--interface__.
+	`--force-interface` cannot be combined with `--interface`.
 
-    __--logfile | -l__ <u>logfile</u>
-        Default: '/var/log/nw-watchdog.log'
-        Logfile to use. If specified as '-' logs are written to stdout.
+- __--logfile | -l__ <u>logfile</u><br>
+	Default: '/var/log/nw-watchdog.log'<br>
+	Logfile to use. If specified as '-' logs are written to stdout.
 
-    __--logsize | -z__ <u>size</u>
-        Default: 0
+- __--logsize | -z__ <u>size</u><br>
+  Default: 0
 
-	If the logfile grows beyond this size, the oldest entries will be removed.
+  If the logfile grows beyond this size, the oldest entries will be removed.
 
-	You can use suffixes K, M, G for kilo / mega / giga bytes. (No suffix is same as K).
-	Set to 0 for unlimited logfile size (which you would want if you do log rotation). 
+  You can use suffixes K, M, G for kilo / mega / giga bytes. (No suffix is same as K).<br>
+  Set to 0 for unlimited logfile size (which you would want if you do log rotation). 
 
-	If the logfile is set to '-' (stdout) this option is ignored.
+  If the logfile is set to '-' (stdout) this option is ignored.
 
-	If __flock__ is available, the logfile will be locked before written to or shrinked, otherwise there is a slight risk of loglines being lost if two or more instances of __nw-watchdog__ are concurently running using the same logfile and at least one of them have __--logsize__ set to a value larger than 0.
+  If `flock` is available, the logfile will be locked before written to or shrinked, otherwise there is a slight risk of loglines being lost if two or more instances of `nw-watchdog` are concurently running using the same logfile and at least one of them have `--logsize` set to a value larger than 0.
 
     __--pidfile | -p__ <u>pidfile</u>
         Default: '/run/nw-watchdog.pid'
