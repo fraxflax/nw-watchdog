@@ -1,9 +1,12 @@
+---
 __NAME__<br>
         nw-watchdog - Network Watchdog
 
-<b>SYNOPSIS</b><br>
+---
+__SYNOPSIS__<br>
 __nw-watchdog__ [ OPTIONS ] <u>TARGET</u>
 
+---
 __DESCRIPTION__<br>
 __nw-watchdog__ is a higly configurable network watchdog written in posix shell script for use in Linux, depending only on Linux most standard tools that are normally installed by default in all distributions (also see the __DEPENDENCIES__ section).
 
@@ -16,9 +19,11 @@ It comes with ABSOLUTELY NO WARRANTY.
 
 Get the latest version from https://github.com/fraxflax/nw-watchdog
 
+---
 __TARGET__<br>
 The mandatory argument <u>TARGET</u> is the target (destination) to monitor the connection to. <u>TARGET</u> can be an IP address or a resolvable hostname / FQDN. If it's a hostname / FQDN, it will be resolved to an IP address (first one found) at startup and the resolved IP address will be used for the monitoring. Upon failed ping-checks the name will be resolved again and if it resolves to a new IP address, that will be used for the monitoring from there on.
 
+---
 __OPTIONS__ (no arguments)<br>
 These options take no arguments, and may be specified in any order. They can be grouped (e.g. -vAP) in their short form, also having one of the OPTIONS that takes arguments last.
 
