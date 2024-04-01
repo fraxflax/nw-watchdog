@@ -35,12 +35,12 @@ __--no-ping-target | -P__<br>
 If the target is the nexthop (on the same subnet or a peer-to-peer address), reachability of the target is checked by arp cache status and ping.<br>
 If the target is not on the same subnet as the source, the reachability of the target is checked by pinging it in a certain pattern (see __--slow-up-timeout__ for details).
 
-	__--no-ping-target__ disables the ping-checks for the target. Only connectivity to the nexthop for the target is checked.
-        It can be useful if target does not reply to ping, or if it desirable to only alert if there is no route to the target or nexthop is unreachable.
+__--no-ping-target__ disables the ping-checks for the target. Only connectivity to the nexthop for the target is checked.<br>
+It can be useful if target does not reply to ping, or if it desirable to only alert if there is no route to the target or nexthop is unreachable.
 
-        __--no-ping-target__ cannot be used in combination with __--no-ping-nexthop__.
+__--no-ping-target__ cannot be used in combination with __--no-ping-nexthop__.
 
-    __--no-ping-nexthop | -N | --no-ping-gateway | -G__
+__--no-ping-nexthop | -N | --no-ping-gateway | -G__
     	By default, if the connectivity to the target cannot be verified, the reachability of the nexthop (usually a gateway) is checked, firstly by checking it's status in the arp cache and then by pinging it, rechecking the arp cache status upon failed ping. 
 
         __--no-ping-nexthop__ disbles the reachaility check for the nexthop so only connectivity to target itself is checked. It can be useful if the nexthop is a peer-to-peer address and not setup to reply to ping.
