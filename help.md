@@ -41,39 +41,39 @@ It can be useful if target does not reply to ping, or if it desirable to only al
 `--no-ping-target` cannot be used in combination with `--no-ping-nexthop`.
 
 - __--no-ping-nexthop | -N | --no-ping-gateway | -G__<br>
-By default, if the connectivity to the target cannot be verified, the reachability of the nexthop (usually a gateway) is checked, firstly by checking it's status in the arp cache and then by pinging it, rechecking the arp cache status upon failed ping. 
+  By default, if the connectivity to the target cannot be verified, the reachability of the nexthop (usually a gateway) is checked, firstly by checking it's status in the arp cache and then by pinging it, rechecking the arp cache status upon failed ping. 
 
 `--no-ping-nexthop` disbles the reachaility check for the nexthop so only connectivity to target itself is checked. It can be useful if the nexthop is a peer-to-peer address and not setup to reply to ping.
 
 `--no-ping-nexthop` cannot be used in combination with `--no-ping-target`.
 
 - __--no-ipaddr-alert | -A__<br>
-Do not alert for not finding any global scope ip addresses on the source interface.
+  Do not alert for not finding any global scope ip addresses on the source interface.
 
 - __--no-interface-reset | -R__<br>
-Do not try to bring down and up interface after failed connectivity checks.<br>
-(Do not try to "repair" the connection", just monitor it.)
+  Do not try to bring down and up interface after failed connectivity checks.<br>
+  (Do not try to "repair" the connection", just monitor it.)
 
 - __--no-continuous-topology-detect | -T__<br>
-Normaly the topology (resolving the ip address of the target, detecting which source interface to use and the ip address of the nexthop towards the target) is detected at startup and continuously monitored for changes.
+  Normaly the topology (resolving the ip address of the target, detecting which source interface to use and the ip address of the nexthop towards the target) is detected at startup and continuously monitored for changes.
 
 `--no-continuous-topology-detect` disables the topology detection for as long as the target replies (or in combination with `--no-ping-target` for as long as the nexthop is reachable). The topology will only be detected at startup and if the TARGET does not reply or if the NEXTHOP cannot be reached, meaning that routing changes making the TARGET or NEXTHOP unreachable will not be detected as long as the TARGET can be reached using the old topology.
 
 `--force-interface` implies `--no-continuous-topology-detect`.
     				       
 - __--foreground | -f | --no-daemonize | -D__<br>
-Do not fork / daemonize, run in foreground.
+  Do not fork / daemonize, run in foreground.
 
 - __--verbose | -v__<br>
-Shortcut for `--verbosity-level=5`<br>
-If used in combination with `--verbosity-level`, the specified verbosity level will take precedence. 
+  Shortcut for `--verbosity-level=5`<br>
+  If used in combination with `--verbosity-level`, the specified verbosity level will take precedence. 
 
 - __--debug | -d__<br>
-Shortcut for: `--verbosity-level=6  --logfile=- --logsize=0  --pidfile=/dev/null  --slow-up-timeout=1  --sleep=3 --ifup-grace=5 --alert='cat' --foreground` 
+  Shortcut for: `--verbosity-level=6  --logfile=- --logsize=0  --pidfile=/dev/null  --slow-up-timeout=1  --sleep=3 --ifup-grace=5 --alert='cat' --foreground` 
 
-If it's combined with any of the options it provides shortcuts for, the specified option will take precedence over the `--debug` shortcut.
+  If it's combined with any of the options it provides shortcuts for, the specified option will take precedence over the `--debug` shortcut.
 
-This option cannot be combined with `--install-systemd` (but it would be wise to test the configuration with `--debug` before installing as a systemd service).
+  This option cannot be combined with `--install-systemd` (but it would be wise to test the configuration with `--debug` before installing as a systemd service).
 
 ---
 __OPTIONS__ (with ARGUMENT)<br>
