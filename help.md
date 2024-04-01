@@ -230,7 +230,7 @@ __OPTIONS__ (with ARGUMENT)<br>
 	`--ifcdown='nmcli connection down %{IFC}-connection-name'`
 
   - iproute2 + isc-dhcp-client:<br>
-	`--ifcdown='kill \`cat /run/dhclient-%{IFC}.pid\` ; ip link set down %{IFC}'`
+	{--ifcdown='kill `cat /run/dhclient-%{IFC}.pid\` ; ip link set down %{IFC}'}
 
   - strongSwan IPSec (setup for IPSec policy routing):<br>
 	`--ifcup='ipsec down connection-name'`<br>
