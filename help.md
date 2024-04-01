@@ -193,38 +193,38 @@ __OPTIONS__ (with ARGUMENT)<br>
 
   Examples:
   - ifupdown:<br>
-    --ifcup='ifup %{IFC}'
+    `--ifcup='ifup %{IFC}'`
 
   - ifupdown, non privilege user running nw-watchdog:<br>
-	--ifcup='sudo ifup %{IFC}'
+	`--ifcup='sudo ifup %{IFC}'`
 
   - NetworkManager device:<br>
-	--ifcup='nmcli device up %{IFC}'
+	`--ifcup='nmcli device up %{IFC}'`
 
-	    NetworkManager connection:
-              --ifcup='nmcli connection up connection-name'
+  - NetworkManager connection:<br>
+	`--ifcup='nmcli connection up connection-name'`
 
-	    iproute2 + isc-dhcp-client:
-              --ifcup='ip link set %{IFC} up && dhclient -pf /run/dhclient-%{IFC}.pid %{IFC}'
+  - iproute2 + isc-dhcp-client:<br>
+	`--ifcup='ip link set %{IFC} up && dhclient -pf /run/dhclient-%{IFC}.pid %{IFC}'`
 
-	    strongSwan IPSec (setup for IPSec policy routing): 
-              --ifcup='ipsec up connection-name'
-	      (see __EXAMPLES__  below for a more extensive IPSec example using vti tunnel interface)
+  - strongSwan IPSec (setup for IPSec policy routing):<br>
+	`--ifcup='ipsec up connection-name'`<br>
+	(see __EXAMPLES__  below for a more extensive IPSec example using vti tunnel interface)
 
-    __--ifcdown | -U__ <u>STRING</u>
-        Default: 'ifdown %{IFC}' 
-        <u>STRING</u> will be passed to 'sh -c' to bring the interface down.
-	%{IFC} will be dynmaically replaced with the interface name currently in use as source interface.
+- __--ifcdown | -U__ <u>STRING</u><br>
+  Default: 'ifdown %{IFC}' <br>
+  <u>STRING</u> will be passed to 'sh -c' to bring the interface down.<br>
+  %{IFC} will be dynmaically replaced with the interface name currently in use as source interface.
 
-	Examples:
-	    ifupdown:
-              --ifcdown='ifdown %{IFC}'
+  Examples:
+  - ifupdown:
+	`--ifcdown='ifdown %{IFC}'`
 
-	    ifupdown, non privilege user running nw-watchdog:
-              --ifcdown='sudo ifdown %{IFC}'
+  - ifupdown, non privilege user running nw-watchdog:
+	`--ifcdown='sudo ifdown %{IFC}'`
 
-	    NetworkManager device:
-              --ifcdown='nmcli device down %{IFC}'
+  - NetworkManager device:
+	`--ifcdown='nmcli device down %{IFC}'`
 
 	    NetworkManager connection:
               --ifcdown='nmcli connection down %{IFC}-connection-name'
