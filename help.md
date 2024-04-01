@@ -143,63 +143,63 @@ __OPTIONS__ (with ARGUMENT)<br>
 
   If `flock` is available, the logfile will be locked before written to or shrinked, otherwise there is a slight risk of loglines being lost if two or more instances of `nw-watchdog` are concurently running using the same logfile and at least one of them have `--logsize` set to a value larger than 0.
 
-    __--pidfile | -p__ <u>pidfile</u>
-        Default: '/run/nw-watchdog.pid'
-        Pidfile to use.
+- __--pidfile | -p__ <u>pidfile</u><br>
+  Default: '/run/nw-watchdog.pid'<br>
+  Pidfile to use.
 
-    __--slow-up-timeout | -t__ <u>seconds</u>
-        Default: 7
-        <u>seconds</u> must be an integer greater than zero.
+- __--slow-up-timeout | -t__ <u>seconds</u><br>
+  Default: 7<br>
+  <u>seconds</u> must be an integer greater than zero.
 
-        The check whether the target is up or not, is performed in several steps.
-	First a "quick-up" test sends one single ICMP echo packet waiting for the reply for no more than 1 second. If that fails, a more thourough "slow-up" test sends 5 ICMP echos.
+  The check whether the target is up or not, is performed in several steps.<br>
+  First a "quick-up" test sends one single ICMP echo packet waiting for the reply for no more than 1 second. If that fails, a more thourough "slow-up" test sends 5 ICMP echos.
 
-	__--slow-up-timeout__ controls he TIMEOUT for waiting on each packet in the slow-up test.
-        5 packets are always sent in the slow-up test.
-        The packets are sent adaptively, meaning that as soon as a reply is received the next packet is sent without delay, giving slow-up a total time of 5 * RTT to the target if the connection is up.
-        The DEADLINE = TIMEOUT * 5 is the maximum time the slow-up test will take if the target is down.
+  `--slow-up-timeout` controls he TIMEOUT for waiting on each packet in the slow-up test.<br>
+  5 packets are always sent in the slow-up test.<br>
+  The packets are sent adaptively, meaning that as soon as a reply is received the next packet is sent without delay, giving slow-up a total time of 5 * RTT to the target if the connection is up.<br>
+  The DEADLINE = TIMEOUT * 5 is the maximum time the slow-up test will take if the target is down.
         
-        __--slow-up-timeout=7__ is useful for monitoring VPN connections via interfaces that need a long wake-up time if idle (due to regotiation of encryption, exchanging keys, reauthentication, etc).
+  `--slow-up-timeout=7` is useful for monitoring VPN connections via interfaces that need a long wake-up time if idle (due to regotiation of encryption, exchanging keys, reauthentication, etc).
 
-        __--slow-up-timeout=3__ is useful for monitoring connections to targets with low - medium latency via interfaces that does not need a long wake-up time (e.g. ethernet interfaces).
+  `--slow-up-timeout=3` is useful for monitoring connections to targets with low - medium latency via interfaces that does not need a long wake-up time (e.g. ethernet interfaces).
 
-        __--slow-up-timeout=1__ is suitable to use for monitoring local targets (e.g. nexthop) on ethernet carried subnets.
+  `--slow-up-timeout=1` is suitable to use for monitoring local targets (e.g. nexthop) on ethernet carried subnets.
 
-    __--sleep | -s | --interval__ <u>seconds</u>
-        Default: 10
-        <u>seconds</u> must be an integer greater than zero.
+- __--sleep | -s | --interval__ <u>seconds</u><br>
+  Default: 10<br>
+  <u>seconds</u> must be an integer greater than zero.
 
-        How many seconds to sleep after sucessful ping check. 
+  How many seconds to sleep after sucessful ping check. 
 
-    __--ifup-grace | -g__ <u>seconds</u>
-        Default: 40
-        <u>seconds</u> must be an integer greater than zero.
+- __--ifup-grace | -g__ <u>seconds</u><br>
+  Default: 40<br>
+  <u>seconds</u> must be an integer greater than zero.
 
-        How many seconds to sleep before next check after interface has been reset.
+  How many seconds to sleep before next check after interface has been reset.
 
-    __--max-nolink | -n__ <u>number</u>
-        Default: 1
-        <u>number</u> must be an integer greater than or equal to zero.
+- __--max-nolink | -n__ <u>number</u><br>
+  Default: 1<br>
+  <u>number</u> must be an integer greater than or equal to zero.
 
-        Maximum number of consecutive failed link checks in which the interface have been reset (brought down and up again) before doing new topology check.
+  Maximum number of consecutive failed link checks in which the interface have been reset (brought down and up again) before doing new topology check.
 
-        A word of warning: If set to 0 and interface is not up / goes down, infinite retries to bring the interface up will be made before checking topology. Only set it to 0 if you are sure that the specified interface should always be used and you want to make sure it's up before starting to monitor the connection.
-        Typically, you would want to also use __--force-interface__ when using __--max-nolink=0__.
+  A word of warning: If set to 0 and interface is not up / goes down, infinite retries to bring the interface up will be made before checking topology. Only set it to 0 if you are sure that the specified interface should always be used and you want to make sure it's up before starting to monitor the connection.<br>
+  Typically, you would want to also use `--force-interface` when using `--max-nolink=0`.
 
-    __--ifcup | -u__ <u>STRING</u> 
-        Default: 'ifup %{IFC}'
-        <u>STRING</u> will be passed to 'sh -c' to bring the interface up.
-	%{IFC} will be dynmaically replaced with the interface name currently in use as source interface.
+- __--ifcup | -u__ <u>STRING</u> <br>
+  Default: 'ifup %{IFC}'<br>
+  <u>STRING</u> will be passed to 'sh -c' to bring the interface up.<br>
+  %{IFC} will be dynmaically replaced with the interface name currently in use as source interface.
 
-	Examples:
-	    ifupdown:
-              --ifcup='ifup %{IFC}'
+  Examples:
+  - ifupdown:<br>
+    --ifcup='ifup %{IFC}'
 
-	    ifupdown, non privilege user running nw-watchdog:
-              --ifcup='sudo ifup %{IFC}'
+  - ifupdown, non privilege user running nw-watchdog:<br>
+	--ifcup='sudo ifup %{IFC}'
 
-	    NetworkManager device:
-              --ifcup='nmcli device up %{IFC}'
+  - NetworkManager device:<br>
+	--ifcup='nmcli device up %{IFC}'
 
 	    NetworkManager connection:
               --ifcup='nmcli connection up connection-name'
