@@ -9,10 +9,10 @@ __nw-watchdog__ is a higly configurable network watchdog written in posix shell 
 
 It monitors the network connectivity to a specified target and/or the next hop towards that target, alerting upon lost connectivity explaining what is wrong. It can handle resetting the source interface and will detect topology changes and, if allowed, reconfigure itself accordingly. It's intended to run as a daemon and has an option to install itself as a systemd service.  If you want to monitor the connectivity to several targets, you can run several instances of nw-watchdog using different __--pidfile__ option arguments.
 
-__nw-watchdog__ is free software written by Fredrik Ax <frax@axnet.nu>.
-Feel free to modify and/or (re)distribute it in any way you like.
-... it's always nice to be mentioned though ;-)
-It comes with ABSOLUTELY NO WARRANTY.
+__nw-watchdog__ is free software written by Fredrik Ax \<frax@axnet.nu\>.<br>
+Feel free to modify and/or (re)distribute it in any way you like.<br>
+... it's always nice to be mentioned though ;-)<br>
+It comes with ABSOLUTELY NO WARRANTY.<br>
 
 Get the latest version from https://github.com/fraxflax/nw-watchdog
 
