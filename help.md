@@ -212,29 +212,29 @@ __OPTIONS__ (with ARGUMENT)<br>
 	(see __EXAMPLES__  below for a more extensive IPSec example using vti tunnel interface)
 
 - __--ifcdown | -U__ <u>STRING</u><br>
-  Default: 'ifdown %{IFC}' <br>
+  Default: 'ifdown %{IFC}'<br>
   <u>STRING</u> will be passed to 'sh -c' to bring the interface down.<br>
   %{IFC} will be dynmaically replaced with the interface name currently in use as source interface.
 
   Examples:
-  - ifupdown:
+  - ifupdown:<br>
 	`--ifcdown='ifdown %{IFC}'`
 
-  - ifupdown, non privilege user running nw-watchdog:
+  - ifupdown, non privilege user running nw-watchdog:<br>
 	`--ifcdown='sudo ifdown %{IFC}'`
 
-  - NetworkManager device:
+  - NetworkManager device:<br>
 	`--ifcdown='nmcli device down %{IFC}'`
 
-	    NetworkManager connection:
-              --ifcdown='nmcli connection down %{IFC}-connection-name'
+  - NetworkManager connection:<br>
+	`--ifcdown='nmcli connection down %{IFC}-connection-name'`
 
-	    iproute2 + isc-dhcp-client:
-              --ifcdown='kill \`cat /run/dhclient-%{IFC}.pid\` ; ip link set down %{IFC}'
+  - iproute2 + isc-dhcp-client:<br>
+	`--ifcdown='kill \`cat /run/dhclient-%{IFC}.pid\` ; ip link set down %{IFC}'`
 
-	    strongSwan IPSec (setup for IPSec policy routing): 
-              --ifcup='ipsec down connection-name'
-	      (see __EXAMPLES__  below for a more extensive IPSec example using vti tunnel interface)
+  - strongSwan IPSec (setup for IPSec policy routing):<br>
+	`--ifcup='ipsec down connection-name'`<br>
+	(see __EXAMPLES__  below for a more extensive IPSec example using vti tunnel interface)
 
     __--alert | -a__ <u>STRING</u>
     	Default: 'if which wall >/dev/null; then exec wall; else cat 1>&2; fi'
