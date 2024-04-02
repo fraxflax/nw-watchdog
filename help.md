@@ -393,11 +393,10 @@ nw-watchdog 10.0.0.1 \
 --ifcdown='ip link del wg0' \
 --install-systemd=wg0
 ```
-    $FMT<<EOU
 
 __OBSERVE__ that the entire `--ifcup='...'` command need to be on a single line without line breaks (linebreaks added above for readability).
 ```
-'ip link add wg0 type wireguard ; ip link set wg0 up ; wg setconf wg0 /etc/wireguard/wg0.conf ; ip address add 10.0.0.2 peer 10.0.0.1 dev wg0 ; getent ahostsv4 wgserver.my.dom | grep -oE "^[0-9.]+" | uniq | while read addr; do ip route add $addr/32 via `ip route show default | head -1 | cut -d" " -f3` ; done ; ip route add 0.0.0.0/1 via 10.0.0.1 dev wg0 src 10.0.0.2 ; ip route add 128.0.0.0/1 via 10.0.0.1 dev wg0 src 10.0.0.2 2>/dev/null'
+--ifcup='ip link add wg0 type wireguard ; ip link set wg0 up ; wg setconf wg0 /etc/wireguard/wg0.conf ; ip address add 10.0.0.2 peer 10.0.0.1 dev wg0 ; getent ahostsv4 wgserver.my.dom | grep -oE "^[0-9.]+" | uniq | while read addr; do ip route add $addr/32 via `ip route show default | head -1 | cut -d" " -f3` ; done ; ip route add 0.0.0.0/1 via 10.0.0.1 dev wg0 src 10.0.0.2 ; ip route add 128.0.0.0/1 via 10.0.0.1 dev wg0 src 10.0.0.2 2>/dev/null'
 ```
 
 We use __--no-ping-nexthop__ as the nexthop is the same as the target peer-to-peer address we monitor the connection for (in reality we don't need to specify it as it is the default behaviour if the target address is the same as the nexthop address).
