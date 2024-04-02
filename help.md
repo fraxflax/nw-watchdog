@@ -288,7 +288,7 @@ __OPTIONS__ (with ARGUMENT)<br>
 
 ### EXAMPLES
 
-<ins>ISP gateway monitoring:</ins>
+#### <ins>ISP gateway monitoring:</ins>
 ```shell
 nw-watchdog 1.2.3.4 \
 --interval=60 \
