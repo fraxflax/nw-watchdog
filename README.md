@@ -425,7 +425,7 @@ If `vpnP` is up we route to all private addresses via it, including `10.0.0.0/8`
 If `vpnF` is up we use it as a full tunnel, routing all traffic (apart from the VPN-connection itself) via it.
 
 Our preferred interface is `vpnL` and if we can't get any traffic through the vpn-server, `vpnL` is the interface we want to reset.<br>
-BUT as long as can get traffic through using any of the three interfaces we don't want to get alerted and have any interface reset, so we can't use `--force-interface`. The soloution will be to allow continuous topology detection but hardcode the preferred interface in `--ifcup` and `--ifcdown`.
+BUT as long as we can get traffic through using any of the three interfaces, we don't want to get alerted and have any interface reset, so we can't use `--force-interface`. The soloution will be to allow continuous topology detection but hardcode the preferred interface in `--ifcup` and `--ifcdown`.
 
 ```shell
 nw-watchdog vpn.inside.dom \

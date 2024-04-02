@@ -533,8 +533,7 @@ $FMT<<EOU
         If vpnF is up we use it as a full tunnel, routing all traffic (apart from the VPN-connection itself) via it.
         
         Our preferred interface is vpnL and if we can't get any traffic through the vpn-server, vpnL is the interface we want to reset.
-        BUT as long as can get traffic through using any of the three interfaces we don't want to get alerted and have any interface reset, so we can't use
-        $_b_--force-interface$__. The soloution will be to allow continuous topology detection but hardcode the preferred interface in $_b_--ifcup$__ and --ifcdown$_b_.
+        BUT as long as we can get traffic through using any of the three interfaces, we don't want to get alerted and have any interface reset, so we can't use $_b_--force-interface$__. The soloution will be to allow continuous topology detection but hardcode the preferred interface in $_b_--ifcup$__ and --ifcdown$_b_.
 
         $_b_$nwwatchdog$__ vpn.inside.dom \\
           $_b_--interface=${__}vpnL \\
