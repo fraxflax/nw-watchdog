@@ -331,9 +331,9 @@ nw-watchdog 1.2.3.4 \
 --pidfile=/run/nw-watchdog-ipsecserver.pid
 ```
 
-Then we setup the monitor for the IPSec VTI tunnel which will also be created, configured and brought up.
-
-Note: It would be smoother to use a script and `--ifcup=/path/script`, but it can also be done like this:
+Then we setup the monitor for the IPSec VTI tunnel which will also be created, configured and brought up.<br>
+Note that we are using different $_b_--pidfile$__ for the two watchdogs allowing them to run simultaneously.<br>
+It would be smoother to use a script and $_b_--ifcup=${__}/path/script, but it can also be done like this:
 
 ```shell
 nw-watchdog 169.254.0.1 \

@@ -420,20 +420,23 @@ $FMT<<EOU
 
         $_b_$nwwatchdog$__ 1.2.3.4 $_b_\\
 EOU
-printf "        %s\n        %s\n        %s\n        %s\n        %s\n" \
+printf "        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n" \
        "  $_b_--verbosity-level=${__}3 $_b_\\" \
        "  $_b_--alert=$__'mailx -a \"From: nwwatchdog@\`hostname -f\`\" -s \"IPSec Peer 1.2.3.4 %{STATE} via %{IFC}\" admin@\`cat /etc/mailname\`' $_b_\\" \
        "  $_b_--slow-up-timeout=${__}2 $_b_\\" \
        "  $_b_--ifup-grace=${__}10 $_b_\\" \
-       "  $_b_--interval=${__}10$__"
+       "  $_b_--interval=${__}10$__" \
+       "  $_b_--pidfile=/run/nw-watchdog-ipsecserver.pid$__"
+
 $FMT<<EOU
 
         Then we setup the monitor for the IPSec VTI tunnel which will also be created, configured and brought up.
-        Note: It would be smoother to use a script and $_b_--ifcup=${__}/path/script, but it can also be done like this:
+        Note that we are using different $_b_--pidfile$__ for the two watchdogs allowing them to run simultaneously.
+	It would be smoother to use a script and $_b_--ifcup=${__}/path/script, but it can also be done like this:
 
         $_b_$nwwatchdog$__ 169.254.0.1 $_b_\\
 EOU
-printf "        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n" \
+printf "        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n" \
        "  $_b_--alert=$__'mailx -a \"From: nwwatchdog@\`hostname -f\`\" -s \"IPSec connection-name %{STATE} via %{IFC}\" admin@\`cat /etc/mailname\`' $_b_\\" \
        "  $_b_--force-interface=${__}ipsec0 $_b_\\" \
        "  $_b_--slow-up-timeout=${__}5 $_b_\\" \
@@ -443,7 +446,8 @@ printf "        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n
        "           ip addr add dev %{IFC} 169.254.0.2 remote 169.254.0.1 ; " \
        "           ip link set %{IFC} up multicast on mtu 1424 state UP ;" \
        "           ip route add 10.10.0.0/20 via 169.254.0.1 dev %{IFC}'$__ $_b_\\" \
-       "  $_b_--ifcdown=$__'ipsec down connection-name ; ip tunnel del %{IFC}' $_b_"
+       "  $_b_--ifcdown=$__'ipsec down connection-name ; ip tunnel del %{IFC}' $_b_" \
+       "  $_b_--pidfile=/run/nw-watchdog-ipsectunnel.pid$__"
 $FMT<<EOU
 
        $___${_b_}OBSERVE$__ that the entire $_b_--ifcup=$__'...' command needs to be on a single line without line breaks (linebreaks added above for readability):
