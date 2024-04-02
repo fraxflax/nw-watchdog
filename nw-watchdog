@@ -235,7 +235,7 @@ $FMT<<EOU
 
         If the logfile is set to '-' (stdout) this option is ignored.
 
-        If ${_b_}flock$__ is available, the logfile will be locked before written to or shrinked, otherwise there is a slight risk of loglines being lost if two or more instances of $_b_$nwwatchdog$__ are concurently running using the same logfile and at least one of them have $_b_--logsize$__ set to a value larger than 0.
+        If ${_b_}flock$__ is available, the logfile will be locked before written to or shrinked, otherwise there is a slight risk of log entries being lost if two or more instances of $_b_$nwwatchdog$__ are concurently running using the same logfile and at least one of them have $_b_--logsize$__ set to a value larger than 0.
 
     $_b_--pidfile | -p$__ ${___}pidfile$__
         Default: '$PIDFILE'
@@ -607,7 +607,7 @@ EOU
 
         - ${_b_}flock$__
             If available the logfile will be locked before truncated or written to.
-            If not available, there is a slight risk of loglines being lost if two or more instances of $_b_$nwwatchdog$__ are concurently running using the same logfile and at least one of them have $_b_--logsize$__ set to a value larger than 0.
+            If not available, there is a slight risk of log entries being lost if two or more instances of $_b_$nwwatchdog$__ are concurently running using the same logfile and at least one of them have $_b_--logsize$__ set to a value larger than 0.
 
         - ${_b_}wall$__
         If available it will be used as default $_b_--alert$__ command. Otherwise, alerting will be done to stderr by default.

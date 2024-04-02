@@ -144,7 +144,7 @@ If the <ins>TARGET</ins> is not on the same subnet as the source, the reachabili
 
   If the logfile is set to '-' (stdout) this option is ignored.
 
-  If `flock` is available, the logfile will be locked before written to or shrinked, otherwise there is a slight risk of loglines being lost if two or more instances of __nw-watchdog__ are concurently running using the same logfile and at least one of them have `--logsize` set to a value larger than 0.
+  If `flock` is available, the logfile will be locked before written to or shrinked, otherwise there is a slight risk of log entries being lost if two or more instances of __nw-watchdog__ are concurently running using the same logfile and at least one of them have `--logsize` set to a value larger than 0.
 
 * __--pidfile | -p__ <ins>pidfile</ins><br>
   Default: `/run/nw-watchdog.pid`<br>
@@ -511,7 +511,7 @@ __nw-watchdog__ will function without the below listed utilities, but will use t
 
 - `flock`<br>
   If available the logfile will be locked before truncated or written to.<br>
-  If not available, there is a slight risk of loglines being lost if two or more instances of __nw-watchdog__ are concurently running using the same logfile and at least one of them have `--logsize` set to a value larger than 0.
+  If not available, there is a slight risk of log entries being lost if two or more instances of __nw-watchdog__ are concurently running using the same logfile and at least one of them have `--logsize` set to a value larger than 0.
 
 - `wall`<br>
   If available it will be used as default `--alert` command. Otherwise, alerting will be done to stderr by default.
