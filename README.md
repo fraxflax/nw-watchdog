@@ -28,7 +28,7 @@ The mandatory argument <ins>TARGET</ins> is the target (destination) to monitor 
 Use `--no-continuous-topology-detect` to resolve the <ins>TARGET</ins> only at startup and failed connectivity checks.
 
 ## OPTIONS (no arguments)
-These options take no arguments, and may be specified in any order. They can be grouped (e.g. -vAP) in their short form, also having one of the OPTIONS that requires an argument last in the group.
+These options take no arguments, and may be specified in any order. They can be grouped (e.g. `-vAP`) in their short form, also having one of the OPTIONS that requires an argument last in the group.
 
 * __--help | -h__
 
@@ -81,6 +81,7 @@ If the <ins>TARGET</ins> is not on the same subnet as the source, the reachabili
 	This option cannot be combined with `--install-systemd` (but it would be wise to test the configuration with `--debug` before installing as a systemd service).
 
 ## OPTIONS (with ARGUMENT)
+These opions takes a single argument each and may be specified in any order. Specify with equalsign or space or no space between option and argument. They can only be grouped together with the shortform of the NO-ARGUMENT-OPTIONS above, and must be last in such groupings (e.g. `-PAV5`).
 
 * __--verbosity-level | -V__ <ins>level</ins><br>
 	Default: `4`<br>
