@@ -330,17 +330,17 @@ nw-watchdog 169.254.0.1 \
 --force-interface=ipsec0 \
 --slow-up-timeout=5 \
 --ifup-grace=25 \
---ifcup='ipsec up connection-name;
-         ip tunnel add %{IFC} mode vti local 4.3.2.1 remote 1.2.3.4 ttl 255 key 111;
-         ip addr add dev %{IFC} 169.254.0.2 remote 169.254.0.1;
-         ip link set %{IFC} up multicast on mtu 1424 state UP;
+--ifcup='ipsec up connection-name ;
+         ip tunnel add %{IFC} mode vti local 4.3.2.1 remote 1.2.3.4 ttl 255 key 111 ;
+         ip addr add dev %{IFC} 169.254.0.2 remote 169.254.0.1 ;
+         ip link set %{IFC} up multicast on mtu 1424 state UP ;
          ip route add 10.10.0.0/20 via 169.254.0.1 dev %{IFC}' \
 --ifcdown='ipsec down connection-name ; ip tunnel del %{IFC}' 
 ```
 
 __OBSERVE__ that the entire `--ifcup=` command needs to be on a single line without line breaks (linebreaks added above for readability):
 ```
---ifcup='ipsec up connection-name; ip tunnel add %{IFC} mode vti local 4.3.2.1 remote 1.2.3.4 ttl 255 key 111; ip addr add dev %{IFC} 169.254.0.2 remote 169.254.0.1; ip link set %{IFC} up multicast on mtu 1424 state UP; ip route add 10.10.0.0/20 via 169.254.0.1 dev %{IFC}'
+--ifcup='ipsec up connection-name ; ip tunnel add %{IFC} mode vti local 4.3.2.1 remote 1.2.3.4 ttl 255 key 111 ; ip addr add dev %{IFC} 169.254.0.2 remote 169.254.0.1 ; ip link set %{IFC} up multicast on mtu 1424 state UP ; ip route add 10.10.0.0/20 via 169.254.0.1 dev %{IFC}'
 ```
 
 
@@ -363,44 +363,44 @@ This is an example of how one can use nw-watchdog to setup and monitor a wiregua
 
 Firstly, we setup the nw-watchdog systemd service for the wireguard server which we reach via the default route:
 
-	__nw-watchdog__ wgserver.domain.dom __\\
-EOU
-printf "        %s\n        %s\n        %s\n        %s\n        %s\n" \
-       "  __--verbosity-level=__3 \
-       "  __--alert=__'mailx -a \"From: nwwatchdog@\`hostname -f\`\" -s \"wgserver %{STATE} via %{IFC}\" admin@\`cat /etc/mailname\`' \
-       "  __--slow-up-timeout=__3 \
-       "  __--ifup-grace=__20 \
-       "  __--install-systemd=__wgserver"
+```shell
+nw-watchdog wgserver.domain.dom \
+--verbosity-level=3 \
+--alert='mailx -a "From: nwwatchdog@`hostname -f`" -s "wgserver %{STATE} via %{IFC}" admin@`cat /etc/mailname`' \
+--slow-up-timeout=3 \
+--ifup-grace=20 \
+--install-systemd=wgserver"
+```
+Then we setup the monitor for the wireguard full tunnel which will also create and configure and bring the tunnel up (if not already) upon start of the sytemd service, making sure we have a /32 routes to all of the wireguard server's ip addresses that the hostname resolves to.<br>
+Note: It would be smoother to use a script and `--ifcup=/path/script`, but it can also be done like this:
+
+```shell
+nw-watchdog 10.0.0.1 \
+--no-ping-nexthop \
+--verbosity-level=3 \
+--alert='mailx -a "From: nwwatchdog@`hostname -f`" -s "wireguard wg0" admin@`cat /etc/mailname`' \
+--force-interface=wg0 \
+--ifcup='ip link add wg0 type wireguard ;
+         ip link set wg0 up ;
+         wg setconf wg0 /etc/wireguard/wg0.conf ;
+         ip address add 10.0.0.2 peer 10.0.0.1 dev wg0 ;
+         getent ahostsv4 wgserver.my.dom | grep -oE "^[0-9.]+" | uniq
+         | while read addr; do
+             ip route add $addr/32 via `ip route show default | head -1 | cut -d" " -f3` ;
+           done ;
+         ip route add 0.0.0.0/1 via 10.0.0.1 dev wg0 src 10.0.0.2 ;
+         ip route add 128.0.0.0/1 via 10.0.0.1 dev wg0 src 10.0.0.2 2>/dev/null' \
+--ifcdown='ip link del wg0' \
+--install-systemd=wg0
+```
     $FMT<<EOU
 
-	Then we setup the monitor for the wireguard full tunnel which will also create and configure and bring the tunnel up (if not already) upon start of the sytemd service, making sure we have a /32 routes to all of the wireguard server's ip addresses that the hostname resolves to.
-	Note: It would be smoother to use a script and __--ifcup=__/path/script, but it can also be done like this:
+__OBSERVE__ that the entire `--ifcup='...'` command need to be on a single line without line breaks (linebreaks added above for readability).
+```
+'ip link add wg0 type wireguard ; ip link set wg0 up ; wg setconf wg0 /etc/wireguard/wg0.conf ; ip address add 10.0.0.2 peer 10.0.0.1 dev wg0 ; getent ahostsv4 wgserver.my.dom | grep -oE "^[0-9.]+" | uniq | while read addr; do ip route add $addr/32 via `ip route show default | head -1 | cut -d" " -f3` ; done ; ip route add 0.0.0.0/1 via 10.0.0.1 dev wg0 src 10.0.0.2 ; ip route add 128.0.0.0/1 via 10.0.0.1 dev wg0 src 10.0.0.2 2>/dev/null'
+```
 
-	__nw-watchdog__ 10.0.0.1 __\\
-EOU
-printf "        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n" \
-       "  __--no-ping-nexthop \\" \
-       "  __--verbosity-level=__3 \
-       "  __--alert=__'mailx -a \"From: nwwatchdog@\`hostname -f\`\" -s \"wireguard wg0\" admin@\`cat /etc/mailname\`' \
-       "  __--force-interface=__wg0 \
-       "  __--ifcup=__'ip link add wg0 type wireguard ;" \
-       "           ip link set wg0 up ;" \
-       "           wg setconf wg0 /etc/wireguard/wg0.conf ;" \
-       "           ip address add 10.0.0.2 peer 10.0.0.1 dev wg0 ;" \
-       "           getent ahostsv4 wgserver.my.dom | grep -oE \"^[0-9.]+\" | uniq" \
-       "           | while read addr; do" \
-       "               ip route add \$addr/32 via \`ip route show default | head -1 | cut -d\" \" -f3\` ;" \
-       "             done ;" \
-       "           ip route add 0.0.0.0/1 via 10.0.0.1 dev wg0 src 10.0.0.2 ;" \
-       "           ip route add 128.0.0.0/1 via 10.0.0.1 dev wg0 src 10.0.0.2 2>/dev/null'__ \
-       "  __--ifcdown=__'ip link del wg0' \
-       "  __--install-systemd=__wg0"
-
-    $FMT<<EOU
-
-   ___OBSERVE__ that the entire __--ifcup=__'...' command need to be on a single line without line breaks (linebreaks added above for readability).
-
-    We use __--no-ping-nexthop__ as the nexthop is the same as the target peer-to-peer address we monitor the connection for (in reality we don't need to specify it as it is the default behaviour if the target address is the same as the nexthop address).
+We use __--no-ping-nexthop__ as the nexthop is the same as the target peer-to-peer address we monitor the connection for (in reality we don't need to specify it as it is the default behaviour if the target address is the same as the nexthop address).
     
 
 __DEPENDENCIES__
