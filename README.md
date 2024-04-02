@@ -8,8 +8,8 @@ Just download the script [nw-watchdog](https://raw.githubusercontent.com/fraxfla
 curl -o /usr/local/bin/nw-watchdog https://raw.githubusercontent.com/fraxflax/nw-watchdog/main/nw-watchdog ; chmod a+rx /usr/local/bin/nw-watchdog
 ```
 ## DOCUMENTATION
-Extensive documentation with examples, as shown below, is available by<br>
-`% nw-watchdog --help`<br>
+Extensive documentation including examples, also shown below, is available by running:<br>
+`nw-watchdog --help`<br>
 
 ---
 
