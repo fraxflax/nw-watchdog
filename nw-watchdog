@@ -360,6 +360,7 @@ $FMT<<EOU
 	    --alert='mailx -a "From: nw-watchdog@this.hst" -s "nw-watchdog %{STATE} alert for %{TARGET} via %{IFC}" my@email.adr'
 
     $_b_--install-systemd$__ ${___}SERVICENAME$__
+        Default: none
 
         Will write a systemd service file /etc/systemd/system/nw-watchdog-${___}SERVICENAME$__.service file launching $nwwatchdog as a daemon with
         $_b_--pidfile$__=/run/nw-watchdog-${___}SERVICENAME$__.pid$__

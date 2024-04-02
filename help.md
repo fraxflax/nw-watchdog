@@ -259,7 +259,7 @@ If the target is not on the same subnet as the source, the reachability of the t
 	EXAMPLE of how to email the alert messages using mailx (mailutils) with a custom from address:<br>
 	`--alert='mailx -a "From: nw-watchdog@this.hst" -s "nw-watchdog %{STATE} alert for %{TARGET} via %{IFC}" my@email.adr'`
 
-* __--install-systemd__ <ins>SERVICENAME</ins>
+* __--install-systemd__ <ins>SERVICENAME</ins><br>
   Default: none
 	
   Will write a systemd service file `/etc/systemd/system/nw-watchdog-SERVICENAME.service` file launching nw-watchdog as a daemon with<br>
