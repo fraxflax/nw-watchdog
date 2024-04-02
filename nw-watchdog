@@ -36,12 +36,12 @@ STATICIFC=''                           # --force-interface | -I
 LOGFILE='/var/log/nw-watchdog.log'     # --logfile | -l
 LOGSIZE=0                              # --logsize | -z
 PIDFILE=/run/nw-watchdog.pid	       # --pidfile | -p
-SLOWUPTIMEOUT=7                        # --slow-up-timeout | -t
+SLOWUPTIMEOUT=3                        # --slow-up-timeout | -t
 SLEEP=10                               # --interval | --sleep | -s
-GRACE=40                               # --ifup-grace | -g
+GRACE=20                               # --ifup-grace | -g
 MAXNOLINK=1                            # --max-nolink | -n
-IFCUPT='ifup %{IFC}'                   # --ifcup | -u
-IFCDOWNT='ifdown %{IFC}'               # --ifcdown | -U
+IFCUPT='ip link set up %{IFC}'         # --ifcup | -u
+IFCDOWNT='ip link set down %{IFC}'     # --ifcdown | -U
 ALERTCMDT='if which wall >/dev/null; then exec wall; else cat 1>&2; fi'
                                        # --alert | -a
 SYSTEMDSERVICENAME=''                  # --install-systemd
