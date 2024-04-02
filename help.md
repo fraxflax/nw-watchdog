@@ -236,10 +236,12 @@ __OPTIONS__ (with ARGUMENT)<br>
 	`--ifcup='ipsec down connection-name'`<br>
 	(see __EXAMPLES__  below for a more extensive IPSec example using vti tunnel interface)
 
-    __--alert | -a__ <u>STRING</u>
-    	Default: 'if which wall >/dev/null; then exec wall; else cat 1>&2; fi'
+    __--alert | -a__ <u>STRING</u><br>
+	Default: 'if which wall >/dev/null; then exec wall; else cat 1>&2; fi'
 
-	Errors, warnings and alerts regarding change of state will be piped to: sh -c '<u>STRING</u>'
+	Errors, warnings and alerts regarding change of state will be piped to:<br>
+	sh -c '<u>STRING</u>'
+
 	Within <u>STRING</u> the following placeholders can be used:		
 
 	%{IFC} - the interface name
