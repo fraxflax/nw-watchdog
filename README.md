@@ -466,7 +466,7 @@ If we add --verbosity-level=5 to the above, allowing us to get a trace of what i
 ```
 00:00:37  ALERT: DOWN - Not getting replies from target 'vpn.inside.dom' (10.0.10.1) on interface 'eth0'.
                  Resetting interface:
-                 ifdown vpnL ; ifdown vpnP ; ifdown vgfull
+                 ifdown vpnL ; ifdown vpnP ; ifdown vpnF
                  sleep 1
                  ifup vpnL
 00:00:37   INFO: Resetting interface (eth0).
@@ -474,7 +474,7 @@ If we add --verbosity-level=5 to the above, allowing us to get a trace of what i
 ^^^ This can be confusing since it's actually not eth0 that is reset (it's just the current source interface)<br>
 Below we see that the watchdog actually brings down all the vpn-interfaces and brings up `vpnL` 
 ```
-00:00:37  TRACE: sh -c 'ifdown vpnL ; ifdown vpnP ; ifdown vgfull'ifup vpnL    TRACE: sh -c ''
+00:00:37  TRACE: sh -c 'ifdown vpnL ; ifdown vpnP ; ifdown vpnF'
 00:00:38  TRACE: sh -c 'ifup vpnL'
 00:00:38  TRACE: Sleeping for 35 seconds.
 ```
