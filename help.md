@@ -286,7 +286,7 @@ __OPTIONS__ (with ARGUMENT)<br>
 	rm /etc/systemd/system/nw-watchdog-SERVICENAME.service
 	```
 
-### EXAMPLES
+## EXAMPLES
 
 #### <ins>ISP gateway monitoring:</ins>
 ```shell
