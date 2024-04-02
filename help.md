@@ -75,7 +75,7 @@ If the target is not on the same subnet as the source, the reachability of the t
 ## OPTIONS (with ARGUMENT)
 
 * __--verbosity-level | -V__ <ins>level</ins><br>
-	Default: 4<br>
+	Default: `4`<br>
 	<ins>level</ins> must be an integer greater than or equal to zero.
 	Determines how much info is logged to the logfile and which alerts are triggered.
 
@@ -127,7 +127,7 @@ If the target is not on the same subnet as the source, the reachability of the t
 	Logfile to use. If specified as '-' logs are written to stdout.
 
 * __--logsize | -z__ <ins>size</ins><br>
-  Default: 0
+  Default: `0`
 
   If the logfile grows beyond this size, the oldest entries will be removed.
 
@@ -139,11 +139,11 @@ If the target is not on the same subnet as the source, the reachability of the t
   If `flock` is available, the logfile will be locked before written to or shrinked, otherwise there is a slight risk of loglines being lost if two or more instances of `nw-watchdog` are concurently running using the same logfile and at least one of them have `--logsize` set to a value larger than 0.
 
 * __--pidfile | -p__ <ins>pidfile</ins><br>
-  Default: '/run/nw-watchdog.pid'<br>
+  Default: `'/run/nw-watchdog.pid'`<br>
   Pidfile to use.
 
 * __--slow-up-timeout | -t__ <ins>seconds</ins><br>
-  Default: 3<br>
+  Default: `3`<br>
   <ins>seconds</ins> must be an integer greater than zero.
 
   The check whether the target is up or not, is performed in several steps.<br>
@@ -161,19 +161,19 @@ If the target is not on the same subnet as the source, the reachability of the t
   `--slow-up-timeout=1` is suitable to use for monitoring local targets (e.g. nexthop) on ethernet carried subnets.
 
 * __--sleep | -s | --interval__ <ins>seconds</ins><br>
-  Default: 10<br>
+  Default: `10`<br>
   <ins>seconds</ins> must be an integer greater than zero.
 
   How many seconds to sleep after sucessful ping check. 
 
 * __--ifup-grace | -g__ <ins>seconds</ins><br>
-  Default: 20<br>
+  Default: `20`<br>
   <ins>seconds</ins> must be an integer greater than zero.
 
   How many seconds to sleep before next check after interface has been reset.
 
 * __--max-nolink | -n__ <ins>number</ins><br>
-  Default: 1<br>
+  Default: `1`<br>
   <ins>number</ins> must be an integer greater than or equal to zero.
 
   Maximum number of consecutive failed link checks in which the interface have been reset (brought down and up again) before doing new topology check.
@@ -182,7 +182,7 @@ If the target is not on the same subnet as the source, the reachability of the t
   Typically, you would want to also use `--force-interface` when using `--max-nolink=0`.
 
 * __--ifcup | -u__ <ins>STRING</ins> <br>
-  Default: 'ip link set up %{IFC}'<br>
+  Default: `'ip link set up %{IFC}'`<br>
   <ins>STRING</ins> will be passed to 'sh -c' to bring the interface up.<br>
   %{IFC} will be dynmaically replaced with the interface name currently in use as source interface.
 
@@ -207,7 +207,7 @@ If the target is not on the same subnet as the source, the reachability of the t
 	(see __EXAMPLES__  below for a more extensive IPSec example using vti tunnel interface)
 
 * __--ifcdown | -U__ <ins>STRING</ins><br>
-  Default: 'ip link set down %{IFC}'<br>
+  Default: `'ip link set down %{IFC}'`<br>
   <ins>STRING</ins> will be passed to 'sh -c' to bring the interface down.<br>
   %{IFC} will be dynmaically replaced with the interface name currently in use as source interface.
 
@@ -232,7 +232,7 @@ If the target is not on the same subnet as the source, the reachability of the t
 	(see __EXAMPLES__  below for a more extensive IPSec example using vti tunnel interface)
 
 * __--alert | -a__ <ins>STRING</ins><br>
-	Default: 'if which wall >/dev/null; then exec wall; else cat 1>&2; fi'
+	Default: `'if which wall >/dev/null; then exec wall; else cat 1>&2; fi'`
 
 	Errors, warnings and alerts regarding change of state will be piped to:<br>
 	sh -c '<ins>STRING</ins>'
