@@ -327,7 +327,8 @@ nw-watchdog 1.2.3.4 \
 --alert='mailx -a "From: nwwatchdog@`hostname -f`" -s "IPSec Peer 1.2.3.4 %{STATE} via %{IFC}" admin@`cat /etc/mailname\`' \
 --slow-up-timeout=2 \
 --ifup-grace=10 \
---interval=10
+--interval=10 \
+--pidfile=/run/nw-watchdog-ipsecserver.pid
 ```
 
 Then we setup the monitor for the IPSec VTI tunnel which will also be created, configured and brought up.
@@ -345,7 +346,8 @@ nw-watchdog 169.254.0.1 \
          ip addr add dev %{IFC} 169.254.0.2 remote 169.254.0.1 ;
          ip link set %{IFC} up multicast on mtu 1424 state UP ;
          ip route add 10.10.0.0/20 via 169.254.0.1 dev %{IFC}' \
---ifcdown='ipsec down connection-name ; ip tunnel del %{IFC}' 
+--ifcdown='ipsec down connection-name ; ip tunnel del %{IFC}' \
+--pidfile=/run/nw-watchdog-ipsectunnel.pid
 ```
 
 __OBSERVE__ that the entire `--ifcup=` command needs to be on a single line without line breaks (linebreaks added above for readability):
