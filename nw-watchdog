@@ -532,17 +532,17 @@ $FMT<<EOU
         BUT as long as can get traffic through using any of the three interfaces we don't want to get alerted and have any interface reset, so we can't use
         $_b_--force-interface$__. The soloution will be to allow continuous topology detection but hardcode the preferred interface in $_b_--ifcup$__ and --ifcdown$_b_.
 
-        $_b_$nwwatchdog$__ vpn.inside.dom \
-          $_b_--interface=${__}vpnL \
-          $_b_--no-ping-nexthop$__ \
-          $_b_--slow-up-timeout=${__}7 \
-          $_b_--ifup-grace=${__}35 \
-          $_b_--ifcdown=${__}'ifdown vnpL ; ifdown vpnP  ; ifdown vpnF' \
+        $_b_$nwwatchdog$__ vpn.inside.dom \\
+          $_b_--interface=${__}vpnL \\
+          $_b_--no-ping-nexthop$__ \\
+          $_b_--slow-up-timeout=${__}7 \\
+          $_b_--ifup-grace=${__}35 \\
+          $_b_--ifcdown=${__}'ifdown vnpL ; ifdown vpnP  ; ifdown vpnF' \\
           $_b_--ifcup=${__}'ifup vpnL'
 
        Starting the watchdog like the above with any of the three vpn-interfaces up, the vpn-interface that is up will be detected and used as source interface. The continuous topology detection will ensure switching to which ever interface currently is up. If all interfaces are down the topology detection will think the interface for the default gw is the one to monitor (in our example eth0) but since we have $_b_--no-ping-nexthop$__ and hardcoded the preferred vpn-interfaces in $_b_--ifcup$__ the watchdog will bring up vpnL. If any of the vpn interfaces are up, but have problems the watchdog will bring them all down and then bring up vpnL.
 
-       if we add $_b_--verbosity-level=${__}5 to the above, allowing us to get a trace of what is happening in the logfile in the scenario of none of the vpn interfaces being up at start, after a while we see that vpnF is replacing vpnL (as somebody brought up the full tunnel for a while) then vpnF is brought down (as somebody did not need it anymore) and nw-watchdog detetcs that the connectivity via the VPN-server is lost and brings up vpnL:
+       If we add $_b_--verbosity-level=${__}5 to the above, allowing us to get a trace of what is happening in the logfile in the scenario of none of the vpn interfaces being up at start, after a while we see that vpnF is replacing vpnL (as somebody brought up the full tunnel for a while) then vpnF is brought down (as somebody did not need it anymore) and nw-watchdog detetcs that the connectivity via the VPN-server is lost and brings up vpnL:
 
 EOU
 cat <<EOU
