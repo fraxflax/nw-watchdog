@@ -141,7 +141,7 @@ ${_b_}OPTIONS $__(no arguments)
 	$_b_--force-interface$__ implies $_b_--no-continuous-topology-detect$__.
     				       
     $_b_--foreground | -f | --no-daemonize | -D $__
-        Do not fork / daemonize, run in foreground.
+    	Run in foreground, do not fork / daemonize.
 
     $_b_--verbose | -v $__
         Shortcut for $_b_--verbosity-level=5$__
@@ -353,7 +353,7 @@ $FMT<<EOU
 
 	The alert command will be launched for every ERROR and WARNING, even repeated ones.
 	For the other states (UP, DOWN, UNREACHABLE, REACHABLE) the alert command will be launched only upon state change.
-	E.g. if the state goes from UP to DOWN the alert is triggered but if the next check is also DOWN, no further alert will be sent (until the state changes again).
+	E.g. if the state goes from UP to DOWN the DOWN alert is triggered but if the next check is also DOWN, no further alert will be sent (until the state changes again).
 
 	EXAMPLE of how to email the alert messages using mailx (mailutils) with a custom from address:
 	    --alert='mailx -a "From: nw-watchdog@this.hst" -s "nw-watchdog %{STATE} alert for %{TARGET} via %{IFC}" my@email.adr'
@@ -439,13 +439,17 @@ printf "        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n
        "  $_b_--ifup-grace=${__}25 $_b_\\" \
        "  $_b_--ifcup=$__'ipsec up connection-name ; " \
        "           ip tunnel add %{IFC} mode vti local 4.3.2.1 remote 1.2.3.4 ttl 255 key 111 ; " \
-       "           ip addr add dev %{IFC} 169.254.0.2 remote 169.254.0.1; " \
-       "           ip link set %{IFC} up multicast on mtu 1424 state UP;" \
+       "           ip addr add dev %{IFC} 169.254.0.2 remote 169.254.0.1 ; " \
+       "           ip link set %{IFC} up multicast on mtu 1424 state UP ;" \
        "           ip route add 10.10.0.0/20 via 169.254.0.1 dev %{IFC}'$__ $_b_\\" \
-       "  $_b_--ifcdown=$__'ipsec down connection-name ; ip tunnel del %{IFC}' $_b_\\" 
+       "  $_b_--ifcdown=$__'ipsec down connection-name ; ip tunnel del %{IFC}' $_b_"
 $FMT<<EOU
 
-	$___${_b_}OBSERVE$__ that the entire $_b_--ifcup=$__'...' command need to be on a single line without line breaks (linebreaks added above for readability).
+       $___${_b_}OBSERVE$__ that the entire $_b_--ifcup=$__'...' command needs to be on a single line without line breaks (linebreaks added above for readability):
+
+EOU
+printf "        %s\n" "$_b_--ifcup=$__'ipsec up connection-name ; ip tunnel add %{IFC} mode vti local 4.3.2.1 remote 1.2.3.4 ttl 255 key 111 ; ip addr add dev %{IFC} 169.254.0.2 remote 169.254.0.1 ; ip link set %{IFC} up multicast on mtu 1424 state UP ; ip route add 10.10.0.0/20 via 169.254.0.1 dev %{IFC}'"
+$FMT<<EOU
 
 	We use $_b_--ifup-grace=25$__ to allow enough time for IPSec to establish the connection upon start and interface reset.
 	$_b_--slow-up-timeout=5$__ (making the deadline 25 seconds for the slow-up ping test) should be enough for an idle IPSec conmnection to wakeup and start forwarding packets when monitored.
@@ -456,7 +460,7 @@ $FMT<<EOU
 	$_b_$nwwatchdog$__ 10.10.1.1 $_b_ ...
 	and the rest of the options exactly the same.
 
-	Now we would get alerts if 10.10.1.1 is down.
+	This would give alerts if 10.10.1.1 is down.
 	In all other ways the effect would be the same as using 169.254.0.1 as target.
 	Even with target 10.10.1.1, the nexthop (169.254.0.1) will also be monitored (we are NOT using --no-ping-nexthop) and the interface will NOT be reset as long as the nexthop is reachable.
 
@@ -502,7 +506,11 @@ printf "        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n
 
     $FMT<<EOU
 
-    $___${_b_}OBSERVE$__ that the entire $_b_--ifcup=$__'...' command need to be on a single line without line breaks (linebreaks added above for readability).
+    $___${_b_}OBSERVE$__ that the entire $_b_--ifcup=$__'...' command needs to be on a single line without line breaks (linebreaks added above for readability):
+
+EOU
+printf "        %s\n" "$_b_--ifcup=$__'ip link add wg0 type wireguard ; ip link set wg0 up ; wg setconf wg0 /etc/wireguard/wg0.conf ; ip address add 10.0.0.2 peer 10.0.0.1 dev wg0 ; getent ahostsv4 wgserver.my.dom | grep -oE \"^[0-9.]+\" | uniq | while read addr; do ip route add \$addr/32 via \`ip route show default | head -1 | cut -d\" \" -f3\` ; done ; ip route add 0.0.0.0/1 via 10.0.0.1 dev wg0 src 10.0.0.2 ; ip route add 128.0.0.0/1 via 10.0.0.1 dev wg0 src 10.0.0.2 2>/dev/null'"
+$FMT<<EOU
 
     We use $_b_--no-ping-nexthop$__ as the nexthop is the same as the target peer-to-peer address we monitor the connection for (in reality we don't need to specify it as it is the default behaviour if the target address is the same as the nexthop address).
     
