@@ -55,7 +55,7 @@ If the <ins>TARGET</ins> is not on the same subnet as the source, the reachabili
 * __--no-continuous-topology-detect | -T__<br>
   Normaly the topology (resolving the ip address of the <ins>TARGET</ins>, detecting which source interface to use and the ip address of the nexthop towards the <ins>TARGET</ins>) is detected at startup and continuously monitored for changes.
 
-	`--no-continuous-topology-detect` disables the topology detection for as long as the <ins>TARGET</ins> replies (or in combination with `--no-ping-target` for as long as the nexthop is reachable). The topology will only be detected at startup and if the <INS>TARGET</INS> does not reply or if the NEXTHOP cannot be reached, meaning that routing changes making the <INS>TARGET</INS> or NEXTHOP unreachable will not be detected as long as the <INS>TARGET</INS> can be reached using the old topology.
+	`--no-continuous-topology-detect` disables the topology detection for as long as the <ins>TARGET</ins> replies (or in combination with `--no-ping-target` for as long as the nexthop is reachable). The topology will only be detected at startup and if the <INS>TARGET</INS> does not reply or if the NEXTHOP cannot be reached, meaning that routing changes making the <INS>TARGET</INS> or NEXTHOP unreachable will not be detected as long as the <INS>TARGET</INS> / NEXTHOP can be reached using the old topology.
 
 	`--force-interface` implies `--no-continuous-topology-detect`.
     				       

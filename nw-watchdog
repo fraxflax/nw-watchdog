@@ -100,7 +100,7 @@ ${_b_}DESCRIPTION $__
 
        Get the latest version from https://github.com/fraxflax/nw-watchdog
 
-${_b_}TARGET $__
+${_b_}${___}TARGET$__
        The mandatory argument ${___}TARGET$__ is the target (destination) to monitor the connection to. ${___}TARGET$__ can be an IP address or a resolvable hostname / FQDN. If it's a hostname / FQDN, it will be resolved to an IP address (first one found). The resolved IP address will be used for the monitoring. The name is continuously resolved and if the resolved ip address changes the new IP address will be used for the monitoring from there on.
        Use $_b_--no-continuous-topology-detect$__ to resolve the ${___}TARGET${__} only at startup and failed connectivity checks.
 
@@ -137,7 +137,7 @@ ${_b_}OPTIONS $__(no arguments)
     $_b_--no-continuous-topology-detect | -T $__
         Normaly the topology (resolving the ip address of the ${___}TARGET${__}, detecting which source interface to use and the ip address of the nexthop towards the ${___}TARGET${__}) is detected at startup and continuously monitored for changes.
 
-        $_b_--no-continuous-topology-detect$__ disables the topology detection for as long as the ${___}TARGET${__} replies (or in combination with $_b_--no-ping-target$__ for as long as the nexthop is reachable). The topology will only be detected at startup and if the ${___}TARGET${__} does not reply or if the NEXTHOP cannot be reached, meaning that routing changes making the ${___}TARGET${__} or NEXTHOP unreachable will not be detected as long as the ${___}TARGET${__} can be reached using the old topology.
+        $_b_--no-continuous-topology-detect$__ disables the topology detection for as long as the ${___}TARGET${__} replies (or in combination with $_b_--no-ping-target$__ for as long as the nexthop is reachable). The topology will only be detected at startup and if the ${___}TARGET${__} does not reply or if the NEXTHOP cannot be reached, meaning that routing changes making the ${___}TARGET${__} or NEXTHOP unreachable will not be detected as long as the ${___}TARGET${__} / NEXTHOP can be reached using the old topology.
 
         $_b_--force-interface$__ implies $_b_--no-continuous-topology-detect$__.
                                        
