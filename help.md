@@ -353,16 +353,15 @@ If we are interested in the connectivity to something in the remote network rout
 `nw-watchdog 10.10.1.1 ...`<br>
 and the rest of the options exactly the same as above.
 
-	Now we would get alerts if 10.10.1.1 is down.
-	In all other ways the effect would be the same as using 169.254.0.1 as target.
-	Even with target 10.10.1.1, the nexthop (169.254.0.1) will also be monitored (we are NOT using --no-ping-nexthop) and the interface will NOT be reset as long as the nexthop is reachable.
+This would get us alerts if 10.10.1.1 is down.<br>
+In all other ways the effect would be the same as using 169.254.0.1 as target.<br>
+Even with target `10.10.1.1`, the nexthop (`169.254.0.1`) will also be monitored (we are __NOT__ using --no-ping-nexthop) and the interface will __NOT__ be reset as long as the nexthop is reachable.
 
 
-	<ins>Wireguard full tunnel management:</ins>
+#### <ins>Wireguard full tunnel management:</ins>
+This is an example of how one can use nw-watchdog to setup and monitor a wireguard full tunnel, also monitoring the connectivity to the wireguard server, running both whatchdogs as systemd services getting alerts via e-mail:
 
-	This is an example of how one can use nw-watchdog to setup and monitor a wireguard full tunnel, also monitoring the connectivity to the wireguard server, running both whatchdogs as systemd services getting alerts via e-mail:
-
-	Firstly, we setup the nw-watchdog systemd service for the wireguard server which we reach via the default route:
+Firstly, we setup the nw-watchdog systemd service for the wireguard server which we reach via the default route:
 
 	__nw-watchdog__ wgserver.domain.dom __\\
 EOU
