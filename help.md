@@ -1,8 +1,8 @@
 ## NAME
-nw-watchdog - Network Watchdog
+__nw-watchdog__ - Network Watchdog
 
 ## SYNOPSIS
-__nw-watchdog__ [ OPTIONS ] <ins>TARGET</ins>
+__nw-watchdog__ <ins>TARGET</ins> [ OPTIONS ] 
 
 ## DESCRIPTION
 __nw-watchdog__ is a higly configurable network watchdog written in posix shell script for use in Linux, depending only on Linux most standard tools that are normally installed by default in all distributions (also see the __DEPENDENCIES__ section).
