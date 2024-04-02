@@ -40,15 +40,15 @@ These options take no arguments, and may be specified in any order. They can be 
 	If the <ins>TARGET</ins> is the next hop (on the same subnet or a peer-to-peer address), reachability of the <ins>TARGET</ins> is checked by arp cache status and ping.<br>
 If the <ins>TARGET</ins> is not on the same subnet as the source, the reachability of the <ins>TARGET</ins> is checked by pinging it in a certain pattern (see `--slow-up-timeout` for details).
 
-	`--no-ping-target` disables the ping-checks for the <ins>TARGET</ins>. Only connectivity to the nexthop for the <ins>TARGET</ins> is checked.<br>
-	This can be useful if <ins>TARGET</ins> does not reply to ping, or if it desirable to only alert if there is no route to the <ins>TARGET</ins> or nexthop is unreachable.
+	`--no-ping-target` disables the ping-checks for the <ins>TARGET</ins>. Only connectivity to the NEXTHOP for the <ins>TARGET</ins> is checked.<br>
+	This can be useful if <ins>TARGET</ins> does not reply to ping, or if it desirable to only alert if there is no route to the <ins>TARGET</ins> or NEXTHOP is unreachable.
 
 	`--no-ping-target` cannot be used in combination with `--no-ping-nexthop`.
 
 * __--no-ping-nexthop | -N | --no-ping-gateway | -G__<br>
-	By default, if the connectivity to the <ins>TARGET</ins> cannot be verified, the reachability of the nexthop (usually a gateway) is checked, firstly by checking it's status in the arp cache and then by pinging it, rechecking the arp cache status upon failed ping. 
+	By default, if the connectivity to the <ins>TARGET</ins> cannot be verified, the reachability of the NEXTHOP (usually a gateway) is checked, firstly by checking it's status in the arp cache and then by pinging it, rechecking the arp cache status upon failed ping. 
 
-	`--no-ping-nexthop` disbles the reachaility check for the nexthop so only connectivity to <ins>TARGET</ins> itself is checked. Useful if the nexthop is a peer-to-peer address and not setup to reply to ping.
+	`--no-ping-nexthop` disbles the reachaility check for the NEXTHOP so only connectivity to <ins>TARGET</ins> itself is checked. Useful if the NEXTHOP is a peer-to-peer address and not setup to reply to ping.
 
 	`--no-ping-nexthop` cannot be used in combination with `--no-ping-target`.
 
@@ -60,9 +60,9 @@ If the <ins>TARGET</ins> is not on the same subnet as the source, the reachabili
   (Do not try to "repair" the connection", just monitor it.)
 
 * __--no-continuous-topology-detect | -T__<br>
-  Normaly the topology (resolving the ip address of the <ins>TARGET</ins>, detecting which source interface to use and the ip address of the nexthop towards the <ins>TARGET</ins>) is detected at startup and continuously monitored for changes.
+  Normaly the topology (resolving the ip address of the <ins>TARGET</ins>, detecting which source interface to use and the ip address of the NEXTHOP towards the <ins>TARGET</ins>) is detected at startup and continuously monitored for changes.
 
-	`--no-continuous-topology-detect` disables the topology detection for as long as the <ins>TARGET</ins> replies (or in combination with `--no-ping-target` for as long as the nexthop is reachable). The topology will only be detected at startup and if the <INS>TARGET</INS> does not reply or if the NEXTHOP cannot be reached, meaning that routing changes making the <INS>TARGET</INS> or NEXTHOP unreachable will not be detected as long as the <INS>TARGET</INS> / NEXTHOP can be reached using the old topology.
+	`--no-continuous-topology-detect` disables the topology detection for as long as the <ins>TARGET</ins> replies (or in combination with `--no-ping-target` for as long as the NEXTHOP is reachable). The topology will only be detected at startup and if the <INS>TARGET</INS> does not reply or if the NEXTHOP cannot be reached, meaning that routing changes making the <INS>TARGET</INS> or NEXTHOP unreachable will not be detected as long as the <INS>TARGET</INS> / NEXTHOP can be reached using the old topology.
 
 	`--force-interface` implies `--no-continuous-topology-detect`.
     				       
@@ -166,7 +166,7 @@ If the <ins>TARGET</ins> is not on the same subnet as the source, the reachabili
 
   `--slow-up-timeout=3` is useful for monitoring connections to <ins>TARGET</ins>s with low - medium latency via interfaces that does not need a long wake-up time (e.g. ethernet interfaces).
 
-  `--slow-up-timeout=1` is suitable to use for monitoring local <ins>TARGET</ins>s (e.g. nexthop) on ethernet carried subnets.
+  `--slow-up-timeout=1` is suitable to use for monitoring local <ins>TARGET</ins>s (e.g. NEXTHOP) on ethernet carried subnets.
 
 * __--sleep | -s | --interval__ <ins>seconds</ins><br>
   Default: `10`<br>
@@ -356,7 +356,7 @@ __OBSERVE__ that the entire `--ifcup=` command needs to be on a single line with
 We use `--ifup-grace=25` to allow enough time for IPSec to establish the connection upon start and interface reset.
 `--slow-up-timeout=5` (making the deadline 25 seconds for the slow-up ping test) should be enough for an idle IPSec conmnection to wakeup and start forwarding packets when monitored.
 
-In the above example we monitor the connectivity to the peer address inside the VTI tunnel, which is also the nexthop.
+In the above example we monitor the connectivity to the peer address inside the VTI tunnel, which is also the NEXTHOP.
 If we are interested in the connectivity to something in the remote network routed via the tunnel we could use that as a <ins>TARGET</ins> instead of the peer address:
 
 `nw-watchdog 10.10.1.1 ...`<br>
@@ -364,7 +364,7 @@ and the rest of the options exactly the same as above.
 
 This would give alerts if `10.10.1.1` is down.<br>
 In all other ways the effect would be the same as using `169.254.0.1` as <ins>TARGET</ins>.<br>
-Even with <ins>TARGET</ins> `10.10.1.1`, the nexthop (`169.254.0.1`) will also be monitored (we are __NOT__ using --no-ping-nexthop) and the interface will __NOT__ be reset as long as the nexthop is reachable.
+Even with <ins>TARGET</ins> `10.10.1.1`, the NEXTHOP (`169.254.0.1`) will also be monitored (we are __NOT__ using --no-ping-nexthop) and the interface will __NOT__ be reset as long as the NEXTHOP is reachable.
 
 
 #### <ins>Wireguard full tunnel management:</ins>
@@ -408,7 +408,7 @@ __OBSERVE__ that the entire `--ifcup='...'` command need to be on a single line 
 --ifcup='ip link add wg0 type wireguard ; ip link set wg0 up ; wg setconf wg0 /etc/wireguard/wg0.conf ; ip address add 10.0.0.2 peer 10.0.0.1 dev wg0 ; getent ahostsv4 wgserver.my.dom | grep -oE "^[0-9.]+" | uniq | while read addr; do ip route add $addr/32 via `ip route show default | head -1 | cut -d" " -f3` ; done ; ip route add 0.0.0.0/1 via 10.0.0.1 dev wg0 src 10.0.0.2 ; ip route add 128.0.0.0/1 via 10.0.0.1 dev wg0 src 10.0.0.2 2>/dev/null'
 ```
 
-We use `--no-ping-nexthop` as the nexthop is the same as the <ins>TARGET</ins> peer-to-peer address we monitor the connection for (in reality we don't need to specify it as it is the default behaviour if the <ins>TARGET</ins> address is the same as the nexthop address).
+We use `--no-ping-nexthop` as the NEXTHOP is the same as the <ins>TARGET</ins> peer-to-peer address we monitor the connection for (in reality we don't need to specify it as it is the default behaviour if the <ins>TARGET</ins> address is the same as the NEXTHOP address).
     
 	
 #### <ins>Several VPN paths with one preferred interface:
