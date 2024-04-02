@@ -148,7 +148,7 @@ __OPTIONS__ (with ARGUMENT)<br>
   Pidfile to use.
 
 - __--slow-up-timeout | -t__ <ins>seconds</ins><br>
-  Default: 7<br>
+  Default: 3<br>
   <ins>seconds</ins> must be an integer greater than zero.
 
   The check whether the target is up or not, is performed in several steps.<br>
@@ -172,7 +172,7 @@ __OPTIONS__ (with ARGUMENT)<br>
   How many seconds to sleep after sucessful ping check. 
 
 - __--ifup-grace | -g__ <ins>seconds</ins><br>
-  Default: 40<br>
+  Default: 20<br>
   <ins>seconds</ins> must be an integer greater than zero.
 
   How many seconds to sleep before next check after interface has been reset.
