@@ -23,55 +23,54 @@ The mandatory argument <ins>TARGET</ins> is the target (destination) to monitor 
 These options take no arguments, and may be specified in any order. They can be grouped (e.g. -vAP) in their short form, also having one of the OPTIONS that takes arguments last.
 
 #### --help | -h
-  Shows this help, using \$PAGER if set to an executable, otherwise 'less' or 'more' if available in "/sbin:/bin:/usr/sbin:/usr/bin:\$PATH"<br>
-  (Use PAGER=cat to avoid using a pager).
+Shows this help, using \$PAGER if set to an executable, otherwise 'less' or 'more' if available in "/sbin:/bin:/usr/sbin:/usr/bin:\$PATH"<br>
+(Use PAGER=cat to avoid using a pager).
 
 #### --no-ping-target | -P
 If the target is the nexthop (on the same subnet or a peer-to-peer address), reachability of the target is checked by arp cache status and ping.<br>
-If the target is not on the same subnet as the source, the reachability of the target is checked by pinging it in a certain pattern (see __--slow-up-timeout__ for details).
+If the target is not on the same subnet as the source, the reachability of the target is checked by pinging it in a certain pattern (see `--slow-up-timeout` for details).
 
-  `--no-ping-target` disables the ping-checks for the target. Only connectivity to the nexthop for the target is checked.<br>
-  It can be useful if target does not reply to ping, or if it desirable to only alert if there is no route to the target or nexthop is unreachable.
+`--no-ping-target` disables the ping-checks for the target. Only connectivity to the nexthop for the target is checked.<br>
+It can be useful if target does not reply to ping, or if it desirable to only alert if there is no route to the target or nexthop is unreachable.
 
-  `--no-ping-target` cannot be used in combination with `--no-ping-nexthop`.
+`--no-ping-target` cannot be used in combination with `--no-ping-nexthop`.
 
-#### --no-ping-nexthop | -N | --no-ping-gateway | -G__<br>
-  By default, if the connectivity to the target cannot be verified, the reachability of the nexthop (usually a gateway) is checked, firstly by checking it's status in the arp cache and then by pinging it, rechecking the arp cache status upon failed ping. 
+#### --no-ping-nexthop | -N | --no-ping-gateway | -G
+By default, if the connectivity to the target cannot be verified, the reachability of the nexthop (usually a gateway) is checked, firstly by checking it's status in the arp cache and then by pinging it, rechecking the arp cache status upon failed ping. 
 
-  `--no-ping-nexthop` disbles the reachaility check for the nexthop so only connectivity to target itself is checked. It can be useful if the nexthop is a peer-to-peer address and not setup to reply to ping.
+`--no-ping-nexthop` disbles the reachaility check for the nexthop so only connectivity to target itself is checked. It can be useful if the nexthop is a peer-to-peer address and not setup to reply to ping.
 
-  `--no-ping-nexthop` cannot be used in combination with `--no-ping-target`.
+`--no-ping-nexthop` cannot be used in combination with `--no-ping-target`.
 
-#### --no-ipaddr-alert | -A__<br>
-  Do not alert for not finding any global scope ip addresses on the source interface.
+#### --no-ipaddr-alert | -A
+Do not alert for not finding any global scope ip addresses on the source interface.
 
-#### --no-interface-reset | -R__<br>
-  Do not try to bring down and up interface after failed connectivity checks.<br>
-  (Do not try to "repair" the connection", just monitor it.)
+#### --no-interface-reset | -R
+Do not try to bring down and up interface after failed connectivity checks.<br>
+(Do not try to "repair" the connection", just monitor it.)
 
-#### --no-continuous-topology-detect | -T__<br>
-  Normaly the topology (resolving the ip address of the target, detecting which source interface to use and the ip address of the nexthop towards the target) is detected at startup and continuously monitored for changes.
+#### --no-continuous-topology-detect | -T
+Normaly the topology (resolving the ip address of the target, detecting which source interface to use and the ip address of the nexthop towards the target) is detected at startup and continuously monitored for changes.
 
-  `--no-continuous-topology-detect` disables the topology detection for as long as the target replies (or in combination with `--no-ping-target` for as long as the nexthop is reachable). The topology will only be detected at startup and if the TARGET does not reply or if the NEXTHOP cannot be reached, meaning that routing changes making the TARGET or NEXTHOP unreachable will not be detected as long as the TARGET can be reached using the old topology.
+`--no-continuous-topology-detect` disables the topology detection for as long as the target replies (or in combination with `--no-ping-target` for as long as the nexthop is reachable). The topology will only be detected at startup and if the TARGET does not reply or if the NEXTHOP cannot be reached, meaning that routing changes making the TARGET or NEXTHOP unreachable will not be detected as long as the TARGET can be reached using the old topology.
 
-  `--force-interface` implies `--no-continuous-topology-detect`.
+`--force-interface` implies `--no-continuous-topology-detect`.
     				       
-#### --foreground | -f | --no-daemonize | -D__<br>
-  Do not fork / daemonize, run in foreground.
+#### --foreground | -f | --no-daemonize | -D
+Run in foreground, do not fork / daemonize.
 
-#### --verbose | -v__<br>
-  Shortcut for `--verbosity-level=5`<br>
-  If used in combination with `--verbosity-level`, the specified verbosity level will take precedence. 
+#### --verbose | -v
+Shortcut for `--verbosity-level=5`<br>
+If used in combination with `--verbosity-level`, the specified verbosity level will take precedence. 
 
 #### --debug | -d__<br>
-  Shortcut for: `--verbosity-level=6  --logfile=- --logsize=0  --pidfile=/dev/null  --slow-up-timeout=1  --sleep=3 --ifup-grace=5 --alert='cat' --foreground` 
+Shortcut for: `--verbosity-level=6  --logfile=- --logsize=0  --pidfile=/dev/null  --slow-up-timeout=1  --sleep=3 --ifup-grace=5 --alert='cat' --foreground` 
 
-  If it's combined with any of the options it provides shortcuts for, the specified option will take precedence over the `--debug` shortcut.
+If it's combined with any of the options it provides shortcuts for, the specified option will take precedence over the `--debug` shortcut.
 
   This option cannot be combined with `--install-systemd` (but it would be wise to test the configuration with `--debug` before installing as a systemd service).
 
-## OPTIONS__ (with ARGUMENT)<br>
-        These opions takes a single argument each and may be specified in any order. Specify with equalsign or space or no space between option and argument. They can only be grouped together with the shortform of the NO-ARGUMENT-OPTIONS above, and must be last in such groupings (e.g. `-PAV5`).
+## OPTIONS (with ARGUMENT)
 
 #### --verbosity-level | -V__ <ins>level</ins><br>
   Default: 4<br>
