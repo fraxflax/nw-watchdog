@@ -417,7 +417,7 @@ $FMT<<EOU
 
 	${___}Management of Strongswan IPSec with VTI tunnel interface:$__
 
-	Firstly, we setup the nw-watchdog systemd service for monitoring the connectivity to the IPSec peers public address (1.2.3.4 in this example), emailing alerts to the admin.
+	Firstly, we start a nw-watchdog for monitoring the connectivity to the IPSec peers public address (1.2.3.4 in this example), emailing alerts to the admin.
 
         $_b_$nwwatchdog$__ 1.2.3.4 $_b_\\
 EOU

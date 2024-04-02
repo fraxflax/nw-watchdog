@@ -318,8 +318,8 @@ nw-watchdog 1.2.3.4 \
 Same as above but enforcing the use of the eth0 interface as we know that the ISP gateway should always be reachable via that interface and that is the only Internet facing interface we have. It must be brought up on startup if not already up and there is no use rechecking the topology if it's not up (`--force-interface=eth0`), so if down, we retry to reset it every 30 seconds (`--ifup-grace=30`) forever (`--max-no-link=0`), checking the connectivity every 10 seconds (`--interval=10`).
 
 
-#### <ins>Management of Strongswan IPSec with VTI tunnel interface:</ins>
-Firstly, we setup the nw-watchdog systemd service for monitoring the connectivity to the IPSec peers public address (1.2.3.4 in this example), emailing alerts to the admin.
+#### <ins>Management of Strongswan IPSec with VTI tunnel interface:</ins> 
+Firstly, we start a nw-watchdog monitoring the connectivity to the IPSec peers public address (1.2.3.4 in this example), emailing alerts to the admin.
 
 ```shell
 nw-watchdog 1.2.3.4 \

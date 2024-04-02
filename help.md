@@ -311,7 +311,7 @@ Same as above but enforcing the use of the eth0 interface as we know that the IS
 
 
 #### <ins>Management of Strongswan IPSec with VTI tunnel interface:</ins>
-Firstly, we setup the nw-watchdog systemd service for monitoring the connectivity to the IPSec peers public address (1.2.3.4 in this example), emailing alerts to the admin.
+Firstly, we start a nw-watchdog for monitoring the connectivity to the IPSec peers public address (1.2.3.4 in this example), emailing alerts to the admin.
 
 ```shell
 nw-watchdog 1.2.3.4 \
