@@ -82,7 +82,7 @@ USAGE() {
     $FMT<<EOU
 $__
 ${_b_}NAME $__
-        $nwwatchdog - Network Watchdog
+        $_b_$nwwatchdog$__ - Network Watchdog
 
 ${_b_}SYNOPSIS $__
 
@@ -91,7 +91,7 @@ ${_b_}SYNOPSIS $__
 ${_b_}DESCRIPTION $__
        $_b_$nwwatchdog$__ is a higly configurable network watchdog written in posix shell script for use in Linux, depending only on Linux most standard tools that are normally installed by default in all distributions (also see the ${_b_}DEPENDENCIES$__ section).
 
-       It monitors the network connectivity to a specified ${___}TARGET${__} and/or the next hop towards that ${___}TARGET${__}, alerting upon lost connectivity explaining what is wrong. It can reset the source interface and will detect topology changes and, if allowed, reconfigure itself accordingly. It's intended to run as a daemon and has an option to install itself as a systemd service.  If you want to monitor the connectivity to several ${___}TARGET${__}s, you can run several instances of $nwwatchdog using different $_b_--pidfile$__ option arguments.
+       It monitors the network connectivity to a specified ${___}TARGET${__} and/or the next hop towards that ${___}TARGET${__}, alerting upon lost connectivity explaining what is wrong. It can reset the source interface and will detect topology changes and, if allowed, reconfigure itself accordingly. It's intended to run as a daemon and has an option to install itself as a systemd service.  If you want to monitor the connectivity to several ${___}TARGET${__}s, you can run several instances of $_b_$nwwatchdog$__ using different $_b_--pidfile$__ option arguments.
 
        $_b_$nwwatchdog$__ is free software written by Fredrik Ax <frax@axnet.nu>.
        Feel free to modify and/or (re)distribute it in any way you like.
@@ -182,7 +182,7 @@ $FMT<<EOU
         No output to logfile and no alerts trigged at all ... pretty useless unless you just want to keep traffic going keeping a connecting alive without any alerts.
 
         ${_b_}1$__ - error
-        Only logs and alerts on errors causing the $nwwatchdog not to function as intended.
+        Only logs and alerts on errors causing the $_b_$nwwatchdog$__ not to function as intended.
 
         ${_b_}2$__ - warning
         Also logs and alerts on warnings about configuration, etc.
@@ -206,7 +206,7 @@ $FMT<<EOU
 
         The interface may dynamically change due to topology detection. If you want to force the use of a specific interface, use $_b_--force-interface$__ instead.
 
-        If neither of ${_b_}--interface$__ or $_b_--force-interface$__ is specified the source interface it will be determined from the FIB by looking at the route to the ${___}TARGET${__}. The reason to specify it even so, would be to have $nwwatchdog bring it up if it's down when starting.
+        If neither of ${_b_}--interface$__ or $_b_--force-interface$__ is specified the source interface it will be determined from the FIB by looking at the route to the ${___}TARGET${__}. The reason to specify it even so, would be to have $_b_$nwwatchdog$__ bring it up if it's down when starting.
 
         $_b_--interface$__ cannot be combined with $_b_--force-interface$__.
 
@@ -289,7 +289,7 @@ $FMT<<EOU
             ifupdown:
               --ifcup='ifup %{IFC}'
 
-            ifupdown, non privilege user running $nwwatchdog:
+            ifupdown, non privilege user running $_b_$nwwatchdog$__:
               --ifcup='sudo ifup %{IFC}'
 
             NetworkManager device:
@@ -314,7 +314,7 @@ $FMT<<EOU
             ifupdown:
               --ifcdown='ifdown %{IFC}'
 
-            ifupdown, non privilege user running $nwwatchdog:
+            ifupdown, non privilege user running $_b_$nwwatchdog$__:
               --ifcdown='sudo ifdown %{IFC}'
 
             NetworkManager device:
@@ -362,7 +362,7 @@ $FMT<<EOU
     $_b_--install-systemd$__ ${___}SERVICENAME$__
         Default: none
 
-        Will write a systemd service file /etc/systemd/system/nw-watchdog-${___}SERVICENAME$__.service launching $nwwatchdog as a daemon with
+        Will write a systemd service file /etc/systemd/system/nw-watchdog-${___}SERVICENAME$__.service launching $_b_$nwwatchdog$__ as a daemon with
         $_b_--pidfile$__=/run/nw-watchdog-${___}SERVICENAME$__.pid$__
         $_b_--lofile$__=/var/log/nw-watchdog-${___}SERVICENAME$__.log$__
         and otherwise with the exact same options as run (apart from the $_b_--install-systemd$__ option itself of course).
@@ -416,7 +416,7 @@ $FMT<<EOU
 
         ${___}Management of Strongswan IPSec with VTI tunnel interface:$__
 
-        Firstly, we start a nw-watchdog for monitoring the connectivity to the IPSec peers public address (1.2.3.4 in this example), emailing alerts to the admin.
+        Firstly, we start a $_b_$nwwatchdog$__ for monitoring the connectivity to the IPSec peers public address (1.2.3.4 in this example), emailing alerts to the admin.
 
         $_b_$nwwatchdog$__ 1.2.3.4 $_b_\\
 EOU
@@ -472,9 +472,9 @@ $FMT<<EOU
 
         ${___}Wireguard full tunnel management:$__
 
-        This is an example of how one can use $nwwatchdog to setup and monitor a wireguard full tunnel, also monitoring the connectivity to the wireguard server, running both whatchdogs as systemd services getting alerts via e-mail:
+        This is an example of how one can use $_b_$nwwatchdog$__ to setup and monitor a wireguard full tunnel, also monitoring the connectivity to the wireguard server, running both whatchdogs as systemd services getting alerts via e-mail:
 
-        Firstly, we setup the nw-watchdog systemd service for the wireguard server which we reach via the default route:
+        Firstly, we setup the $_b_$nwwatchdog$__ systemd service for the wireguard server which we reach via the default route:
 
         $_b_$nwwatchdog$__ wgserver.domain.dom $_b_\\
 EOU
@@ -546,7 +546,7 @@ $FMT<<EOU
 
        Starting the watchdog like the above with any of the three vpn-interfaces up, the vpn-interface that is up will be detected and used as source interface. The continuous topology detection will ensure switching to which ever interface currently is up. If all interfaces are down the topology detection will think the interface for the default gw is the one to monitor (in our example eth0) but since we have $_b_--no-ping-nexthop$__ and hardcoded the preferred vpn-interfaces in $_b_--ifcup$__ the watchdog will bring up vpnL. If any of the vpn interfaces are up, but have problems the watchdog will bring them all down and then bring up vpnL.
 
-       If we add $_b_--verbosity-level=${__}5 to the above, allowing us to get a trace of what is happening in the logfile in the scenario of none of the vpn interfaces being up at start, after a while we see that vpnF is replacing vpnL (as somebody brought up the full tunnel for a while) then vpnF is brought down (as somebody did not need it anymore) and nw-watchdog detetcs that the connectivity via the VPN-server is lost and brings up vpnL:
+       If we add $_b_--verbosity-level=${__}5 to the above, allowing us to get a trace of what is happening in the logfile in the scenario of none of the vpn interfaces being up at start, after a while we see that vpnF is replacing vpnL (as somebody brought up the full tunnel for a while) then vpnF is brought down (as somebody did not need it anymore) and $_b_$nwwatchdog$__ detetcs that the connectivity via the VPN-server is lost and brings up vpnL:
 
 EOU
 cat <<EOU
@@ -570,7 +570,7 @@ $_b_       and here the full tunnel was brought down again (without replacing it
        00:00:35  TRACE: quick-up failed ... trying slow-up ...
        00:00:35  TRACE: slow-up failed or ambigious result ... verifying ...
 $_b_       ^^^^^^^^^^^^^^^^ $__
-$_b_       Here the $nwwatchdog gives up and judge that the ${___}TARGET${__} is down. $__
+$_b_       Here the $_b_$nwwatchdog$__ gives up and judge that the ${___}TARGET${__} is down. $__
 
        00:00:37  ALERT: DOWN - Not getting replies from target 'vpn.inside.dom' (10.0.10.1) on interface 'eth0'.
                         Resetting interface:
@@ -595,7 +595,7 @@ EOU
 $FMT <<EOU
 
 ${_b_}DEPENDENCIES$__
-        $nwwatchdog depends on the below executables being available in "/sbin:/bin:/usr/sbin:/usr/bin:\$PATH" or being shell-builtin. A check is done at startup and if any of these tools are missing, $nwwatchdog will exit with an error telling which are lacking.
+        $_b_$nwwatchdog$__ depends on the below executables being available in "/sbin:/bin:/usr/sbin:/usr/bin:\$PATH" or being shell-builtin. A check is done at startup and if any of these tools are missing, $_b_$nwwatchdog$__ will exit with an error telling which are lacking.
         
 EOU
     for dep in $DEPENDENCIES; do

@@ -7,7 +7,7 @@ __nw-watchdog__ <ins>TARGET</ins> [ OPTIONS ]
 ## DESCRIPTION
 __nw-watchdog__ is a higly configurable network watchdog written in posix shell script for use in Linux, depending only on Linux most standard tools that are normally installed by default in all distributions (also see the __DEPENDENCIES__ section).
 
-It monitors the network connectivity to a specified <ins>TARGET</ins> and/or the next hop towards that <ins>TARGET</ins>, alerting upon lost connectivity explaining what is wrong. It can reset the source interface and will detect topology changes and, if allowed, reconfigure itself accordingly. It's intended to run as a daemon and has an option to install itself as a systemd service.  If you want to monitor the connectivity to several <ins>TARGET</ins>s, you can run several instances of $nwwatchdog using different `--pidfile` option arguments.
+It monitors the network connectivity to a specified <ins>TARGET</ins> and/or the next hop towards that <ins>TARGET</ins>, alerting upon lost connectivity explaining what is wrong. It can reset the source interface and will detect topology changes and, if allowed, reconfigure itself accordingly. It's intended to run as a daemon and has an option to install itself as a systemd service.  If you want to monitor the connectivity to several <ins>TARGET</ins>s, you can run several instances of __nw-watchdog__ using different `--pidfile` option arguments.
 
 __nw-watchdog__ is free software written by Fredrik Ax \<frax@axnet.nu\>.<br>
 Feel free to modify and/or (re)distribute it in any way you like.<br>
@@ -84,7 +84,7 @@ If the <ins>TARGET</ins> is not on the same subnet as the source, the reachabili
 	No output to logfile and no alerts trigged at all ... pretty useless unless you just want to keep traffic going keeping a connecting alive without any alerts.
 
 	__1__ - error<br>
-	Only logs and alerts on errors causing the nw-watchdog not to function as intended.
+	Only logs and alerts on errors causing the __nw-watchdog__ not to function as intended.
 
 	__2__ - warning<br>
 	Also logs and alerts on warnings about configuration, etc.
@@ -108,7 +108,7 @@ If the <ins>TARGET</ins> is not on the same subnet as the source, the reachabili
 
 	The interface may dynamically change due to topology detection. If you want to force the use of a specific interface, use `--force-interface` instead.
 
-	If neither of `--interface` or `--force-interface` is specified the source interface it will be determined from the FIB by looking at the route to the <ins>TARGET</ins>. The reason to specify it even so, would be to have nw-watchdog bring it up if it's down when starting.
+	If neither of `--interface` or `--force-interface` is specified the source interface it will be determined from the FIB by looking at the route to the <ins>TARGET</ins>. The reason to specify it even so, would be to have __nw-watchdog__ bring it up if it's down when starting.
 
 	`--interface` cannot be combined with `--force-interface`.
 
@@ -191,7 +191,7 @@ If the <ins>TARGET</ins> is not on the same subnet as the source, the reachabili
   - ifupdown:<br>
     `--ifcup='ifup %{IFC}'`
 
-  - ifupdown, non privilege user running nw-watchdog:<br>
+  - ifupdown, non privilege user running __nw-watchdog__:<br>
 	`--ifcup='sudo ifup %{IFC}'`
 
   - NetworkManager device:<br>
@@ -216,7 +216,7 @@ If the <ins>TARGET</ins> is not on the same subnet as the source, the reachabili
   - ifupdown:<br>
 	`--ifcdown='ifdown %{IFC}'`
 
-  - ifupdown, non privilege user running nw-watchdog:<br>
+  - ifupdown, non privilege user running __nw-watchdog__:<br>
 	`--ifcdown='sudo ifdown %{IFC}'`
 
   - NetworkManager device:<br>
@@ -261,7 +261,7 @@ If the <ins>TARGET</ins> is not on the same subnet as the source, the reachabili
 * __--install-systemd__ <ins>SERVICENAME</ins><br>
   Default: none
 	
-  Will write a systemd service file `/etc/systemd/system/nw-watchdog-SERVICENAME.service` launching nw-watchdog as a daemon with<br>
+  Will write a systemd service file `/etc/systemd/system/nw-watchdog-SERVICENAME.service` launching __nw-watchdog__ as a daemon with<br>
   `--pidfile=/run/nw-watchdog-SERVICENAME.pid`<br>
   `--lofile=/var/log/nw-watchdog-SERVICENAME.log`<br>
 	and otherwise with the exact same options as run (apart from the `--install-systemd` option itself of course).
@@ -310,7 +310,7 @@ Same as above but enforcing the use of the eth0 interface as we know that the IS
 
 
 #### <ins>Management of Strongswan IPSec with VTI tunnel interface:</ins>
-Firstly, we start a nw-watchdog for monitoring the connectivity to the IPSec peers public address (1.2.3.4 in this example), emailing alerts to the admin.
+Firstly, we start a __nw-watchdog__ for monitoring the connectivity to the IPSec peers public address (1.2.3.4 in this example), emailing alerts to the admin.
 
 ```shell
 nw-watchdog 1.2.3.4 \
@@ -361,9 +361,9 @@ Even with <ins>TARGET</ins> `10.10.1.1`, the NEXTHOP (`169.254.0.1`) will also b
 
 
 #### <ins>Wireguard full tunnel management:</ins>
-This is an example of how one can use nw-watchdog to setup and monitor a wireguard full tunnel, also monitoring the connectivity to the wireguard server, running both whatchdogs as systemd services getting alerts via e-mail:
+This is an example of how one can use __nw-watchdog__ to setup and monitor a wireguard full tunnel, also monitoring the connectivity to the wireguard server, running both whatchdogs as systemd services getting alerts via e-mail:
 
-Firstly, we setup the nw-watchdog systemd service for the wireguard server which we reach via the default route:
+Firstly, we setup the __nw-watchdog__ systemd service for the wireguard server which we reach via the default route:
 
 ```shell
 nw-watchdog wgserver.domain.dom \
@@ -406,7 +406,7 @@ We use `--no-ping-nexthop` as the NEXTHOP is the same as the <ins>TARGET</ins> p
 	
 #### <ins>Several VPN paths with one preferred interface:
 
-This is a (real life) cornor case but worth explaining to get an understanding of the capabilities of nw-watchdog.
+This is a (real life) cornor case but worth explaining to get an understanding of the capabilities of __nw-watchdog__.
 
 We have setup ifupdown to handle three different vpn-interfaces: vpnL vpnP and vpnF<br>
 They all use the same VPN server but have different routes to the server.<br>
@@ -431,7 +431,7 @@ nw-watchdog vpn.inside.dom \
 ```
 Starting the watchdog like the above with any of the three vpn-interfaces up, the vpn-interface that is up will be detected and used as source interface. The continuous topology detection will ensure switching to which ever interface currently is up. If all interfaces are down the topology detection will think the interface for the default gw is the one to monitor (in our example `eth0`) but since we have `--no-ping-nexthop` and hardcoded the preferred vpn-interfaces in `--ifcup` the watchdog will bring up vpnL. If any of the vpn interfaces are up, but have problems the watchdog will bring them all down and then bring up `vpnL`.
 
-If we add --verbosity-level=5 to the above, allowing us to get a trace of what is happening in the logfile in the scenario of none of the vpn interfaces being up at start, after a while we see that vpnF is replacing vpnL (as somebody brought up the full tunnel for a while) then vpnF is brought down (as somebody did not need it anymore) and nw-watchdog detetcs that the connectivity via the VPN-server is lost and brings up `vpnL`:
+If we add --verbosity-level=5 to the above, allowing us to get a trace of what is happening in the logfile in the scenario of none of the vpn interfaces being up at start, after a while we see that vpnF is replacing vpnL (as somebody brought up the full tunnel for a while) then vpnF is brought down (as somebody did not need it anymore) and __nw-watchdog__ detetcs that the connectivity via the VPN-server is lost and brings up `vpnL`:
 ```
 00:00:01   INFO: Target (vpn.inside.dom) resolved to 10.0.10.1 (instead of '').
 00:00:01   INFO: Detected topology: IFC='vpnL' -> 'vpnL' ; NEXTHOP='' -> '10.0.10.1'
@@ -454,7 +454,7 @@ If we add --verbosity-level=5 to the above, allowing us to get a trace of what i
 00:00:35  TRACE: quick-up failed ... trying slow-up ...
 00:00:35  TRACE: slow-up failed or ambigious result ... verifying ...
 ```
-^^^ Here the nw-watchdog gives up and judge that the <ins>TARGET</ins> is down. 
+^^^ Here the __nw-watchdog__ gives up and judge that the <ins>TARGET</ins> is down. 
 ```
 00:00:37  ALERT: DOWN - Not getting replies from target 'vpn.inside.dom' (10.0.10.1) on interface 'eth0'.
                  Resetting interface:
@@ -479,7 +479,7 @@ Below we see that the watchdog actually brings down all the vpn-interfaces and b
 ```
 
 ## DEPENDENCIES
-nw-watchdog depends on the below executables being available in `/sbin:/bin:/usr/sbin:/usr/bin:$PATH` or being shell-builtin. A check is done at startup and if any of these tools are missing, nw-watchdog will exit with an error telling which are lacking.
+__nw-watchdog__ depends on the below executables being available in `/sbin:/bin:/usr/sbin:/usr/bin:$PATH` or being shell-builtin. A check is done at startup and if any of these tools are missing, __nw-watchdog__ will exit with an error telling which are lacking.
 	
 - `basename`
 - `cat`
