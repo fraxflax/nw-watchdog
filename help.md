@@ -26,7 +26,7 @@ These options take no arguments, and may be specified in any order. They can be 
   Shows this help, using \$PAGER if set to an executable, otherwise 'less' or 'more' if available in "/sbin:/bin:/usr/sbin:/usr/bin:\$PATH"<br>
   (Use PAGER=cat to avoid using a pager).
 
-##### --no-ping-target | -P
+#### --no-ping-target | -P
 If the target is the nexthop (on the same subnet or a peer-to-peer address), reachability of the target is checked by arp cache status and ping.<br>
 If the target is not on the same subnet as the source, the reachability of the target is checked by pinging it in a certain pattern (see __--slow-up-timeout__ for details).
 
@@ -35,35 +35,35 @@ If the target is not on the same subnet as the source, the reachability of the t
 
   `--no-ping-target` cannot be used in combination with `--no-ping-nexthop`.
 
-- __--no-ping-nexthop | -N | --no-ping-gateway | -G__<br>
+#### --no-ping-nexthop | -N | --no-ping-gateway | -G__<br>
   By default, if the connectivity to the target cannot be verified, the reachability of the nexthop (usually a gateway) is checked, firstly by checking it's status in the arp cache and then by pinging it, rechecking the arp cache status upon failed ping. 
 
   `--no-ping-nexthop` disbles the reachaility check for the nexthop so only connectivity to target itself is checked. It can be useful if the nexthop is a peer-to-peer address and not setup to reply to ping.
 
   `--no-ping-nexthop` cannot be used in combination with `--no-ping-target`.
 
-- __--no-ipaddr-alert | -A__<br>
+#### --no-ipaddr-alert | -A__<br>
   Do not alert for not finding any global scope ip addresses on the source interface.
 
-- __--no-interface-reset | -R__<br>
+#### --no-interface-reset | -R__<br>
   Do not try to bring down and up interface after failed connectivity checks.<br>
   (Do not try to "repair" the connection", just monitor it.)
 
-- __--no-continuous-topology-detect | -T__<br>
+#### --no-continuous-topology-detect | -T__<br>
   Normaly the topology (resolving the ip address of the target, detecting which source interface to use and the ip address of the nexthop towards the target) is detected at startup and continuously monitored for changes.
 
   `--no-continuous-topology-detect` disables the topology detection for as long as the target replies (or in combination with `--no-ping-target` for as long as the nexthop is reachable). The topology will only be detected at startup and if the TARGET does not reply or if the NEXTHOP cannot be reached, meaning that routing changes making the TARGET or NEXTHOP unreachable will not be detected as long as the TARGET can be reached using the old topology.
 
   `--force-interface` implies `--no-continuous-topology-detect`.
     				       
-- __--foreground | -f | --no-daemonize | -D__<br>
+#### --foreground | -f | --no-daemonize | -D__<br>
   Do not fork / daemonize, run in foreground.
 
-- __--verbose | -v__<br>
+#### --verbose | -v__<br>
   Shortcut for `--verbosity-level=5`<br>
   If used in combination with `--verbosity-level`, the specified verbosity level will take precedence. 
 
-- __--debug | -d__<br>
+#### --debug | -d__<br>
   Shortcut for: `--verbosity-level=6  --logfile=- --logsize=0  --pidfile=/dev/null  --slow-up-timeout=1  --sleep=3 --ifup-grace=5 --alert='cat' --foreground` 
 
   If it's combined with any of the options it provides shortcuts for, the specified option will take precedence over the `--debug` shortcut.
@@ -73,7 +73,7 @@ If the target is not on the same subnet as the source, the reachability of the t
 ## OPTIONS__ (with ARGUMENT)<br>
         These opions takes a single argument each and may be specified in any order. Specify with equalsign or space or no space between option and argument. They can only be grouped together with the shortform of the NO-ARGUMENT-OPTIONS above, and must be last in such groupings (e.g. `-PAV5`).
 
-- __--verbosity-level | -V__ <ins>level</ins><br>
+#### --verbosity-level | -V__ <ins>level</ins><br>
   Default: 4<br>
   <ins>level</ins> must be an integer greater than or equal to zero.
   Determines how much info is logged to the logfile and which alerts are triggered.
@@ -100,7 +100,7 @@ If the target is not on the same subnet as the source, the reachability of the t
 	__6__ - debug<br>
 	Logs even more internal details, e.g. SETTINGS used, all tests performed, all sleeps, and other debug info.
 
-- __--interface | -i__ <ins>interface</ins><br>
+#### --interface | -i__ <ins>interface</ins><br>
   Default: none<br>
   <ins>interface</ins> is the name of the source interface to initially use.
 
@@ -110,7 +110,7 @@ If the target is not on the same subnet as the source, the reachability of the t
 
 	`--interface` cannot be combined with `--force-interface`.
 
-- __--force-interface | -I__ <ins>interface</ins><br>
+#### --force-interface | -I__ <ins>interface</ins><br>
   Default: none<br>
   <ins>interface</ins> is the name of the source interface to always use.
 
@@ -121,11 +121,11 @@ If the target is not on the same subnet as the source, the reachability of the t
 
 	`--force-interface` cannot be combined with `--interface`.
 
-- __--logfile | -l__ <ins>logfile</ins><br>
+#### --logfile | -l__ <ins>logfile</ins><br>
 	Default: '/var/log/nw-watchdog.log'<br>
 	Logfile to use. If specified as '-' logs are written to stdout.
 
-- __--logsize | -z__ <ins>size</ins><br>
+#### --logsize | -z__ <ins>size</ins><br>
   Default: 0
 
   If the logfile grows beyond this size, the oldest entries will be removed.
@@ -137,11 +137,11 @@ If the target is not on the same subnet as the source, the reachability of the t
 
   If `flock` is available, the logfile will be locked before written to or shrinked, otherwise there is a slight risk of loglines being lost if two or more instances of `nw-watchdog` are concurently running using the same logfile and at least one of them have `--logsize` set to a value larger than 0.
 
-- __--pidfile | -p__ <ins>pidfile</ins><br>
+#### --pidfile | -p__ <ins>pidfile</ins><br>
   Default: '/run/nw-watchdog.pid'<br>
   Pidfile to use.
 
-- __--slow-up-timeout | -t__ <ins>seconds</ins><br>
+#### --slow-up-timeout | -t__ <ins>seconds</ins><br>
   Default: 3<br>
   <ins>seconds</ins> must be an integer greater than zero.
 
@@ -159,19 +159,19 @@ If the target is not on the same subnet as the source, the reachability of the t
 
   `--slow-up-timeout=1` is suitable to use for monitoring local targets (e.g. nexthop) on ethernet carried subnets.
 
-- __--sleep | -s | --interval__ <ins>seconds</ins><br>
+#### --sleep | -s | --interval__ <ins>seconds</ins><br>
   Default: 10<br>
   <ins>seconds</ins> must be an integer greater than zero.
 
   How many seconds to sleep after sucessful ping check. 
 
-- __--ifup-grace | -g__ <ins>seconds</ins><br>
+#### --ifup-grace | -g__ <ins>seconds</ins><br>
   Default: 20<br>
   <ins>seconds</ins> must be an integer greater than zero.
 
   How many seconds to sleep before next check after interface has been reset.
 
-- __--max-nolink | -n__ <ins>number</ins><br>
+#### --max-nolink | -n__ <ins>number</ins><br>
   Default: 1<br>
   <ins>number</ins> must be an integer greater than or equal to zero.
 
@@ -180,7 +180,7 @@ If the target is not on the same subnet as the source, the reachability of the t
   A word of warning: If set to 0 and interface is not up / goes down, infinite retries to bring the interface up will be made before checking topology. Only set it to 0 if you are sure that the specified interface should always be used and you want to make sure it's up before starting to monitor the connection.<br>
   Typically, you would want to also use `--force-interface` when using `--max-nolink=0`.
 
-- __--ifcup | -u__ <ins>STRING</ins> <br>
+#### --ifcup | -u__ <ins>STRING</ins> <br>
   Default: 'ip link set up %{IFC}'<br>
   <ins>STRING</ins> will be passed to 'sh -c' to bring the interface up.<br>
   %{IFC} will be dynmaically replaced with the interface name currently in use as source interface.
@@ -205,7 +205,7 @@ If the target is not on the same subnet as the source, the reachability of the t
 	`--ifcup='ipsec up connection-name'`<br>
 	(see __EXAMPLES__  below for a more extensive IPSec example using vti tunnel interface)
 
-- __--ifcdown | -U__ <ins>STRING</ins><br>
+#### --ifcdown | -U__ <ins>STRING</ins><br>
   Default: 'ip link set down %{IFC}'<br>
   <ins>STRING</ins> will be passed to 'sh -c' to bring the interface down.<br>
   %{IFC} will be dynmaically replaced with the interface name currently in use as source interface.
@@ -230,7 +230,7 @@ If the target is not on the same subnet as the source, the reachability of the t
 	`--ifcup='ipsec down connection-name'`<br>
 	(see __EXAMPLES__  below for a more extensive IPSec example using vti tunnel interface)
 
-- __--alert | -a__ <ins>STRING</ins><br>
+#### --alert | -a__ <ins>STRING</ins><br>
 	Default: 'if which wall >/dev/null; then exec wall; else cat 1>&2; fi'
 
 	Errors, warnings and alerts regarding change of state will be piped to:<br>
@@ -256,7 +256,7 @@ If the target is not on the same subnet as the source, the reachability of the t
 	EXAMPLE of how to email the alert messages using mailx (mailutils) with a custom from address:<br>
 	`--alert='mailx -a "From: nw-watchdog@this.hst" -s "nw-watchdog %{STATE} alert for %{TARGET} via %{IFC}" my@email.adr'`
 
-- __--install-systemd__ <ins>SERVICENAME</ins>
+#### --install-systemd__ <ins>SERVICENAME</ins>
   Default: none
 	
   Will write a systemd service file `/etc/systemd/system/nw-watchdog-SERVICENAME.service` file launching nw-watchdog as a daemon with<br>
