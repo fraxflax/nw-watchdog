@@ -410,16 +410,15 @@ We use `--no-ping-nexthop` as the NEXTHOP is the same as the <ins>TARGET</ins> p
 This is a (real life) cornor case but worth explaining to get an understanding of the capabilities of __nw-watchdog__.
 
 We have setup ifupdown to handle three different vpn-interfaces: `vpnL` `vpnP` and `vpnF`<br>
-They all use the same VPN server but have different routes to the server.<br>
+They all use the same VPN server but have different routes via the server.<br>
 Only one of the interfaces can be up at any given time.
 
 If `vpnL` is up we route just to the peer local network `10.0.10.0/24` via it.<br>
 If `vpnP` is up we route to all private addresses via it, including `10.0.0.0/8`<br>
-If `vpnF` is up we use it ass a full tunnel, routing all traffic (apart from the VPN-connection itself) via it.
+If `vpnF` is up we use it as a full tunnel, routing all traffic (apart from the VPN-connection itself) via it.
 
-Our preferred interface is `vpnL` and if we can't get any traffic through the vpnserver that is the one we want to reset.
-BUT as long as can get traffic through using any of the three interfaces we don't want to get alerted and have any interface reset,
-so we can't use `--force-interface`. The soloution will be to allow continuous topology detection but hardcode the preferred interface in `--ifcup` and `--ifcdown`.
+Our preferred interface is `vpnL` and if we can't get any traffic through the vpn-server, `vpnL` is the interface we want to reset.<br>
+BUT as long as can get traffic through using any of the three interfaces we don't want to get alerted and have any interface reset, so we can't use `--force-interface`. The soloution will be to allow continuous topology detection but hardcode the preferred interface in `--ifcup` and `--ifcdown`.
 
 ```shell
 nw-watchdog vpn.inside.dom \
