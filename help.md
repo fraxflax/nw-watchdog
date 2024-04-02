@@ -64,7 +64,7 @@ If the target is not on the same subnet as the source, the reachability of the t
 
 	Run in foreground, do not fork / daemonize.
 
-* __--verbose | -v_
+* __--verbose | -v__
 
 	Shortcut for `--verbosity-level=5`<br>
 	If used in combination with `--verbosity-level`, the specified verbosity level will take precedence. 
