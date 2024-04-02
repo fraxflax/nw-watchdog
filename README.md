@@ -271,7 +271,7 @@ These opions takes a single argument each and may be specified in any order. Spe
 	
   Will write a systemd service file `/etc/systemd/system/nw-watchdog-SERVICENAME.service` launching __nw-watchdog__ as a daemon with<br>
   `--pidfile=/run/nw-watchdog-SERVICENAME.pid`<br>
-  `--lofile=/var/log/nw-watchdog-SERVICENAME.log`<br>
+  `--logfile=/var/log/nw-watchdog-SERVICENAME.log`<br>
 	and otherwise with the exact same options as run (apart from the `--install-systemd` option itself of course).
 
 	If `/etc/systemd/system/nw-watchdog-SERVICENAME.service` already exists, the service will be stopped and the file overwritten.

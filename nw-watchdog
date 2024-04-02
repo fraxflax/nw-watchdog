@@ -364,7 +364,7 @@ $FMT<<EOU
 
         Will write a systemd service file /etc/systemd/system/nw-watchdog-${___}SERVICENAME$__.service launching $_b_$nwwatchdog$__ as a daemon with
         $_b_--pidfile$__=/run/nw-watchdog-${___}SERVICENAME$__.pid$__
-        $_b_--lofile$__=/var/log/nw-watchdog-${___}SERVICENAME$__.log$__
+        $_b_--logfile$__=/var/log/nw-watchdog-${___}SERVICENAME$__.log$__
         and otherwise with the exact same options as run (apart from the $_b_--install-systemd$__ option itself of course).
 
         If /etc/systemd/system/nw-watchdog-${___}SERVICENAME$__.service already exists, the service will be stopped and the file overwritten.
