@@ -21,7 +21,7 @@ The mandatory argument <ins>TARGET</ins> is the target (destination) to monitor 
 
 ## OPTIONS (no arguments)
 These options take no arguments, and may be specified in any order. They can be grouped (e.g. -vAP) in their short form, also having one of the OPTIONS that takes arguments last.
-
+<style>li {list-style-type: none;}</style>
 #### --help | -h
     Shows this help, using \$PAGER if set to an executable, otherwise 'less' or 'more' if available in "/sbin:/bin:/usr/sbin:/usr/bin:\$PATH"<br>
 (Use PAGER=cat to avoid using a pager).
