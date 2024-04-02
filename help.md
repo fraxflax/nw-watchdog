@@ -265,24 +265,24 @@ __OPTIONS__ (with ARGUMENT)<br>
 - __--install-systemd__ <ins>SERVICENAME</ins>
   Default: none
 	
-  Will write a systemd service file /etc/systemd/system/nw-watchdog-<ins>SERVICENAME</ins>.service file launching nw-watchdog as a daemon with<br>
+  Will write a systemd service file `/etc/systemd/system/nw-watchdog-SERVICENAME.service` file launching nw-watchdog as a daemon with<br>
   `--pidfile=/run/nw-watchdog-SERVICENAME.pid`<br>
-  `--lofile=/var/log/nw-watchdog-`<ins>SERVICENAME</ins>`.log`<br>
+  `--lofile=/var/log/nw-watchdog-SERVICENAME.log`<br>
 	and otherwise with the exact same options as run (apart from the `--install-systemd` option itself of course).
 
-	If /etc/systemd/system/nw-watchdog-<ins>SERVICENAME</ins>.service already exists, the service will be stopped and the file overwritten.
+	If `/etc/systemd/system/nw-watchdog-SERVICENAME.service` already exists, the service will be stopped and the file overwritten.
 
 	It will then enable, start it and show status of the newly created nw-watchdog-<ins>SERVICENAME</ins>.service.
 
 	The <ins>SERVICENAME</ins> must consist of at least 1 valid character ( 'a-z', 'A-Z', '0-9', '-' and '_' ) and be no longer than 236 characters.
 
-        This option requires root privileges.
+    This option requires root privileges.
 
-	Note:
+	Note:<br>
 	To completely remove the service do (as root):
-	    systemctl stop nw-watchdog-<ins>SERVICENAME</ins>.service
-	    systemctl disable nw-watchdog-<ins>SERVICENAME</ins>.service
-	    rm /etc/systemd/system/nw-watchdog-<ins>SERVICENAME</ins>.service
+    ``` systemctl stop nw-watchdog-SERVICENAME.service
+	    systemctl disable nw-watchdog-SERVICENAME.service
+	    rm /etc/systemd/system/nw-watchdog-SERVICENAME.service```
 
 __EXAMPLES__
 
