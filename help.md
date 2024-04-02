@@ -286,15 +286,15 @@ __OPTIONS__ (with ARGUMENT)<br>
 	rm /etc/systemd/system/nw-watchdog-SERVICENAME.service
 	```
 
-- __EXAMPLES__
+## EXAMPLES
 
 	<ins>ISP gateway monitoring:</ins>
 	```shell
-	nw-watchdog 1.2.3.4 \\
-	--interval=60 \\
-	--no-ping-target \\
-	--interface=__eth0 \\
-	--slow-up-timeout=1 \\
+	nw-watchdog 1.2.3.4 \
+	--interval=60 \
+	--no-ping-target \
+	--interface=__eth0 \
+	--slow-up-timeout=1 \
 	--ifup-grace=300
 	```
 	Checking once a minute (__--interval=__60) that we have connectivity to the Internet Service Provider's gateway without actually pinging anything on the Internet (__--no-ping-target__ 1.2.3.4 ... any Intenet address will do) allowing interface and topology detection (not using --force-interface or --max-no-link=0) but still, if down, bring the supposed initial interface towards the ISP up on startup (__--interface=__eth0) expecting the ISP gateway to have an RTT below 1 second (__--slow-up-timeout=__1) and allowing the interface to be down for up to 5 minutes before considering it a permanent error rechecking topology (__--ifup-grace=__300).
