@@ -280,9 +280,10 @@ __OPTIONS__ (with ARGUMENT)<br>
 
 	Note:<br>
 	To completely remove the service do (as root):
-    ``` systemctl stop nw-watchdog-SERVICENAME.service
-	    systemctl disable nw-watchdog-SERVICENAME.service
-	    rm /etc/systemd/system/nw-watchdog-SERVICENAME.service```
+    ```shell
+	systemctl stop nw-watchdog-SERVICENAME.service
+	systemctl disable nw-watchdog-SERVICENAME.service
+	rm /etc/systemd/system/nw-watchdog-SERVICENAME.service```
 
 __EXAMPLES__
 
