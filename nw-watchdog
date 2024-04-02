@@ -362,7 +362,7 @@ $FMT<<EOU
     $_b_--install-systemd$__ ${___}SERVICENAME$__
         Default: none
 
-        Will write a systemd service file /etc/systemd/system/nw-watchdog-${___}SERVICENAME$__.service file launching $nwwatchdog as a daemon with
+        Will write a systemd service file /etc/systemd/system/nw-watchdog-${___}SERVICENAME$__.service launching $nwwatchdog as a daemon with
         $_b_--pidfile$__=/run/nw-watchdog-${___}SERVICENAME$__.pid$__
         $_b_--lofile$__=/var/log/nw-watchdog-${___}SERVICENAME$__.log$__
 	and otherwise with the exact same options as run (apart from the $_b_--install-systemd$__ option itself of course).

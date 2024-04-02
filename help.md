@@ -262,7 +262,7 @@ If the target is not on the same subnet as the source, the reachability of the t
 * __--install-systemd__ <ins>SERVICENAME</ins><br>
   Default: none
 	
-  Will write a systemd service file `/etc/systemd/system/nw-watchdog-SERVICENAME.service` file launching nw-watchdog as a daemon with<br>
+  Will write a systemd service file `/etc/systemd/system/nw-watchdog-SERVICENAME.service` launching nw-watchdog as a daemon with<br>
   `--pidfile=/run/nw-watchdog-SERVICENAME.pid`<br>
   `--lofile=/var/log/nw-watchdog-SERVICENAME.log`<br>
 	and otherwise with the exact same options as run (apart from the `--install-systemd` option itself of course).
