@@ -82,7 +82,7 @@ These opions takes a single argument each and may be specified in any order. Spe
 	Determines how much info is logged to the logfile and which alerts are triggered.
 
 	__0__ - none<br>
-	No output to logfile and no alerts trigged at all ... pretty useless unless you just want to keep traffic going keeping a connecting alive without any alerts.
+	No output to logfile and no alerts triggered at all ... pretty useless unless you just want to keep traffic going keeping a connecting alive without any alerts.
 
 	__1__ - error<br>
 	Only logs and alerts on errors causing the __nw-watchdog__ not to function as intended.

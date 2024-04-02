@@ -179,7 +179,7 @@ $FMT<<EOU
         Determines how much info is logged to the logfile and which alerts are triggered.
 
         ${_b_}0$__ - none
-        No output to logfile and no alerts trigged at all ... pretty useless unless you just want to keep traffic going keeping a connecting alive without any alerts.
+        No output to logfile and no alerts triggered at all ... pretty useless unless you just want to keep traffic going keeping a connecting alive without any alerts.
 
         ${_b_}1$__ - error
         Only logs and alerts on errors causing the $_b_$nwwatchdog$__ not to function as intended.
