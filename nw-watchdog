@@ -86,7 +86,7 @@ ${_b_}NAME $__
 
 ${_b_}SYNOPSIS $__
 
-        $_b_$nwwatchdog$__ [ OPTIONS ] ${___}TARGET$__
+        $_b_$nwwatchdog$__ ${___}TARGET$__ [ OPTIONS ] 
 
 ${_b_}DESCRIPTION $__
        $_b_$nwwatchdog$__ is a higly configurable network watchdog written in posix shell script for use in Linux, depending only on Linux most standard tools that are normally installed by default in all distributions (also see the ${_b_}DEPENDENCIES$__ section).
