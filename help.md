@@ -4,7 +4,7 @@ __NAME__<br>
 
 ---
 __SYNOPSIS__<br>
-__nw-watchdog__ [ OPTIONS ] ===TARGET===
+__nw-watchdog__ [ OPTIONS ] <ins>TARGET</ins>
 
 ---
 __DESCRIPTION__<br>
