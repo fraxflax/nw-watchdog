@@ -292,56 +292,52 @@ nw-watchdog 1.2.3.4 \
 --slow-up-timeout=1 \
 --ifup-grace=300
 ```
-Checking once a minute (__--interval=__60) that we have connectivity to the Internet Service Provider's gateway without actually pinging anything on the Internet (__--no-ping-target__ 1.2.3.4 ... any Intenet address will do) allowing interface and topology detection (not using --force-interface or --max-no-link=0) but still, if down, bring the supposed initial interface towards the ISP up on startup (__--interface=__eth0) expecting the ISP gateway to have an RTT below 1 second (__--slow-up-timeout=__1) and allowing the interface to be down for up to 5 minutes before considering it a permanent error rechecking topology (__--ifup-grace=__300).
+Checking once a minute (`--interval=60`) that we have connectivity to the Internet Service Provider's gateway without actually pinging anything on the Internet (`--no-ping-target` `1.2.3.4` ... any Intenet address will do) allowing interface and topology detection (not using --force-interface or --max-no-link=0) but still, if down, bring the supposed initial interface towards the ISP up on startup (`--interface=eth0`) expecting the ISP gateway to have an RTT below 1 second (`--slow-up-timeout=1`) and allowing the interface to be down for up to 5 minutes before considering it a permanent error rechecking topology (`--ifup-grace=300`).
 
 
-	<ins>ISP gateway monitoring with forced interface:</ins>
-
-        __nw-watchdog__ 1.2.3.4 __\\
-EOU
-printf "        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n" \
-       "  __--no-ping-target \\" \
-       "  __--force-interface=__eth0 __\\" \
-       "  __--slow-up-timeout=__1 __\\" \
-       "  __--ifup-grace=__30 __\\" \
-       "  __--max-no-link=__0 __\\" \
-       "  __--interval=__10__"
-$FMT<<EOU
-
-        Same as above but enforcing the use of the eth0 interface as we know that the ISP gateway should always be reachable via that interface and that is the only Internet facing interface we have. It must be brought up on startup if not already up and there is no use rechecking the topology if it's not up (__--force-interface=__eth0), so if down, we retry to reset it every 30 seconds (__--ifup-grace=__30) forever (__--max-no-link=__0), checking the connectivity every 10 seconds (__--interval=__10).
+#### <ins>ISP gateway monitoring with forced interface:</ins>
+```shell
+nw-watchdog 1.2.3.4 \
+--no-ping-target \
+--force-interface=eth0 \
+--slow-up-timeout=1 \
+--ifup-grace=30 \
+--max-no-link=0 \
+--interval=10
+```
+Same as above but enforcing the use of the eth0 interface as we know that the ISP gateway should always be reachable via that interface and that is the only Internet facing interface we have. It must be brought up on startup if not already up and there is no use rechecking the topology if it's not up (`--force-interface=eth0`), so if down, we retry to reset it every 30 seconds (`--ifup-grace=30`) forever (`--max-no-link=0`), checking the connectivity every 10 seconds (`--interval=10`).
 
 
-	<ins>Management of Strongswan IPSec with VTI tunnel interface:</ins>
+#### <ins>Management of Strongswan IPSec with VTI tunnel interface:</ins>
+Firstly, we setup the nw-watchdog systemd service for monitoring the connectivity to the IPSec peers public address (1.2.3.4 in this example), emailing alerts to the admin.
 
-	Firstly, we setup the nw-watchdog systemd service for monitoring the connectivity to the IPSec peers public address (1.2.3.4 in this example), emailing alerts to the admin.
+```shell
+nw-watchdog 1.2.3.4 \
+--verbosity-level=3 \
+--alert='mailx -a \"From: nwwatchdog@\`hostname -f\`\" -s \"IPSec Peer 1.2.3.4 %{STATE} via %{IFC}\" admin@\`cat /etc/mailname\`' \
+--slow-up-timeout=2 \
+--ifup-grace=10 \
+--interval=10
+```
 
-        __nw-watchdog__ 1.2.3.4 __\\
-EOU
-printf "        %s\n        %s\n        %s\n        %s\n        %s\n" \
-       "  __--verbosity-level=__3 __\\" \
-       "  __--alert=__'mailx -a \"From: nwwatchdog@\`hostname -f\`\" -s \"IPSec Peer 1.2.3.4 %{STATE} via %{IFC}\" admin@\`cat /etc/mailname\`' __\\" \
-       "  __--slow-up-timeout=__2 __\\" \
-       "  __--ifup-grace=__10 __\\" \
-       "  __--interval=__10__"
-$FMT<<EOU
+Then we setup the monitor for the IPSec VTI tunnel which will also be created, configured and brought up.
 
-	Then we setup the monitor for the IPSec VTI tunnel which will also be created, configured and brought up.
-	Note: It would be smoother to use a script and __--ifcup=__/path/script, but it can also be done like this:
+Note: It would be smoother to use a script and `--ifcup=/path/script`, but it can also be done like this:
 
-	__nw-watchdog__ 169.254.0.1 __\\
-EOU
-printf "        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n" \
-       "  __--alert=__'mailx -a \"From: nwwatchdog@\`hostname -f\`\" -s \"IPSec connection-name %{STATE} via %{IFC}\" admin@\`cat /etc/mailname\`' __\\" \
-       "  __--force-interface=__ipsec0 __\\" \
-       "  __--slow-up-timeout=__5 __\\" \
-       "  __--ifup-grace=__25 __\\" \
-       "  __--ifcup=__'ipsec up connection-name ; " \
-       "           ip tunnel add %{IFC} mode vti local 4.3.2.1 remote 1.2.3.4 ttl 255 key 111 ; " \
-       "           ip addr add dev %{IFC} 169.254.0.2 remote 169.254.0.1; " \
-       "           ip link set %{IFC} up multicast on mtu 1424 state UP;" \
-       "           ip route add 10.10.0.0/20 via 169.254.0.1 dev %{IFC}'__ __\\" \
-       "  __--ifcdown=__'ipsec down connection-name ; ip tunnel del %{IFC}' __\\" 
-$FMT<<EOU
+```shell
+nw-watchdog 169.254.0.1 \
+--alert='mailx -a \"From: nwwatchdog@\`hostname -f\`\" -s \"IPSec connection-name %{STATE} via %{IFC}\" admin@\`cat /etc/mailname\`' \
+--force-interface=ipsec0 \
+--slow-up-timeout=5 \
+--ifup-grace=25 \
+--ifcup='ipsec up connection-name ; " \
+       ip tunnel add %{IFC} mode vti local 4.3.2.1 remote 1.2.3.4 ttl 255 key 111 ; " \
+       ip addr add dev %{IFC} 169.254.0.2 remote 169.254.0.1; " \
+       ip link set %{IFC} up multicast on mtu 1424 state UP;" \
+       ip route add 10.10.0.0/20 via 169.254.0.1 dev %{IFC}' \
+--ifcdown='ipsec down connection-name ; ip tunnel del %{IFC}' 
+```
+
 
 	_____OBSERVE__ that the entire __--ifcup=__'...' command need to be on a single line without line breaks (linebreaks added above for readability).
 
@@ -368,10 +364,10 @@ $FMT<<EOU
 	__nw-watchdog__ wgserver.domain.dom __\\
 EOU
 printf "        %s\n        %s\n        %s\n        %s\n        %s\n" \
-       "  __--verbosity-level=__3 __\\" \
-       "  __--alert=__'mailx -a \"From: nwwatchdog@\`hostname -f\`\" -s \"wgserver %{STATE} via %{IFC}\" admin@\`cat /etc/mailname\`' __\\" \
-       "  __--slow-up-timeout=__3 __\\" \
-       "  __--ifup-grace=__20 __\\" \
+       "  __--verbosity-level=__3 \
+       "  __--alert=__'mailx -a \"From: nwwatchdog@\`hostname -f\`\" -s \"wgserver %{STATE} via %{IFC}\" admin@\`cat /etc/mailname\`' \
+       "  __--slow-up-timeout=__3 \
+       "  __--ifup-grace=__20 \
        "  __--install-systemd=__wgserver"
     $FMT<<EOU
 
@@ -382,9 +378,9 @@ printf "        %s\n        %s\n        %s\n        %s\n        %s\n" \
 EOU
 printf "        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n" \
        "  __--no-ping-nexthop \\" \
-       "  __--verbosity-level=__3 __\\" \
-       "  __--alert=__'mailx -a \"From: nwwatchdog@\`hostname -f\`\" -s \"wireguard wg0\" admin@\`cat /etc/mailname\`' __\\" \
-       "  __--force-interface=__wg0 __\\" \
+       "  __--verbosity-level=__3 \
+       "  __--alert=__'mailx -a \"From: nwwatchdog@\`hostname -f\`\" -s \"wireguard wg0\" admin@\`cat /etc/mailname\`' \
+       "  __--force-interface=__wg0 \
        "  __--ifcup=__'ip link add wg0 type wireguard ;" \
        "           ip link set wg0 up ;" \
        "           wg setconf wg0 /etc/wireguard/wg0.conf ;" \
@@ -394,8 +390,8 @@ printf "        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n
        "               ip route add \$addr/32 via \`ip route show default | head -1 | cut -d\" \" -f3\` ;" \
        "             done ;" \
        "           ip route add 0.0.0.0/1 via 10.0.0.1 dev wg0 src 10.0.0.2 ;" \
-       "           ip route add 128.0.0.0/1 via 10.0.0.1 dev wg0 src 10.0.0.2 2>/dev/null'__ __\\" \
-       "  __--ifcdown=__'ip link del wg0' __\\" \
+       "           ip route add 128.0.0.0/1 via 10.0.0.1 dev wg0 src 10.0.0.2 2>/dev/null'__ \
+       "  __--ifcdown=__'ip link del wg0' \
        "  __--install-systemd=__wg0"
 
     $FMT<<EOU
