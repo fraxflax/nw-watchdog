@@ -463,7 +463,7 @@ If we add --verbosity-level=5 to the above, allowing us to get a trace of what i
                  ifup vpnL
 00:00:37   INFO: Resetting interface (eth0).
 ```
-^^^ This can be confusing since it's actually not eth0 that is reset (it's just the current source interface) 
+^^^ This can be confusing since it's actually not eth0 that is reset (it's just the current source interface)<br>
 Below we see that the watchdog actually brings down all the vpn-interfaces and brings up `vpnL` 
 ```
 00:00:37  TRACE: sh -c 'ifdown vpnL ; ifdown vpnP ; ifdown vgfull'ifup vpnL    TRACE: sh -c ''
