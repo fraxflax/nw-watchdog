@@ -187,7 +187,7 @@ __OPTIONS__ (with ARGUMENT)<br>
   Typically, you would want to also use `--force-interface` when using `--max-nolink=0`.
 
 - __--ifcup | -u__ <ins>STRING</ins> <br>
-  Default: 'ifup %{IFC}'<br>
+  Default: 'ip link set up %{IFC}'<br>
   <ins>STRING</ins> will be passed to 'sh -c' to bring the interface up.<br>
   %{IFC} will be dynmaically replaced with the interface name currently in use as source interface.
 
@@ -212,7 +212,7 @@ __OPTIONS__ (with ARGUMENT)<br>
 	(see __EXAMPLES__  below for a more extensive IPSec example using vti tunnel interface)
 
 - __--ifcdown | -U__ <ins>STRING</ins><br>
-  Default: 'ifdown %{IFC}'<br>
+  Default: 'ip link set down %{IFC}'<br>
   <ins>STRING</ins> will be passed to 'sh -c' to bring the interface down.<br>
   %{IFC} will be dynmaically replaced with the interface name currently in use as source interface.
 
@@ -236,7 +236,7 @@ __OPTIONS__ (with ARGUMENT)<br>
 	`--ifcup='ipsec down connection-name'`<br>
 	(see __EXAMPLES__  below for a more extensive IPSec example using vti tunnel interface)
 
-    __--alert | -a__ <ins>STRING</ins><br>
+- __--alert | -a__ <ins>STRING</ins><br>
 	Default: 'if which wall >/dev/null; then exec wall; else cat 1>&2; fi'
 
 	Errors, warnings and alerts regarding change of state will be piped to:<br>
