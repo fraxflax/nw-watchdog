@@ -21,7 +21,7 @@ Get the latest version from https://github.com/fraxflax/nw-watchdog
 
 ---
 __TARGET__<br>
-The mandatory argument <u>TARGET</u> is the target (destination) to monitor the connection to. <u>TARGET</u> can be an IP address or a resolvable hostname / FQDN. If it's a hostname / FQDN, it will be resolved to an IP address (first one found) at startup and the resolved IP address will be used for the monitoring. Upon failed ping-checks the name will be resolved again and if it resolves to a new IP address, that will be used for the monitoring from there on.
+The mandatory argument <ins>TARGET</ins> is the target (destination) to monitor the connection to. <ins>TARGET</ins> can be an IP address or a resolvable hostname / FQDN. If it's a hostname / FQDN, it will be resolved to an IP address (first one found) at startup and the resolved IP address will be used for the monitoring. Upon failed ping-checks the name will be resolved again and if it resolves to a new IP address, that will be used for the monitoring from there on.
 
 ---
 __OPTIONS__ (no arguments)<br>
@@ -79,9 +79,9 @@ If the target is not on the same subnet as the source, the reachability of the t
 __OPTIONS__ (with ARGUMENT)<br>
         These opions takes a single argument each and may be specified in any order. Specify with equalsign or space or no space between option and argument. They can only be grouped together with the shortform of the NO-ARGUMENT-OPTIONS above, and must be last in such groupings (e.g. `-PAV5`).
 
-- __--verbosity-level | -V__ <u>level</u><br>
+- __--verbosity-level | -V__ <ins>level</ins><br>
   Default: 4<br>
-  <u>level</u> must be an integer greater than or equal to zero.
+  <ins>level</ins> must be an integer greater than or equal to zero.
   Determines how much info is logged to the logfile and which alerts are triggered.
 
 	__0__ - none<br>
@@ -106,9 +106,9 @@ __OPTIONS__ (with ARGUMENT)<br>
 	__6__ - debug<br>
 	Logs even more internal details, e.g. SETTINGS used, all tests performed, all sleeps, and other debug info.
 
-- __--interface | -i__ <u>interface</u><br>
+- __--interface | -i__ <ins>interface</ins><br>
   Default: none<br>
-  <u>interface</u> is the name of the source interface to initially use.
+  <ins>interface</ins> is the name of the source interface to initially use.
 
 	The interface may dynamically change due to topology detection. If you want to force the use of a specific interface, use __--force-interface__ instead.
 
@@ -116,9 +116,9 @@ __OPTIONS__ (with ARGUMENT)<br>
 
 	`--interface` cannot be combined with `--force-interface`.
 
-- __--force-interface | -I__ <u>interface</u><br>
+- __--force-interface | -I__ <ins>interface</ins><br>
   Default: none<br>
-  <u>interface</u> is the name of the source interface to always use.
+  <ins>interface</ins> is the name of the source interface to always use.
 
 	Packets will always be sent from this interface. The forwadring table will be ignored as well as conflicting topology changes.<br>
 	This is useful for monitoring the preferred path and making sure it's up. It does not check if you have connectivity to the target via any other path.
@@ -127,11 +127,11 @@ __OPTIONS__ (with ARGUMENT)<br>
 
 	`--force-interface` cannot be combined with `--interface`.
 
-- __--logfile | -l__ <u>logfile</u><br>
+- __--logfile | -l__ <ins>logfile</ins><br>
 	Default: '/var/log/nw-watchdog.log'<br>
 	Logfile to use. If specified as '-' logs are written to stdout.
 
-- __--logsize | -z__ <u>size</u><br>
+- __--logsize | -z__ <ins>size</ins><br>
   Default: 0
 
   If the logfile grows beyond this size, the oldest entries will be removed.
@@ -143,13 +143,13 @@ __OPTIONS__ (with ARGUMENT)<br>
 
   If `flock` is available, the logfile will be locked before written to or shrinked, otherwise there is a slight risk of loglines being lost if two or more instances of `nw-watchdog` are concurently running using the same logfile and at least one of them have `--logsize` set to a value larger than 0.
 
-- __--pidfile | -p__ <u>pidfile</u><br>
+- __--pidfile | -p__ <ins>pidfile</ins><br>
   Default: '/run/nw-watchdog.pid'<br>
   Pidfile to use.
 
-- __--slow-up-timeout | -t__ <u>seconds</u><br>
+- __--slow-up-timeout | -t__ <ins>seconds</ins><br>
   Default: 7<br>
-  <u>seconds</u> must be an integer greater than zero.
+  <ins>seconds</ins> must be an integer greater than zero.
 
   The check whether the target is up or not, is performed in several steps.<br>
   First a "quick-up" test sends one single ICMP echo packet waiting for the reply for no more than 1 second. If that fails, a more thourough "slow-up" test sends 5 ICMP echos.
@@ -165,30 +165,30 @@ __OPTIONS__ (with ARGUMENT)<br>
 
   `--slow-up-timeout=1` is suitable to use for monitoring local targets (e.g. nexthop) on ethernet carried subnets.
 
-- __--sleep | -s | --interval__ <u>seconds</u><br>
+- __--sleep | -s | --interval__ <ins>seconds</ins><br>
   Default: 10<br>
-  <u>seconds</u> must be an integer greater than zero.
+  <ins>seconds</ins> must be an integer greater than zero.
 
   How many seconds to sleep after sucessful ping check. 
 
-- __--ifup-grace | -g__ <u>seconds</u><br>
+- __--ifup-grace | -g__ <ins>seconds</ins><br>
   Default: 40<br>
-  <u>seconds</u> must be an integer greater than zero.
+  <ins>seconds</ins> must be an integer greater than zero.
 
   How many seconds to sleep before next check after interface has been reset.
 
-- __--max-nolink | -n__ <u>number</u><br>
+- __--max-nolink | -n__ <ins>number</ins><br>
   Default: 1<br>
-  <u>number</u> must be an integer greater than or equal to zero.
+  <ins>number</ins> must be an integer greater than or equal to zero.
 
   Maximum number of consecutive failed link checks in which the interface have been reset (brought down and up again) before doing new topology check.
 
   A word of warning: If set to 0 and interface is not up / goes down, infinite retries to bring the interface up will be made before checking topology. Only set it to 0 if you are sure that the specified interface should always be used and you want to make sure it's up before starting to monitor the connection.<br>
   Typically, you would want to also use `--force-interface` when using `--max-nolink=0`.
 
-- __--ifcup | -u__ <u>STRING</u> <br>
+- __--ifcup | -u__ <ins>STRING</ins> <br>
   Default: 'ifup %{IFC}'<br>
-  <u>STRING</u> will be passed to 'sh -c' to bring the interface up.<br>
+  <ins>STRING</ins> will be passed to 'sh -c' to bring the interface up.<br>
   %{IFC} will be dynmaically replaced with the interface name currently in use as source interface.
 
   Examples:
@@ -211,9 +211,9 @@ __OPTIONS__ (with ARGUMENT)<br>
 	`--ifcup='ipsec up connection-name'`<br>
 	(see __EXAMPLES__  below for a more extensive IPSec example using vti tunnel interface)
 
-- __--ifcdown | -U__ <u>STRING</u><br>
+- __--ifcdown | -U__ <ins>STRING</ins><br>
   Default: 'ifdown %{IFC}'<br>
-  <u>STRING</u> will be passed to 'sh -c' to bring the interface down.<br>
+  <ins>STRING</ins> will be passed to 'sh -c' to bring the interface down.<br>
   %{IFC} will be dynmaically replaced with the interface name currently in use as source interface.
 
   Examples:
@@ -236,13 +236,13 @@ __OPTIONS__ (with ARGUMENT)<br>
 	`--ifcup='ipsec down connection-name'`<br>
 	(see __EXAMPLES__  below for a more extensive IPSec example using vti tunnel interface)
 
-    __--alert | -a__ <u>STRING</u><br>
+    __--alert | -a__ <ins>STRING</ins><br>
 	Default: 'if which wall >/dev/null; then exec wall; else cat 1>&2; fi'
 
 	Errors, warnings and alerts regarding change of state will be piped to:<br>
-	sh -c '<u>STRING</u>'
+	sh -c '<ins>STRING</ins>'
 
-	Within <u>STRING</u> the following placeholders can be used:		
+	Within <ins>STRING</ins> the following placeholders can be used:		
 	- %{IFC} - the interface name
 	- %{TARGET} - the target for which the connection is monitored
 	- %{TADDR} - the IP address of the TARGET
@@ -262,31 +262,31 @@ __OPTIONS__ (with ARGUMENT)<br>
 	EXAMPLE of how to email the alert messages using mailx (mailutils) with a custom from address:<br>
 	`--alert='mailx -a "From: nw-watchdog@this.hst" -s "nw-watchdog %{STATE} alert for %{TARGET} via %{IFC}" my@email.adr'`
 
-- __--install-systemd__ <u>SERVICENAME</u>
+- __--install-systemd__ <ins>SERVICENAME</ins>
   Default: none
 	
-  Will write a systemd service file /etc/systemd/system/nw-watchdog-<u>SERVICENAME</u>.service file launching nw-watchdog as a daemon with<br>
-  `--pidfile=/run/nw-watchdog-<u>SERVICENAME</u>.pid`<br>
-  `--lofile=/var/log/nw-watchdog-<u>SERVICENAME</u>.log`<br>
+  Will write a systemd service file /etc/systemd/system/nw-watchdog-<ins>SERVICENAME</ins>.service file launching nw-watchdog as a daemon with<br>
+  `--pidfile=/run/nw-watchdog-<ins>SERVICENAME</ins>.pid`<br>
+  `--lofile=/var/log/nw-watchdog-<ins>SERVICENAME</ins>.log`<br>
 	and otherwise with the exact same options as run (apart from the `--install-systemd` option itself of course).
 
-	If /etc/systemd/system/nw-watchdog-<u>SERVICENAME</u>.service already exists, the service will be stopped and the file overwritten.
+	If /etc/systemd/system/nw-watchdog-<ins>SERVICENAME</ins>.service already exists, the service will be stopped and the file overwritten.
 
-	It will then enable, start it and show status of the newly created nw-watchdog-<u>SERVICENAME</u>.service.
+	It will then enable, start it and show status of the newly created nw-watchdog-<ins>SERVICENAME</ins>.service.
 
-	The <u>SERVICENAME</u> must consist of at least 1 valid character ( 'a-z', 'A-Z', '0-9', '-' and '_' ) and be no longer than 236 characters.
+	The <ins>SERVICENAME</ins> must consist of at least 1 valid character ( 'a-z', 'A-Z', '0-9', '-' and '_' ) and be no longer than 236 characters.
 
         This option requires root privileges.
 
 	Note:
 	To completely remove the service do (as root):
-	    systemctl stop nw-watchdog-<u>SERVICENAME</u>.service
-	    systemctl disable nw-watchdog-<u>SERVICENAME</u>.service
-	    rm /etc/systemd/system/nw-watchdog-<u>SERVICENAME</u>.service
+	    systemctl stop nw-watchdog-<ins>SERVICENAME</ins>.service
+	    systemctl disable nw-watchdog-<ins>SERVICENAME</ins>.service
+	    rm /etc/systemd/system/nw-watchdog-<ins>SERVICENAME</ins>.service
 
 __EXAMPLES__
 
-	<u>ISP gateway monitoring:</u>
+	<ins>ISP gateway monitoring:</ins>
 
         __nw-watchdog__ 1.2.3.4 __\\
 EOU
@@ -302,7 +302,7 @@ $FMT<<EOU
 	Checking once a minute (__--interval=__60) that we have connectivity to the Internet Service Provider's gateway without actually pinging anything on the Internet (__--no-ping-target__ 1.2.3.4 ... any Intenet address will do) allowing interface and topology detection (not using --force-interface or --max-no-link=0) but still, if down, bring the supposed initial interface towards the ISP up on startup (__--interface=__eth0) expecting the ISP gateway to have an RTT below 1 second (__--slow-up-timeout=__1) and allowing the interface to be down for up to 5 minutes before considering it a permanent error rechecking topology (__--ifup-grace=__300).
 
 
-	<u>ISP gateway monitoring with forced interface:</u>
+	<ins>ISP gateway monitoring with forced interface:</ins>
 
         __nw-watchdog__ 1.2.3.4 __\\
 EOU
@@ -318,7 +318,7 @@ $FMT<<EOU
         Same as above but enforcing the use of the eth0 interface as we know that the ISP gateway should always be reachable via that interface and that is the only Internet facing interface we have. It must be brought up on startup if not already up and there is no use rechecking the topology if it's not up (__--force-interface=__eth0), so if down, we retry to reset it every 30 seconds (__--ifup-grace=__30) forever (__--max-no-link=__0), checking the connectivity every 10 seconds (__--interval=__10).
 
 
-	<u>Management of Strongswan IPSec with VTI tunnel interface:</u>
+	<ins>Management of Strongswan IPSec with VTI tunnel interface:</ins>
 
 	Firstly, we setup the nw-watchdog systemd service for monitoring the connectivity to the IPSec peers public address (1.2.3.4 in this example), emailing alerts to the admin.
 
@@ -366,7 +366,7 @@ $FMT<<EOU
 	Even with target 10.10.1.1, the nexthop (169.254.0.1) will also be monitored (we are NOT using --no-ping-nexthop) and the interface will NOT be reset as long as the nexthop is reachable.
 
 
-	<u>Wireguard full tunnel management:</u>
+	<ins>Wireguard full tunnel management:</ins>
 
 	This is an example of how one can use nw-watchdog to setup and monitor a wireguard full tunnel, also monitoring the connectivity to the wireguard server, running both whatchdogs as systemd services getting alerts via e-mail:
 
