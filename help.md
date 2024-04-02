@@ -394,38 +394,51 @@ nw-watchdog 10.0.0.1 \
 --install-systemd=wg0
 ```
 
-__OBSERVE__ that the entire `--ifcup='...'` command need to be on a single line without line breaks (linebreaks added above for readability).
+__OBSERVE__ that the entire `--ifcup='...'` command need to be on a single line without line breaks (linebreaks added above for readability):
 ```
 --ifcup='ip link add wg0 type wireguard ; ip link set wg0 up ; wg setconf wg0 /etc/wireguard/wg0.conf ; ip address add 10.0.0.2 peer 10.0.0.1 dev wg0 ; getent ahostsv4 wgserver.my.dom | grep -oE "^[0-9.]+" | uniq | while read addr; do ip route add $addr/32 via `ip route show default | head -1 | cut -d" " -f3` ; done ; ip route add 0.0.0.0/1 via 10.0.0.1 dev wg0 src 10.0.0.2 ; ip route add 128.0.0.0/1 via 10.0.0.1 dev wg0 src 10.0.0.2 2>/dev/null'
 ```
 
-We use __--no-ping-nexthop__ as the nexthop is the same as the target peer-to-peer address we monitor the connection for (in reality we don't need to specify it as it is the default behaviour if the target address is the same as the nexthop address).
+We use `--no-ping-nexthop` as the nexthop is the same as the target peer-to-peer address we monitor the connection for (in reality we don't need to specify it as it is the default behaviour if the target address is the same as the nexthop address).
     
 
-__DEPENDENCIES__
-        nw-watchdog depends on the below executables being available in "/sbin:/bin:/usr/sbin:/usr/bin:\$PATH" or being shell-builtin. A check is done at startup and if any of these tools are missing, nw-watchdog will exit with an error telling which are lacking.
+## DEPENDENCIES
+nw-watchdog depends on the below executables being available in `/sbin:/bin:/usr/sbin:/usr/bin:\$PATH` or being shell-builtin. A check is done at startup and if any of these tools are missing, nw-watchdog will exit with an error telling which are lacking.
 	
-EOU
-    for dep in $DEPENDENCIES; do
-		printf "        - __%s__\n" "$dep"
-    done
-    $FMT<<EOU
+- `basename`
+- `cat`
+- `cut`
+- `date`
+- `getent`
+- `grep`
+- `head`
+- `id`
+- `ip`
+- `ping`
+- `printf`
+- `readlink`
+- `sed`
+- `sleep`
+- `stat`
+- `tail`
+- `touch`
+- `wc`
 
-        __nw-watchdog__ will function without the below listed utilities, but will use them to enhance its functionality if available.
+`nw-watchdog` will function without the below listed utilities, but will use them to enhance its functionality if available.
 
-	- __flock__
-            If available the logfile will be locked before truncated or written to.
-	    If not available, there is a slight risk of loglines being lost if two or more instances of __nw-watchdog__ are concurently running using the same logfile and at least one of them have __--logsize__ set to a value larger than 0.
+- `flock`<br>
+  If available the logfile will be locked before truncated or written to.<br>
+  If not available, there is a slight risk of loglines being lost if two or more instances of `nw-watchdog` are concurently running using the same logfile and at least one of them have `--logsize` set to a value larger than 0.
 
-	- __wall__
-	If available it will be used as default __--alert__ command. Otherwise, alerting will be done to stderr by default.
+- `wall`<br>
+  If available it will be used as default `--alert` command. Otherwise, alerting will be done to stderr by default.
 
-	- __tput__
-	Is used to determine the terminal width and output bold and underlined text in this help page.
+- `tput`<br>
+  Is used to determine the terminal width and output bold and underlined text in this help page.
 
-	- __fmt__
-	Is used to format the help message if available.
+- fmt`<br>
+  Is used to format the help message if available.
 
-	- __less__ (or __more__)
-	Is used to page this help unless \$PAGER is set to something else.
+- `less` (or `more`)<br>
+  Is used to page this help unless \$PAGER is set to something else.
 
