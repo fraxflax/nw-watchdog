@@ -34,7 +34,7 @@ These options take no arguments, and may be specified in any order. They can be 
 
 * __--help | -h__
 
-	Shows this help, using \$PAGER if set to an executable, otherwise 'less' or 'more' if available in "/sbin:/bin:/usr/sbin:/usr/bin:\$PATH"<br>
+	Shows this help, using $PAGER if set to an executable, otherwise 'less' or 'more' if available in "/sbin:/bin:/usr/sbin:/usr/bin:$PATH"<br>
 (Use PAGER=cat to avoid using a pager).
 
 * __--no-ping-target | -P__
@@ -413,7 +413,7 @@ We use `--no-ping-nexthop` as the nexthop is the same as the target peer-to-peer
     
 
 ## DEPENDENCIES
-nw-watchdog depends on the below executables being available in `/sbin:/bin:/usr/sbin:/usr/bin:\$PATH` or being shell-builtin. A check is done at startup and if any of these tools are missing, nw-watchdog will exit with an error telling which are lacking.
+nw-watchdog depends on the below executables being available in `/sbin:/bin:/usr/sbin:/usr/bin:$PATH` or being shell-builtin. A check is done at startup and if any of these tools are missing, nw-watchdog will exit with an error telling which are lacking.
 	
 - `basename`
 - `cat`
@@ -450,5 +450,5 @@ __nw-watchdog__ will function without the below listed utilities, but will use t
   Is used to format the help message if available.
 
 - `less` (or `more`)<br>
-  Is used to page this help unless \$PAGER is set to something else.
+  Is used to page this help unless $PAGER is set to something else.
 
