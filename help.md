@@ -257,7 +257,7 @@ __OPTIONS__ (with ARGUMENT)<br>
 
 	The alert command will be launched for every ERROR and WARNING, even repeated ones.<br>
 	For the other states (UP, DOWN, UNREACHABLE, REACHABLE) the alert command will be launched only upon state change.<br>
-	E.g. if the state goes from UP to DOWN the alert is triggered but if the next check is also DOWN, no further alert will be sent (until the state changes again).
+	E.g. if the state goes from UP to DOWN the DOWN alert is triggered, but if the next check is also DOWN, no further alert will be sent (until the state changes again).
 
 	EXAMPLE of how to email the alert messages using mailx (mailutils) with a custom from address:<br>
 	`--alert='mailx -a "From: nw-watchdog@this.hst" -s "nw-watchdog %{STATE} alert for %{TARGET} via %{IFC}" my@email.adr'`
@@ -266,8 +266,8 @@ __OPTIONS__ (with ARGUMENT)<br>
   Default: none
 	
   Will write a systemd service file /etc/systemd/system/nw-watchdog-<ins>SERVICENAME</ins>.service file launching nw-watchdog as a daemon with<br>
-  `--pidfile=/run/nw-watchdog-<ins>SERVICENAME</ins>.pid`<br>
-  `--lofile=/var/log/nw-watchdog-<ins>SERVICENAME</ins>.log`<br>
+  `--pidfile=/run/nw-watchdog-SERVICENAME.pid`<br>
+  `--lofile=/var/log/nw-watchdog-`<ins>SERVICENAME</ins>`.log`<br>
 	and otherwise with the exact same options as run (apart from the `--install-systemd` option itself of course).
 
 	If /etc/systemd/system/nw-watchdog-<ins>SERVICENAME</ins>.service already exists, the service will be stopped and the file overwritten.
