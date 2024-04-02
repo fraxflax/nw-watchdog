@@ -436,9 +436,9 @@ nw-watchdog vpn.inside.dom \
 --ifcdown='ifdown vnpL ; ifdown vpnP  ; ifdown vpnF' \
 --ifcup='ifup vpnL'
 ```
-Starting the watchdog like the above with any of the three vpn-interfaces up, the vpn-interface that is up will be detected and used as source interface. The continuous topology detection will ensure switching to which ever interface currently is up. If all interfaces are down the topology detection will think the interface for the default gw is the one to monitor (in our example `eth0`) but since we have `--no-ping-nexthop` and hardcoded the preferred vpn-interfaces in `--ifcup` the watchdog will bring up `vpnL`. If any of the vpn interfaces are up, but have problems the watchdog will bring them all down and then bring up `vpnL`.
+Starting the watchdog like the above with any of the three vpn-interfaces up, the vpn-interface that is up will be detected and used as source interface. The continuous topology detection will ensure switching to which ever interface currently is up. If all interfaces are down the topology detection will think the interface for the default gw is the one to monitor (in our example `eth0`) but since we have `--no-ping-nexthop` and hardcoded the preferred vpn-interface in `--ifcup` the watchdog will bring up `vpnL`. If any of the vpn interfaces are up, but have problems the watchdog will bring them all down and then bring up `vpnL`.
 
-If we add `--verbosity-level=5` to the above, allowing us to get a trace of what is happening in the logfile in the following scenario:<br>
+We add `--verbosity-level=5` to the above, allowing us to get a trace of what is happening in the logfile in the following scenario:<br>
 `vpnL` is up when __nw-watchdog__ starts,<br>
 after a while we see that `vpnF` is replacing `vpnL` (as somebody brought up the full tunnel for a while)<br>
 then `vpnF` is brought down (as somebody did not need it anymore) and<br>
@@ -453,7 +453,7 @@ __nw-watchdog__ detetcs that the connectivity via the VPN-server is lost and bri
 00:00:01  TRACE: ... and for changes in topology
 00:00:26   INFO: Detected topology: IFC='vpnL' -> 'vpnF' ; NEXTHOP='10.0.10.1' -> '10.0.10.1'
 ```
-^^^ Here sombody replaced `vpnL` with the full tunnel `vpnF`
+^^^ Here somebody replaced `vpnL` with the full tunnel `vpnF`
 ```
 00:00:31   INFO: Detected topology: IFC='vpnF' -> 'eth0' ; NEXTHOP='10.0.10.1' -> '192.168.0.1'
 ```
