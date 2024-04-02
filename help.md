@@ -123,7 +123,7 @@ If the target is not on the same subnet as the source, the reachability of the t
 	`--force-interface` cannot be combined with `--interface`.
 
 * __--logfile | -l__ <ins>logfile</ins><br>
-	Default: '/var/log/nw-watchdog.log'<br>
+	Default: `/var/log/nw-watchdog.log`<br>
 	Logfile to use. If specified as '-' logs are written to stdout.
 
 * __--logsize | -z__ <ins>size</ins><br>
@@ -139,7 +139,7 @@ If the target is not on the same subnet as the source, the reachability of the t
   If `flock` is available, the logfile will be locked before written to or shrinked, otherwise there is a slight risk of loglines being lost if two or more instances of `nw-watchdog` are concurently running using the same logfile and at least one of them have `--logsize` set to a value larger than 0.
 
 * __--pidfile | -p__ <ins>pidfile</ins><br>
-  Default: `'/run/nw-watchdog.pid'`<br>
+  Default: `/run/nw-watchdog.pid`<br>
   Pidfile to use.
 
 * __--slow-up-timeout | -t__ <ins>seconds</ins><br>
@@ -182,7 +182,7 @@ If the target is not on the same subnet as the source, the reachability of the t
   Typically, you would want to also use `--force-interface` when using `--max-nolink=0`.
 
 * __--ifcup | -u__ <ins>STRING</ins> <br>
-  Default: `'ip link set up %{IFC}'`<br>
+  Default: `ip link set up %{IFC}`<br>
   <ins>STRING</ins> will be passed to 'sh -c' to bring the interface up.<br>
   %{IFC} will be dynmaically replaced with the interface name currently in use as source interface.
 
@@ -207,7 +207,7 @@ If the target is not on the same subnet as the source, the reachability of the t
 	(see __EXAMPLES__  below for a more extensive IPSec example using vti tunnel interface)
 
 * __--ifcdown | -U__ <ins>STRING</ins><br>
-  Default: `'ip link set down %{IFC}'`<br>
+  Default: `ip link set down %{IFC}`<br>
   <ins>STRING</ins> will be passed to 'sh -c' to bring the interface down.<br>
   %{IFC} will be dynmaically replaced with the interface name currently in use as source interface.
 
@@ -232,7 +232,7 @@ If the target is not on the same subnet as the source, the reachability of the t
 	(see __EXAMPLES__  below for a more extensive IPSec example using vti tunnel interface)
 
 * __--alert | -a__ <ins>STRING</ins><br>
-	Default: `'if which wall >/dev/null; then exec wall; else cat 1>&2; fi'`
+	Default: `if which wall >/dev/null; then exec wall; else cat 1>&2; fi`
 
 	Errors, warnings and alerts regarding change of state will be piped to:<br>
 	sh -c '<ins>STRING</ins>'
