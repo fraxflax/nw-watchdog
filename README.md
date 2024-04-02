@@ -1,7 +1,7 @@
 # nw-watchdog
 __nw-watchdog__ is a higly configurable network watchdog written in posix shell script for use in Linux, depending only on Linux most standard tools that are normally installed by default in all distributions (also see the __DEPENDENCIES__ section).
 
-It monitors the network connectivity to a specified target and/or the next hop towards that target, alerting upon lost connectivity explaining what is wrong. It can reset the source interface and will detect topology changes and, if allowed, reconfigure itself accordingly. It's intended to run as a daemon and has an option to install itself as a systemd service.  If you want to monitor the connectivity to several targets, you can run several instances of $nwwatchdog using different `--pidfile` option arguments.
+It monitors the network connectivity to a specified <ins>TARGET</ins> and/or the next hop towards that <ins>TARGET</ins>, alerting upon lost connectivity explaining what is wrong. It can reset the source interface and will detect topology changes and, if allowed, reconfigure itself accordingly. It's intended to run as a daemon and has an option to install itself as a systemd service.  If you want to monitor the connectivity to several <ins>TARGET</ins>s, you can run several instances of $nwwatchdog using different `--pidfile` option arguments.
 
 __nw-watchdog__ is free software written by Fredrik Ax \<frax@axnet.nu\>.<br>
 Feel free to modify and/or (re)distribute it in any way you like.<br>
@@ -25,30 +25,30 @@ __nw-watchdog__ <ins>TARGET</ins> [ OPTIONS ]
 
 ## TARGET
 The mandatory argument <ins>TARGET</ins> is the target (destination) to monitor the connection to. <ins>TARGET</ins> can be an IP address or a resolvable hostname / FQDN. If it's a hostname / FQDN, it will be resolved to an IP address (first one found). The resolved IP address will be used for the monitoring. The name is continuously resolved and if the resolved ip address changes the new IP address will be used for the monitoring from there on.<br>
-Use `--no-continuous-topology-detect` to resolve the target only at startup and failed connectivity checks.
+Use `--no-continuous-topology-detect` to resolve the <ins>TARGET</ins> only at startup and failed connectivity checks.
 
 ## OPTIONS (no arguments)
 These options take no arguments, and may be specified in any order. They can be grouped (e.g. -vAP) in their short form, also having one of the OPTIONS that requires an argument last in the group.
 
 * __--help | -h__
 
-	Shows this help, using $PAGER if set to an executable, otherwise 'less' or 'more' if available in "/sbin:/bin:/usr/sbin:/usr/bin:$PATH"<br>
-(Use PAGER=cat to avoid using a pager).
+	Shows this help, using `$PAGER` if set to an executable, otherwise `less` or `more` if available in `/sbin:/bin:/usr/sbin:/usr/bin:$PATH`<br>
+(Use `PAGER=cat` to avoid using a pager).
 
 * __--no-ping-target | -P__
 
-	If the target is the nexthop (on the same subnet or a peer-to-peer address), reachability of the target is checked by arp cache status and ping.<br>
-If the target is not on the same subnet as the source, the reachability of the target is checked by pinging it in a certain pattern (see `--slow-up-timeout` for details).
+	If the <ins>TARGET</ins> is the next hop (on the same subnet or a peer-to-peer address), reachability of the <ins>TARGET</ins> is checked by arp cache status and ping.<br>
+If the <ins>TARGET</ins> is not on the same subnet as the source, the reachability of the <ins>TARGET</ins> is checked by pinging it in a certain pattern (see `--slow-up-timeout` for details).
 
-	`--no-ping-target` disables the ping-checks for the target. Only connectivity to the nexthop for the target is checked.<br>
-	It can be useful if target does not reply to ping, or if it desirable to only alert if there is no route to the target or nexthop is unreachable.
+	`--no-ping-target` disables the ping-checks for the <ins>TARGET</ins>. Only connectivity to the nexthop for the <ins>TARGET</ins> is checked.<br>
+	This can be useful if <ins>TARGET</ins> does not reply to ping, or if it desirable to only alert if there is no route to the <ins>TARGET</ins> or nexthop is unreachable.
 
 	`--no-ping-target` cannot be used in combination with `--no-ping-nexthop`.
 
 * __--no-ping-nexthop | -N | --no-ping-gateway | -G__<br>
-	By default, if the connectivity to the target cannot be verified, the reachability of the nexthop (usually a gateway) is checked, firstly by checking it's status in the arp cache and then by pinging it, rechecking the arp cache status upon failed ping. 
+	By default, if the connectivity to the <ins>TARGET</ins> cannot be verified, the reachability of the nexthop (usually a gateway) is checked, firstly by checking it's status in the arp cache and then by pinging it, rechecking the arp cache status upon failed ping. 
 
-	`--no-ping-nexthop` disbles the reachaility check for the nexthop so only connectivity to target itself is checked. It can be useful if the nexthop is a peer-to-peer address and not setup to reply to ping.
+	`--no-ping-nexthop` disbles the reachaility check for the nexthop so only connectivity to <ins>TARGET</ins> itself is checked. Useful if the nexthop is a peer-to-peer address and not setup to reply to ping.
 
 	`--no-ping-nexthop` cannot be used in combination with `--no-ping-target`.
 
@@ -60,9 +60,9 @@ If the target is not on the same subnet as the source, the reachability of the t
   (Do not try to "repair" the connection", just monitor it.)
 
 * __--no-continuous-topology-detect | -T__<br>
-  Normaly the topology (resolving the ip address of the target, detecting which source interface to use and the ip address of the nexthop towards the target) is detected at startup and continuously monitored for changes.
+  Normaly the topology (resolving the ip address of the <ins>TARGET</ins>, detecting which source interface to use and the ip address of the nexthop towards the <ins>TARGET</ins>) is detected at startup and continuously monitored for changes.
 
-	`--no-continuous-topology-detect` disables the topology detection for as long as the target replies (or in combination with `--no-ping-target` for as long as the nexthop is reachable). The topology will only be detected at startup and if the TARGET does not reply or if the NEXTHOP cannot be reached, meaning that routing changes making the TARGET or NEXTHOP unreachable will not be detected as long as the TARGET can be reached using the old topology.
+	`--no-continuous-topology-detect` disables the topology detection for as long as the <ins>TARGET</ins> replies (or in combination with `--no-ping-target` for as long as the nexthop is reachable). The topology will only be detected at startup and if the <INS>TARGET</INS> does not reply or if the NEXTHOP cannot be reached, meaning that routing changes making the <INS>TARGET</INS> or NEXTHOP unreachable will not be detected as long as the <INS>TARGET</INS> can be reached using the old topology.
 
 	`--force-interface` implies `--no-continuous-topology-detect`.
     				       
@@ -115,7 +115,7 @@ If the target is not on the same subnet as the source, the reachability of the t
 
 	The interface may dynamically change due to topology detection. If you want to force the use of a specific interface, use `--force-interface` instead.
 
-	If neither of `--interface` or `--force-interface` is specified the source interface it will be determined from the FIB by looking at the route to the target. The reason to specify it even so, would be to have nw-watchdog bring it up if it's down when starting.
+	If neither of `--interface` or `--force-interface` is specified the source interface it will be determined from the FIB by looking at the route to the <ins>TARGET</ins>. The reason to specify it even so, would be to have nw-watchdog bring it up if it's down when starting.
 
 	`--interface` cannot be combined with `--force-interface`.
 
@@ -124,7 +124,7 @@ If the target is not on the same subnet as the source, the reachability of the t
   <ins>interface</ins> is the name of the source interface to always use.
 
 	Packets will always be sent from this interface. The forwadring table will be ignored as well as conflicting topology changes.<br>
-	This is useful for monitoring the preferred path and making sure it's up. It does not check if you have connectivity to the target via any other path.
+	This is useful for monitoring the preferred path and making sure it's up. It does not check if you have connectivity to the <ins>TARGET</ins> via any other path.
 
 	Implies `--no-continuous-topology-detect`.
 
@@ -154,19 +154,19 @@ If the target is not on the same subnet as the source, the reachability of the t
   Default: `3`<br>
   <ins>seconds</ins> must be an integer greater than zero.
 
-  The check whether the target is up or not, is performed in several steps.<br>
+  The check whether the <ins>TARGET</ins> is up or not, is performed in several steps.<br>
   First a "quick-up" test sends one single ICMP echo packet waiting for the reply for no more than 1 second. If that fails, a more thourough "slow-up" test sends 5 ICMP echos.
 
   `--slow-up-timeout` controls he TIMEOUT for waiting on each packet in the slow-up test.<br>
   5 packets are always sent in the slow-up test.<br>
-  The packets are sent adaptively, meaning that as soon as a reply is received the next packet is sent without delay, giving slow-up a total time of 5 * RTT to the target if the connection is up.<br>
-  The DEADLINE = TIMEOUT * 5 is the maximum time the slow-up test will take if the target is down.
+  The packets are sent adaptively, meaning that as soon as a reply is received the next packet is sent without delay, giving slow-up a total time of 5 * RTT to the <ins>TARGET</ins> if the connection is up.<br>
+  The DEADLINE = TIMEOUT * 5 is the maximum time the slow-up test will take if the <ins>TARGET</ins> is down.
         
   `--slow-up-timeout=7` is useful for monitoring VPN connections via interfaces that need a long wake-up time if idle (due to regotiation of encryption, exchanging keys, reauthentication, etc).
 
-  `--slow-up-timeout=3` is useful for monitoring connections to targets with low - medium latency via interfaces that does not need a long wake-up time (e.g. ethernet interfaces).
+  `--slow-up-timeout=3` is useful for monitoring connections to <ins>TARGET</ins>s with low - medium latency via interfaces that does not need a long wake-up time (e.g. ethernet interfaces).
 
-  `--slow-up-timeout=1` is suitable to use for monitoring local targets (e.g. nexthop) on ethernet carried subnets.
+  `--slow-up-timeout=1` is suitable to use for monitoring local <ins>TARGET</ins>s (e.g. nexthop) on ethernet carried subnets.
 
 * __--sleep | -s | --interval__ <ins>seconds</ins><br>
   Default: `10`<br>
@@ -247,12 +247,12 @@ If the target is not on the same subnet as the source, the reachability of the t
 
 	Within <ins>STRING</ins> the following placeholders can be used:		
 	- %{IFC} - the interface name
-	- %{TARGET} - the target for which the connection is monitored
-	- %{TADDR} - the IP address of the TARGET
-    - %{NEXTHOP}  - the IP address of the NEXTHOP towards target
+	- %{TARGET} - the <ins>TARGET</ins> for which the connection is monitored
+	- %{TADDR} - the IP address of the <INS>TARGET</INS>
+    - %{NEXTHOP}  - the IP address of the NEXTHOP towards <ins>TARGET</ins>
 	- %{STATE} - the state of the alert:
-	  - UP for restored connectivity to TARGET (implies REACHABLE)
-	  - DOWN for lost conenctivity to TARGET
+	  - UP for restored connectivity to <INS>TARGET</INS> (implies REACHABLE)
+	  - DOWN for lost conenctivity to <INS>TARGET</INS>
 	  - UNREACHABLE for lost conenctivity to NEXTHOP (implies DOWN)
 	  - REACHABLE for restored connectivity to NEXTHOP
 	  - ERROR for permanent errors
@@ -316,8 +316,8 @@ nw-watchdog 1.2.3.4 \
 Same as above but enforcing the use of the eth0 interface as we know that the ISP gateway should always be reachable via that interface and that is the only Internet facing interface we have. It must be brought up on startup if not already up and there is no use rechecking the topology if it's not up (`--force-interface=eth0`), so if down, we retry to reset it every 30 seconds (`--ifup-grace=30`) forever (`--max-no-link=0`), checking the connectivity every 10 seconds (`--interval=10`).
 
 
-#### <ins>Management of Strongswan IPSec with VTI tunnel interface:</ins> 
-Firstly, we start a nw-watchdog monitoring the connectivity to the IPSec peers public address (1.2.3.4 in this example), emailing alerts to the admin.
+#### <ins>Management of Strongswan IPSec with VTI tunnel interface:</ins>
+Firstly, we start a nw-watchdog for monitoring the connectivity to the IPSec peers public address (1.2.3.4 in this example), emailing alerts to the admin.
 
 ```shell
 nw-watchdog 1.2.3.4 \
@@ -325,7 +325,6 @@ nw-watchdog 1.2.3.4 \
 --alert='mailx -a "From: nwwatchdog@`hostname -f`" -s "IPSec Peer 1.2.3.4 %{STATE} via %{IFC}" admin@`cat /etc/mailname\`' \
 --slow-up-timeout=2 \
 --ifup-grace=10 \
---interval=10 \
 --pidfile=/run/nw-watchdog-ipsecserver.pid
 ```
 
@@ -358,14 +357,14 @@ We use `--ifup-grace=25` to allow enough time for IPSec to establish the connect
 `--slow-up-timeout=5` (making the deadline 25 seconds for the slow-up ping test) should be enough for an idle IPSec conmnection to wakeup and start forwarding packets when monitored.
 
 In the above example we monitor the connectivity to the peer address inside the VTI tunnel, which is also the nexthop.
-If we are interested in the connectivity to something in the remote network routed via the tunnel we could use that as a target instead of the peer address:
+If we are interested in the connectivity to something in the remote network routed via the tunnel we could use that as a <ins>TARGET</ins> instead of the peer address:
 
 `nw-watchdog 10.10.1.1 ...`<br>
 and the rest of the options exactly the same as above.
 
 This would give alerts if `10.10.1.1` is down.<br>
-In all other ways the effect would be the same as using `169.254.0.1` as target.<br>
-Even with target `10.10.1.1`, the nexthop (`169.254.0.1`) will also be monitored (we are __NOT__ using --no-ping-nexthop) and the interface will __NOT__ be reset as long as the nexthop is reachable.
+In all other ways the effect would be the same as using `169.254.0.1` as <ins>TARGET</ins>.<br>
+Even with <ins>TARGET</ins> `10.10.1.1`, the nexthop (`169.254.0.1`) will also be monitored (we are __NOT__ using --no-ping-nexthop) and the interface will __NOT__ be reset as long as the nexthop is reachable.
 
 
 #### <ins>Wireguard full tunnel management:</ins>
@@ -409,9 +408,9 @@ __OBSERVE__ that the entire `--ifcup='...'` command need to be on a single line 
 --ifcup='ip link add wg0 type wireguard ; ip link set wg0 up ; wg setconf wg0 /etc/wireguard/wg0.conf ; ip address add 10.0.0.2 peer 10.0.0.1 dev wg0 ; getent ahostsv4 wgserver.my.dom | grep -oE "^[0-9.]+" | uniq | while read addr; do ip route add $addr/32 via `ip route show default | head -1 | cut -d" " -f3` ; done ; ip route add 0.0.0.0/1 via 10.0.0.1 dev wg0 src 10.0.0.2 ; ip route add 128.0.0.0/1 via 10.0.0.1 dev wg0 src 10.0.0.2 2>/dev/null'
 ```
 
-We use `--no-ping-nexthop` as the nexthop is the same as the target peer-to-peer address we monitor the connection for (in reality we don't need to specify it as it is the default behaviour if the target address is the same as the nexthop address).
+We use `--no-ping-nexthop` as the nexthop is the same as the <ins>TARGET</ins> peer-to-peer address we monitor the connection for (in reality we don't need to specify it as it is the default behaviour if the <ins>TARGET</ins> address is the same as the nexthop address).
     
-
+	
 #### <ins>Several VPN paths with one preferred interface:
 
 This is a (real life) cornor case but worth explaining to get an understanding of the capabilities of nw-watchdog.
@@ -462,7 +461,7 @@ If we add --verbosity-level=5 to the above, allowing us to get a trace of what i
 00:00:35  TRACE: quick-up failed ... trying slow-up ...
 00:00:35  TRACE: slow-up failed or ambigious result ... verifying ...
 ```
-^^^ Here the nw-watchdog gives up and judge that the target is down. 
+^^^ Here the nw-watchdog gives up and judge that the <ins>TARGET</ins> is down. 
 ```
 00:00:37  ALERT: DOWN - Not getting replies from target 'vpn.inside.dom' (10.0.10.1) on interface 'eth0'.
                  Resetting interface:
