@@ -7,7 +7,7 @@ __nw-watchdog__ <ins>TARGET</ins> [ OPTIONS ]
 ## DESCRIPTION
 __nw-watchdog__ is a higly configurable network watchdog written in posix shell script for use in Linux, depending only on Linux most standard tools that are normally installed by default in all distributions (also see the __DEPENDENCIES__ section).
 
-It monitors the network connectivity to a specified target and/or the next hop towards that target, alerting upon lost connectivity explaining what is wrong. It can handle resetting the source interface and will detect topology changes and, if allowed, reconfigure itself accordingly. It's intended to run as a daemon and has an option to install itself as a systemd service.  If you want to monitor the connectivity to several targets, you can run several instances of nw-watchdog using different `--pidfile` option arguments.
+It monitors the network connectivity to a specified target and/or the next hop towards that target, alerting upon lost connectivity explaining what is wrong. It can reset the source interface and will detect topology changes and, if allowed, reconfigure itself accordingly. It's intended to run as a daemon and has an option to install itself as a systemd service.  If you want to monitor the connectivity to several targets, you can run several instances of $nwwatchdog using different `--pidfile` option arguments.
 
 __nw-watchdog__ is free software written by Fredrik Ax \<frax@axnet.nu\>.<br>
 Feel free to modify and/or (re)distribute it in any way you like.<br>
@@ -17,17 +17,16 @@ It comes with ABSOLUTELY NO WARRANTY.
 Get the latest version from https://github.com/fraxflax/nw-watchdog
 
 ## TARGET
-The mandatory argument <ins>TARGET</ins> is the target (destination) to monitor the connection to. <ins>TARGET</ins> can be an IP address or a resolvable hostname / FQDN.
-
-If it's a hostname / FQDN, it will be resolved to an IP address (first one found) The resolved IP address will be used for the monitoring. The name is continously resolved and if the resolved ip address changes the new IP address will be used for the monitoring from there on. Use `--no-continuous-topology-detect` to resolve the target only at startup and failed connectivity checks.
+The mandatory argument <ins>TARGET</ins> is the target (destination) to monitor the connection to. <ins>TARGET</ins> can be an IP address or a resolvable hostname / FQDN. If it's a hostname / FQDN, it will be resolved to an IP address (first one found). The resolved IP address will be used for the monitoring. The name is continuously resolved and if the resolved ip address changes the new IP address will be used for the monitoring from there on.<br>
+Use `--no-continuous-topology-detect` to resolve the target only at startup and failed connectivity checks.
 
 ## OPTIONS (no arguments)
-These options take no arguments, and may be specified in any order. They can be grouped (e.g. -vAP) in their short form, also having one of the OPTIONS that takes arguments last.
+These options take no arguments, and may be specified in any order. They can be grouped (e.g. -vAP) in their short form, also having one of the OPTIONS that requires an argument last in the group.
 
 * __--help | -h__
 
-	Shows this help, using $PAGER if set to an executable, otherwise 'less' or 'more' if available in "/sbin:/bin:/usr/sbin:/usr/bin:$PATH"<br>
-(Use PAGER=cat to avoid using a pager).
+	Shows this help, using `$PAGER` if set to an executable, otherwise `less` or `more` if available in `/sbin:/bin:/usr/sbin:/usr/bin:$PATH`<br>
+(Use `PAGER=cat` to avoid using a pager).
 
 * __--no-ping-target | -P__
 
