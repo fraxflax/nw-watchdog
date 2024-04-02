@@ -436,20 +436,17 @@ If we add --verbosity-level=5 to the above, allowing us to get a trace of what i
 00:00:01   INFO: Target (vpn.inside.dom) resolved to 10.0.10.1 (instead of '').
 00:00:01   INFO: Detected topology: IFC='vpnL' -> 'vpnL' ; NEXTHOP='' -> '10.0.10.1'
 ```
-^^^^^^^^^^^^^^^^
-This shows that vpnL is the interface that is up at start
+^^^ This shows that `vpnL` is the interface that is up at start
 ```
 00:00:01  TRACE: Continuously checking if target is up...
 00:00:01  TRACE: ... and for changes in topology
 00:00:26   INFO: Detected topology: IFC='vpnL' -> 'vpnF' ; NEXTHOP='10.0.10.1' -> '10.0.10.1'
 ```
-^^^^^^^^^^^^^^^^
-Here sombody replaced vpnL with the full tunnel vpnF
+^^^ Here sombody replaced `vpnL` with the full tunnel `vpnF`
 ```
 00:00:31   INFO: Detected topology: IFC='vpnF' -> 'eth0' ; NEXTHOP='10.0.10.1' -> '192.168.0.1'
 ```
-^^^^^^^^^^^^^^^^
-and here the full tunnel was brought down again (without replacing it with any of th e other vpn-interfaces) 
+^^^ and here the full tunnel was brought down again (without replacing it with any of the other vpn-interfaces) 
 ```
 00:00:32  TRACE: quick-up failed ... trying slow-up ...
 00:00:32  TRACE: slow-up failed or ambigious result ... verifying ...
@@ -457,8 +454,7 @@ and here the full tunnel was brought down again (without replacing it with any o
 00:00:35  TRACE: quick-up failed ... trying slow-up ...
 00:00:35  TRACE: slow-up failed or ambigious result ... verifying ...
 ```
-^^^^^^^^^^^^^^^^
-Here the nw-watchdog gives up and judge that the target is down. 
+^^^ Here the nw-watchdog gives up and judge that the target is down. 
 ```
 00:00:37  ALERT: DOWN - Not getting replies from target 'vpn.inside.dom' (10.0.10.1) on interface 'eth0'.
                  Resetting interface:
@@ -467,16 +463,14 @@ Here the nw-watchdog gives up and judge that the target is down.
                  ifup vpnL
 00:00:37   INFO: Resetting interface (eth0).
 ```
-^^^^^^^^^^^^^^^^
-This can be confusing since it's actually not eth0 that is reset (it's just the current source interface) 
-Below we see that the watchdog actually brings down all the vpn-interfaces and brings up vpnL 
+^^^ This can be confusing since it's actually not eth0 that is reset (it's just the current source interface) 
+Below we see that the watchdog actually brings down all the vpn-interfaces and brings up `vpnL` 
 ```
 00:00:37  TRACE: sh -c 'ifdown vpnL ; ifdown vpnP ; ifdown vgfull'ifup vpnL    TRACE: sh -c ''
 00:00:38  TRACE: sh -c 'ifup vpnL'
 00:00:38  TRACE: Sleeping for 35 seconds.
 ```
-^^^^^^^^^^^^^^^^
-This is the grace period we have set in --ifup-grace 
+^^^ This is the grace period we have set in `--ifup-grace`
 ```
 00:01:13   INFO: Detected topology: IFC='eth0' -> 'vpnL' ; NEXTHOP='192.168.0.1' -> '10.0.10.1'
 00:01:13  TRACE: Continuously checking if target is up...
