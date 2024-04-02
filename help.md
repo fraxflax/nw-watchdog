@@ -22,11 +22,11 @@ The mandatory argument <ins>TARGET</ins> is the target (destination) to monitor 
 ## OPTIONS (no arguments)
 These options take no arguments, and may be specified in any order. They can be grouped (e.g. -vAP) in their short form, also having one of the OPTIONS that takes arguments last.
 
-##### --help | -h
+#### --help | -h
   Shows this help, using \$PAGER if set to an executable, otherwise 'less' or 'more' if available in "/sbin:/bin:/usr/sbin:/usr/bin:\$PATH"<br>
   (Use PAGER=cat to avoid using a pager).
 
-- __--no-ping-target | -P__<br>
+##### --no-ping-target | -P
 If the target is the nexthop (on the same subnet or a peer-to-peer address), reachability of the target is checked by arp cache status and ping.<br>
 If the target is not on the same subnet as the source, the reachability of the target is checked by pinging it in a certain pattern (see __--slow-up-timeout__ for details).
 
