@@ -545,7 +545,11 @@ $FMT<<EOU
 
        Starting the watchdog like the above with any of the three vpn-interfaces up, the vpn-interface that is up will be detected and used as source interface. The continuous topology detection will ensure switching to which ever interface currently is up. If all interfaces are down the topology detection will think the interface for the default gw is the one to monitor (in our example eth0) but since we have $_b_--no-ping-nexthop$__ and hardcoded the preferred vpn-interfaces in $_b_--ifcup$__ the watchdog will bring up vpnL. If any of the vpn interfaces are up, but have problems the watchdog will bring them all down and then bring up vpnL.
 
-       If we add $_b_--verbosity-level=${__}5 to the above, allowing us to get a trace of what is happening in the logfile in the scenario of none of the vpn interfaces being up at start, after a while we see that vpnF is replacing vpnL (as somebody brought up the full tunnel for a while) then vpnF is brought down (as somebody did not need it anymore) and $_b_$nwwatchdog$__ detetcs that the connectivity via the VPN-server is lost and brings up vpnL:
+       If we add $_b_--verbosity-level=${__}5 to the above, allowing us to get a trace of what is happening in the logfile in the following scenario:
+       vpnL is up when $_b_$nwwatchdog$__ starts,
+       after a while we see that vpnF is replacing vpnL (as somebody brought up the full tunnel for a while)
+       then vpnF is brought down (as somebody did not need it anymore) and
+       $_b_$nwwatchdog$__ detetcs that the connectivity via the VPN-server is lost and brings up vpnL:
 
 EOU
 cat <<EOU
@@ -569,7 +573,7 @@ $_b_       and here the full tunnel was brought down again (without replacing it
        00:00:35  TRACE: quick-up failed ... trying slow-up ...
        00:00:35  TRACE: slow-up failed or ambigious result ... verifying ...
 $_b_       ^^^^^^^^^^^^^^^^ $__
-$_b_       Here the $_b_$nwwatchdog$__ gives up and judge that the ${___}TARGET${__} is down. $__
+$_b_       Here the $nwwatchdog gives up and concludes that the ${___}TARGET${__}$_b_ is down. $__
 
        00:00:37  ALERT: DOWN - Not getting replies from target 'vpn.inside.dom' (10.0.10.1) on interface 'eth0'.
                         Resetting interface:
@@ -577,8 +581,8 @@ $_b_       Here the $_b_$nwwatchdog$__ gives up and judge that the ${___}TARGET$
                         sleep 1
                         ifup vpnL
        00:00:37   INFO: Resetting interface (eth0).
-$_b_       ^^^^^^^^^^^^^^^^ $__
-$_b_       This can be confusing since it's actually not eth0 that is reset (it's just the current source interface) $__
+$_b_       ^^^^^^^^^^^^^^^^                  ^^^^ $__
+$_b_       This can be confusing since it's actually not eth0 that is reset (but it's the current source interface) $__
 $_b_       Below we see that the watchdog actually brings down all the vpn-interfaces and brings up vpnL $__
 
        00:00:37  TRACE: sh -c 'ifdown vpnL ; ifdown vpnP ; ifdown vpnF'
