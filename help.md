@@ -1,13 +1,10 @@
----
-__NAME__<br>
-        nw-watchdog - Network Watchdog
+## NAME
+nw-watchdog - Network Watchdog
 
----
-__SYNOPSIS__<br>
+## SYNOPSIS
 __nw-watchdog__ [ OPTIONS ] <ins>TARGET</ins>
 
----
-__DESCRIPTION__<br>
+## DESCRIPTION
 __nw-watchdog__ is a higly configurable network watchdog written in posix shell script for use in Linux, depending only on Linux most standard tools that are normally installed by default in all distributions (also see the __DEPENDENCIES__ section).
 
 It monitors the network connectivity to a specified target and/or the next hop towards that target, alerting upon lost connectivity explaining what is wrong. It can handle resetting the source interface and will detect topology changes and, if allowed, reconfigure itself accordingly. It's intended to run as a daemon and has an option to install itself as a systemd service.  If you want to monitor the connectivity to several targets, you can run several instances of nw-watchdog using different __--pidfile__ option arguments.
@@ -19,12 +16,10 @@ It comes with ABSOLUTELY NO WARRANTY.
 
 Get the latest version from https://github.com/fraxflax/nw-watchdog
 
----
-__TARGET__<br>
+## TARGET__<br>
 The mandatory argument <ins>TARGET</ins> is the target (destination) to monitor the connection to. <ins>TARGET</ins> can be an IP address or a resolvable hostname / FQDN. If it's a hostname / FQDN, it will be resolved to an IP address (first one found) at startup and the resolved IP address will be used for the monitoring. Upon failed ping-checks the name will be resolved again and if it resolves to a new IP address, that will be used for the monitoring from there on.
 
----
-__OPTIONS__ (no arguments)<br>
+## OPTIONS__ (no arguments)<br>
 These options take no arguments, and may be specified in any order. They can be grouped (e.g. -vAP) in their short form, also having one of the OPTIONS that takes arguments last.
 
 - __--help | -h__<br>
@@ -75,8 +70,7 @@ If the target is not on the same subnet as the source, the reachability of the t
 
   This option cannot be combined with `--install-systemd` (but it would be wise to test the configuration with `--debug` before installing as a systemd service).
 
----
-__OPTIONS__ (with ARGUMENT)<br>
+## OPTIONS__ (with ARGUMENT)<br>
         These opions takes a single argument each and may be specified in any order. Specify with equalsign or space or no space between option and argument. They can only be grouped together with the shortform of the NO-ARGUMENT-OPTIONS above, and must be last in such groupings (e.g. `-PAV5`).
 
 - __--verbosity-level | -V__ <ins>level</ins><br>
