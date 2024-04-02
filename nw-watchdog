@@ -255,7 +255,7 @@ $FMT<<EOU
         
         $_b_--slow-up-timeout=7$__ is useful for monitoring VPN connections via interfaces that need a long wake-up time if idle (due to regotiation of encryption, exchanging keys, reauthentication, etc).
 
-        $_b_--slow-up-timeout=3$__ is useful for monitoring connections to ${___}TARGET${__}s with low - medium latency via interfaces that does not need a long wake-up time (e.g. ethernet interfaces).
+        $_b_--slow-up-timeout=3$__ is useful for monitoring connections to ${___}TARGET${__}s with low to medium latency via interfaces that does not need a long wake-up time (e.g. ethernet interfaces).
 
         $_b_--slow-up-timeout=1$__ is suitable to use for monitoring local ${___}TARGET${__}s (e.g. NEXTHOP) on ethernet carried subnets.
 

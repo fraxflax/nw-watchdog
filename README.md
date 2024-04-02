@@ -165,7 +165,7 @@ These opions takes a single argument each and may be specified in any order. Spe
         
   `--slow-up-timeout=7` is useful for monitoring VPN connections via interfaces that need a long wake-up time if idle (due to regotiation of encryption, exchanging keys, reauthentication, etc).
 
-  `--slow-up-timeout=3` is useful for monitoring connections to <ins>TARGET</ins>s with low - medium latency via interfaces that does not need a long wake-up time (e.g. ethernet interfaces).
+  `--slow-up-timeout=3` is useful for monitoring connections to <ins>TARGET</ins>s with low to medium latency via interfaces that does not need a long wake-up time (e.g. ethernet interfaces).
 
   `--slow-up-timeout=1` is suitable to use for monitoring local <ins>TARGET</ins>s (e.g. NEXTHOP) on ethernet carried subnets.
 
