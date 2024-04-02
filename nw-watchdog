@@ -567,6 +567,7 @@ $_b_       Here somebody replaced vpnL with the full tunnel vpnF $__
        00:00:31   INFO: Detected topology: IFC='vpnF' -> 'eth0' ; NEXTHOP='10.0.10.1' -> '192.168.0.1'
 $_b_       ^^^^^^^^^^^^^^^^ $__
 $_b_       and here the full tunnel was brought down again (without replacing it with any of the other vpn-interfaces) $__
+
        00:00:32  TRACE: quick-up failed ... trying slow-up ...
        00:00:32  TRACE: slow-up failed or ambigious result ... verifying ...
        00:00:34  TRACE: No reply from target 'vpn.inside.dom' (10.0.10.1), checking link and topology.
