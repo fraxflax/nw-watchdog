@@ -353,8 +353,8 @@ If we are interested in the connectivity to something in the remote network rout
 `nw-watchdog 10.10.1.1 ...`<br>
 and the rest of the options exactly the same as above.
 
-This would get us alerts if 10.10.1.1 is down.<br>
-In all other ways the effect would be the same as using 169.254.0.1 as target.<br>
+This would give alerts if `10.10.1.1` is down.<br>
+In all other ways the effect would be the same as using `169.254.0.1` as target.<br>
 Even with target `10.10.1.1`, the nexthop (`169.254.0.1`) will also be monitored (we are __NOT__ using --no-ping-nexthop) and the interface will __NOT__ be reset as long as the nexthop is reachable.
 
 
