@@ -16,13 +16,13 @@ It comes with ABSOLUTELY NO WARRANTY.
 
 Get the latest version from https://github.com/fraxflax/nw-watchdog
 
-## TARGET__<br>
+## TARGET
 The mandatory argument <ins>TARGET</ins> is the target (destination) to monitor the connection to. <ins>TARGET</ins> can be an IP address or a resolvable hostname / FQDN. If it's a hostname / FQDN, it will be resolved to an IP address (first one found) at startup and the resolved IP address will be used for the monitoring. Upon failed ping-checks the name will be resolved again and if it resolves to a new IP address, that will be used for the monitoring from there on.
 
-## OPTIONS__ (no arguments)<br>
+## OPTIONS (no arguments)
 These options take no arguments, and may be specified in any order. They can be grouped (e.g. -vAP) in their short form, also having one of the OPTIONS that takes arguments last.
 
-- __--help | -h__<br>
+##### --help | -h
   Shows this help, using \$PAGER if set to an executable, otherwise 'less' or 'more' if available in "/sbin:/bin:/usr/sbin:/usr/bin:\$PATH"<br>
   (Use PAGER=cat to avoid using a pager).
 
