@@ -314,7 +314,7 @@ Firstly, we setup the nw-watchdog systemd service for monitoring the connectivit
 ```shell
 nw-watchdog 1.2.3.4 \
 --verbosity-level=3 \
---alert='mailx -a \"From: nwwatchdog@\`hostname -f\`\" -s \"IPSec Peer 1.2.3.4 %{STATE} via %{IFC}\" admin@\`cat /etc/mailname\`' \
+--alert='mailx -a "From: nwwatchdog@`hostname -f`" -s "IPSec Peer 1.2.3.4 %{STATE} via %{IFC}" admin@`cat /etc/mailname\`' \
 --slow-up-timeout=2 \
 --ifup-grace=10 \
 --interval=10
@@ -326,29 +326,32 @@ Note: It would be smoother to use a script and `--ifcup=/path/script`, but it ca
 
 ```shell
 nw-watchdog 169.254.0.1 \
---alert='mailx -a \"From: nwwatchdog@\`hostname -f\`\" -s \"IPSec connection-name %{STATE} via %{IFC}\" admin@\`cat /etc/mailname\`' \
+--alert='mailx -a "From: nwwatchdog@`hostname -f`" -s "IPSec connection-name %{STATE} via %{IFC}" admin@`cat /etc/mailname\`' \
 --force-interface=ipsec0 \
 --slow-up-timeout=5 \
 --ifup-grace=25 \
---ifcup='ipsec up connection-name ; " \
-       ip tunnel add %{IFC} mode vti local 4.3.2.1 remote 1.2.3.4 ttl 255 key 111 ; " \
-       ip addr add dev %{IFC} 169.254.0.2 remote 169.254.0.1; " \
-       ip link set %{IFC} up multicast on mtu 1424 state UP;" \
-       ip route add 10.10.0.0/20 via 169.254.0.1 dev %{IFC}' \
+--ifcup='ipsec up connection-name;
+         ip tunnel add %{IFC} mode vti local 4.3.2.1 remote 1.2.3.4 ttl 255 key 111;
+         ip addr add dev %{IFC} 169.254.0.2 remote 169.254.0.1;
+         ip link set %{IFC} up multicast on mtu 1424 state UP;
+         ip route add 10.10.0.0/20 via 169.254.0.1 dev %{IFC}' \
 --ifcdown='ipsec down connection-name ; ip tunnel del %{IFC}' 
 ```
 
+__OBSERVE__ that the entire `--ifcup=` command needs to be on a single line without line breaks (linebreaks added above for readability):
+```
+--ifcup='ipsec up connection-name; ip tunnel add %{IFC} mode vti local 4.3.2.1 remote 1.2.3.4 ttl 255 key 111; ip addr add dev %{IFC} 169.254.0.2 remote 169.254.0.1; ip link set %{IFC} up multicast on mtu 1424 state UP; ip route add 10.10.0.0/20 via 169.254.0.1 dev %{IFC}'
+```
 
-	_____OBSERVE__ that the entire __--ifcup=__'...' command need to be on a single line without line breaks (linebreaks added above for readability).
 
-	We use __--ifup-grace=25__ to allow enough time for IPSec to establish the connection upon start and interface reset.
-	__--slow-up-timeout=5__ (making the deadline 25 seconds for the slow-up ping test) should be enough for an idle IPSec conmnection to wakeup and start forwarding packets when monitored.
+We use `--ifup-grace=25` to allow enough time for IPSec to establish the connection upon start and interface reset.
+`--slow-up-timeout=5` (making the deadline 25 seconds for the slow-up ping test) should be enough for an idle IPSec conmnection to wakeup and start forwarding packets when monitored.
 
-	In the above example we monitor the connectivity to the peer address inside the VTI tunnel, which is also the nexthop.
-        If we are interested in the connectivity to something in the remote network routed via the tunnel we could use that as a target instead of the peer address:
+In the above example we monitor the connectivity to the peer address inside the VTI tunnel, which is also the nexthop.
+If we are interested in the connectivity to something in the remote network routed via the tunnel we could use that as a target instead of the peer address:
 
-	__nw-watchdog__ 10.10.1.1 __ ...
-	and the rest of the options exactly the same.
+`nw-watchdog 10.10.1.1 ...`<br>
+and the rest of the options exactly the same as above.
 
 	Now we would get alerts if 10.10.1.1 is down.
 	In all other ways the effect would be the same as using 169.254.0.1 as target.
