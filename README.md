@@ -416,7 +416,7 @@ We use `--no-ping-nexthop` as the NEXTHOP is the same as the <ins>TARGET</ins> p
 
 This is a (real life) cornor case but worth explaining to get an understanding of the capabilities of __nw-watchdog__.
 
-We have setup ifupdown to handle three different vpn-interfaces: vpnL vpnP and vpnF<br>
+We have setup ifupdown to handle three different vpn-interfaces: `vpnL` `vpnP` and `vpnF`<br>
 They all use the same VPN server but have different routes to the server.<br>
 Only one of the interfaces can be up at any given time.
 
@@ -424,7 +424,7 @@ If `vpnL` is up we route just to the peer local network `10.0.10.0/24` via it.<b
 If `vpnP` is up we route to all private addresses via it, including `10.0.0.0/8`<br>
 If `vpnF` is up we use it ass a full tunnel, routing all traffic (apart from the VPN-connection itself) via it.
 
-Our preferred interface is vpnL and if we can't get any traffic through the vpnserver that is the one we want to reset.
+Our preferred interface is `vpnL` and if we can't get any traffic through the vpnserver that is the one we want to reset.
 BUT as long as can get traffic through using any of the three interfaces we don't want to get alerted and have any interface reset,
 so we can't use `--force-interface`. The soloution will be to allow continuous topology detection but hardcode the preferred interface in `--ifcup` and `--ifcdown`.
 
@@ -437,9 +437,9 @@ nw-watchdog vpn.inside.dom \
 --ifcdown='ifdown vnpL ; ifdown vpnP  ; ifdown vpnF' \
 --ifcup='ifup vpnL'
 ```
-Starting the watchdog like the above with any of the three vpn-interfaces up, the vpn-interface that is up will be detected and used as source interface. The continuous topology detection will ensure switching to which ever interface currently is up. If all interfaces are down the topology detection will think the interface for the default gw is the one to monitor (in our example `eth0`) but since we have `--no-ping-nexthop` and hardcoded the preferred vpn-interfaces in `--ifcup` the watchdog will bring up vpnL. If any of the vpn interfaces are up, but have problems the watchdog will bring them all down and then bring up `vpnL`.
+Starting the watchdog like the above with any of the three vpn-interfaces up, the vpn-interface that is up will be detected and used as source interface. The continuous topology detection will ensure switching to which ever interface currently is up. If all interfaces are down the topology detection will think the interface for the default gw is the one to monitor (in our example `eth0`) but since we have `--no-ping-nexthop` and hardcoded the preferred vpn-interfaces in `--ifcup` the watchdog will bring up `vpnL`. If any of the vpn interfaces are up, but have problems the watchdog will bring them all down and then bring up `vpnL`.
 
-If we add --verbosity-level=5 to the above, allowing us to get a trace of what is happening in the logfile in the scenario of none of the vpn interfaces being up at start, after a while we see that vpnF is replacing vpnL (as somebody brought up the full tunnel for a while) then vpnF is brought down (as somebody did not need it anymore) and __nw-watchdog__ detetcs that the connectivity via the VPN-server is lost and brings up `vpnL`:
+If we add --verbosity-level=5 to the above, allowing us to get a trace of what is happening in the logfile in the scenario of none of the vpn interfaces being up at start, after a while we see that `vpnF` is replacing `vpnL` (as somebody brought up the full tunnel for a while) then `vpnF` is brought down (as somebody did not need it anymore) and __nw-watchdog__ detetcs that the connectivity via the VPN-server is lost and brings up `vpnL`:
 ```
 00:00:01   INFO: Target (vpn.inside.dom) resolved to 10.0.10.1 (instead of '').
 00:00:01   INFO: Detected topology: IFC='vpnL' -> 'vpnL' ; NEXTHOP='' -> '10.0.10.1'
