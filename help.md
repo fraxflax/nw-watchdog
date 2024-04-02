@@ -266,7 +266,7 @@ __OPTIONS__ (with ARGUMENT)<br>
   Default: none
 	
   Will write a systemd service file /etc/systemd/system/nw-watchdog-<u>SERVICENAME</u>.service file launching nw-watchdog as a daemon with<br>
-  `--pidfile=/run/nw-watchdog-<u>SERVICENAME</u>.pid`<br>
+  `--pidfile=/run/nw-watchdog-<u>SERVICENAME<u>.pid`<br>
   `--lofile=/var/log/nw-watchdog-<u>SERVICENAME</u>.log`<br>
 	and otherwise with the exact same options as run (apart from the `--install-systemd` option itself of course).
 
