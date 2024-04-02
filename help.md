@@ -7,7 +7,7 @@ __nw-watchdog__ [ OPTIONS ] <ins>TARGET</ins>
 ## DESCRIPTION
 __nw-watchdog__ is a higly configurable network watchdog written in posix shell script for use in Linux, depending only on Linux most standard tools that are normally installed by default in all distributions (also see the __DEPENDENCIES__ section).
 
-It monitors the network connectivity to a specified target and/or the next hop towards that target, alerting upon lost connectivity explaining what is wrong. It can handle resetting the source interface and will detect topology changes and, if allowed, reconfigure itself accordingly. It's intended to run as a daemon and has an option to install itself as a systemd service.  If you want to monitor the connectivity to several targets, you can run several instances of nw-watchdog using different __--pidfile__ option arguments.
+It monitors the network connectivity to a specified target and/or the next hop towards that target, alerting upon lost connectivity explaining what is wrong. It can handle resetting the source interface and will detect topology changes and, if allowed, reconfigure itself accordingly. It's intended to run as a daemon and has an option to install itself as a systemd service.  If you want to monitor the connectivity to several targets, you can run several instances of nw-watchdog using different `--pidfile` option arguments.
 
 __nw-watchdog__ is free software written by Fredrik Ax \<frax@axnet.nu\>.<br>
 Feel free to modify and/or (re)distribute it in any way you like.<br>
@@ -105,7 +105,7 @@ If the target is not on the same subnet as the source, the reachability of the t
   Default: none<br>
   <ins>interface</ins> is the name of the source interface to initially use.
 
-	The interface may dynamically change due to topology detection. If you want to force the use of a specific interface, use __--force-interface__ instead.
+	The interface may dynamically change due to topology detection. If you want to force the use of a specific interface, use `--force-interface` instead.
 
 	If neither of `--interface` or `--force-interface` is specified the source interface it will be determined from the FIB by looking at the route to the target. The reason to specify it even so, would be to have nw-watchdog bring it up if it's down when starting.
 
@@ -136,7 +136,7 @@ If the target is not on the same subnet as the source, the reachability of the t
 
   If the logfile is set to '-' (stdout) this option is ignored.
 
-  If `flock` is available, the logfile will be locked before written to or shrinked, otherwise there is a slight risk of loglines being lost if two or more instances of `nw-watchdog` are concurently running using the same logfile and at least one of them have `--logsize` set to a value larger than 0.
+  If `flock` is available, the logfile will be locked before written to or shrinked, otherwise there is a slight risk of loglines being lost if two or more instances of __nw-watchdog__ are concurently running using the same logfile and at least one of them have `--logsize` set to a value larger than 0.
 
 * __--pidfile | -p__ <ins>pidfile</ins><br>
   Default: `/run/nw-watchdog.pid`<br>
@@ -424,11 +424,11 @@ nw-watchdog depends on the below executables being available in `/sbin:/bin:/usr
 - `touch`
 - `wc`
 
-`nw-watchdog` will function without the below listed utilities, but will use them to enhance its functionality if available.
+__nw-watchdog__ will function without the below listed utilities, but will use them to enhance its functionality if available.
 
 - `flock`<br>
   If available the logfile will be locked before truncated or written to.<br>
-  If not available, there is a slight risk of loglines being lost if two or more instances of `nw-watchdog` are concurently running using the same logfile and at least one of them have `--logsize` set to a value larger than 0.
+  If not available, there is a slight risk of loglines being lost if two or more instances of __nw-watchdog__ are concurently running using the same logfile and at least one of them have `--logsize` set to a value larger than 0.
 
 - `wall`<br>
   If available it will be used as default `--alert` command. Otherwise, alerting will be done to stderr by default.
