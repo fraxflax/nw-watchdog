@@ -243,32 +243,27 @@ __OPTIONS__ (with ARGUMENT)<br>
 	sh -c '<u>STRING</u>'
 
 	Within <u>STRING</u> the following placeholders can be used:		
+	- %{IFC} - the interface name
+	- %{TARGET} - the target for which the connection is monitored
+	- %{TADDR} - the IP address of the TARGET
+    - %{NEXTHOP}  - the IP address of the NEXTHOP towards target
+	- %{STATE} - the state of the alert:
+	  - UP for restored connectivity to TARGET (implies REACHABLE)
+	  - DOWN for lost conenctivity to TARGET
+	  - UNREACHABLE for lost conenctivity to NEXTHOP (implies DOWN)
+	  - REACHABLE for restored connectivity to NEXTHOP
+	  - ERROR for permanent errors
+	  - WARNING for things that might need reconfiguration
 
-	%{IFC} - the interface name
-
-	%{TARGET} - the target for which the connection is monitored
-
-	%{TADDR} - the IP address of the TARGET
-
-	%{NEXTHOP}  - the IP address of the NEXTHOP towards target
-
-	%{STATE} - the state of the alert:
-	- UP for restored connectivity to TARGET (implies REACHABLE)
-	- DOWN for lost conenctivity to TARGET
-	- UNREACHABLE for lost conenctivity to NEXTHOP (implies DOWN)
-	- REACHABLE for restored connectivity to NEXTHOP
-	- ERROR for permanent errors
-	- WARNING for things that might need reconfiguration
-
-	The alert command will be launched for every ERROR and WARNING, even repeated ones.
-	For the other states (UP, DOWN, UNREACHABLE, REACHABLE) the alert command will be launched only upon state change.
+	The alert command will be launched for every ERROR and WARNING, even repeated ones.<br>
+	For the other states (UP, DOWN, UNREACHABLE, REACHABLE) the alert command will be launched only upon state change.<br>
 	E.g. if the state goes from UP to DOWN the alert is triggered but if the next check is also DOWN, no further alert will be sent (until the state changes again).
 
-	EXAMPLE of how to email the alert messages using mailx (mailutils) with a custom from address:
-	    --alert='mailx -a "From: nw-watchdog@this.hst" -s "nw-watchdog %{STATE} alert for %{TARGET} via %{IFC}" my@email.adr'
+	EXAMPLE of how to email the alert messages using mailx (mailutils) with a custom from address:<br>
+	`--alert='mailx -a "From: nw-watchdog@this.hst" -s "nw-watchdog %{STATE} alert for %{TARGET} via %{IFC}" my@email.adr'`
 
-    __--install-systemd__ <u>SERVICENAME</u>
-	Default: none
+- __--install-systemd__ <u>SERVICENAME</u>
+  Default: none
 	
         Will write a systemd service file /etc/systemd/system/nw-watchdog-<u>SERVICENAME</u>.service file launching nw-watchdog as a daemon with
         __--pidfile__=/run/nw-watchdog-<u>SERVICENAME</u>.pid__
