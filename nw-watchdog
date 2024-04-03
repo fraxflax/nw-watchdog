@@ -1,7 +1,7 @@
 #!/bin/sh
 #
 #       nw-watchdog is a higly configurable network watchdog written
-#       in posix shell script for use in Linux.
+#       in POSIX shell script for use in Linux.
 # 
 #       Get the latest version from https://github.com/fraxflax/nw-watchdog
 #
@@ -102,7 +102,7 @@ ${_b_}SYNOPSIS $__
     $_b_$nwwatchdog$__ ${___}TARGET$__ [ OPTIONS ] 
 
 ${_b_}DESCRIPTION $__
-    $_b_$nwwatchdog$__ is a higly configurable network watchdog written in posix shell script for use in Linux, depending only on Linux most standard tools that are normally installed by default in all distributions (also see the ${_b_}DEPENDENCIES$__ section).
+    $_b_$nwwatchdog$__ is a higly configurable network watchdog written in POSIX shell script for use in Linux, depending only on Linux most standard tools that are normally installed by default in all distributions (also see the ${_b_}DEPENDENCIES$__ section).
 
     It monitors the network connectivity to a specified ${___}TARGET${__} and/or the next hop towards that ${___}TARGET${__}, alerting upon lost connectivity explaining what is wrong. It can reset the source interface and will detect topology changes and, if allowed, reconfigure itself accordingly. It's intended to run as a daemon and has an option to install itself as a systemd service.  If you want to monitor the connectivity to several ${___}TARGET${__}s, you can run several instances of $_b_$nwwatchdog$__ using different $_b_--pidfile$__ option arguments.
 
@@ -177,7 +177,7 @@ EOU
 #       If not specified, ${_b_}/etc/nw-watchdog.conf$__ is used if present and readable.
 #       If filename specified but file not found, it will be generated based on current settings (as defined by defaults and current commandline options).
 #
-#       The config file syntax is posix shell script syntax for declaring environment variables
+#       The config file syntax is POSIX shell script syntax for declaring environment variables
 #       and may override any default values.
 #       
 #       No other variables or code is allowed in the file.
