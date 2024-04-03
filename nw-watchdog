@@ -51,7 +51,20 @@ SYSTEMDSERVICENAME=''                  # --install-systemd
 set >/dev/null 2>&1 || { echo "This script must be run in a POSIX compliant shell" 1>&2; exit 1; }
 
 # Let's put the "standard" paths first in PATH to ensure we get the standard utilities we need
-PATH="/sbin:/bin:/usr/sbin:/usr/bin:$PATH"
+# and remove duplicates in PATH before exporting it
+NEWPATH='/sbin:/bin:/usr/sbin:/usr/bin'
+OIFS="$IFS"
+IFS=':'
+for p in $PATH; do
+    case ":$NEWPATH:" in
+	*:"$p":*) ;;
+	*) NEWPATH="$NEWPATH:$p" ;;
+    esac
+done
+IFS="$OIFS"
+PATH=$NEWPATH
+export PATH
+
 DEPENDENCIES="basename cat cut date getent grep head id ip ping readlink sed sleep stat tail touch wc" 
 lacking=''
 if printf '' 2>/dev/null; then 
