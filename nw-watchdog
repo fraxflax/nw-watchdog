@@ -46,22 +46,35 @@ ALERTCMDT='if which wall >/dev/null; then exec wall; else cat 1>&2; fi'
                                        # --alert | -a
 SYSTEMDSERVICENAME=''                  # --install-systemd
 
+
+# Check shell-builtin dependencies
+set >/dev/null 2>&1 || { echo "This script must be run in a POSIX compliant shell" 1>&2; exit 1; }
+
 # Let's put the "standard" paths first in PATH to ensure we get the standard utilities we need
 PATH="/sbin:/bin:/usr/sbin:/usr/bin:$PATH"
-DEPENDENCIES="basename cat cut date getent grep head id ip ping printf readlink sed sleep stat tail touch wc" 
-deperr() { 
-    echo "(PATH=$PATH)" 1>&2
-    echo ' ' 1>&2
-    echo '~~~~~~~~~~~~~~~~' 1>&2
-    echo 'DEPENDENCY ERROR' 1>&2
-    echo '~~~~~~~~~~~~~~~~' 1>&2
-    echo 'The following executable(s) are lacking in your PATH:' 1>&2
-    echo "   $@" 1>&2
-    echo '... aborting!' 1>&2
-    echo ' ' 1>&2
-    exit 1
-}
-which which >/dev/null 2>&1 || deperr which
+DEPENDENCIES="basename cat cut date getent grep head id ip ping readlink sed sleep stat tail touch wc" 
+lacking=''
+if printf '' 2>/dev/null; then 
+    deperr() {
+	printf '(PATH=%s)\n\n~~~~~~~~~~~~~~~~\nDEPENDENCY ERROR\n~~~~~~~~~~~~~~~~\nThe following executable(s) are lacking in your PATH:\n   %s\n... aborting!\n\n' "$PATH" "$@"
+	exit 1
+    }
+else
+    lacking='printf'
+    deperr() { 
+	echo "(PATH=$PATH)" 1>&2
+	echo ' ' 1>&2
+	echo '~~~~~~~~~~~~~~~~' 1>&2
+	echo 'DEPENDENCY ERROR' 1>&2
+	echo '~~~~~~~~~~~~~~~~' 1>&2
+	echo 'The following executable(s) are lacking in your PATH:' 1>&2
+	echo "   $@" 1>&2
+	echo '... aborting!' 1>&2
+	echo ' ' 1>&2
+	exit 1
+    }
+fi
+which sh >/dev/null 2>&1 || deperr which $lacking
 for x in $DEPENDENCIES; do which $x>/dev/null || lacking="$lacking $x"; done
 [ -n "$lacking" ] && deperr $lacking
 
@@ -603,7 +616,7 @@ ${_b_}DEPENDENCIES$__
     $_b_$nwwatchdog$__ depends on the below executables being available in "/sbin:/bin:/usr/sbin:/usr/bin:\$PATH" or being shell-builtin. A check is done at startup and if any of these tools are missing, $_b_$nwwatchdog$__ will exit with an error telling which are lacking.
         
 EOU
-    for dep in $DEPENDENCIES; do
+    for dep in sh printf which $DEPENDENCIES; do
                 printf "    - ${_b_}%s$__\n" "$dep"
     done
     $FMT<<EOU
@@ -614,17 +627,17 @@ EOU
         If available the logfile will be locked before truncated or written to.
         If not available, there is a slight risk of log entries being lost if two or more instances of $_b_$nwwatchdog$__ are concurently running using the same logfile and at least one of them have $_b_--logsize$__ set to a value larger than 0.
 
-    - ${_b_}wall$__
-        If available it will be used as default $_b_--alert$__ command. Otherwise, alerting will be done to stderr by default.
-
-    - ${_b_}tput$__
-        Is used to determine the terminal width and output bold and underlined text in this help page.
-
     - ${_b_}fmt$__
         Is used to format the help message if available.
 
     - ${_b_}less$__ (or ${_b_}more$__)
         Is used to page this help unless \$PAGER is set to something else.
+
+    - ${_b_}tput$__
+        Is used to determine the terminal width and output bold and underlined text in this help page.
+
+    - ${_b_}wall$__
+        If available it will be used as default $_b_--alert$__ command. Otherwise, alerting will be done to stderr by default.
 
 EOU
     [ -n "$1" ] && printf "$@"
@@ -642,9 +655,9 @@ USAGEpager() {
     fi
 }
 dieUSAGEpager() {
-    local PATN="\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nERROR: $1 ... aborting!\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+    dieUPATN="\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nERROR: $1 ... aborting!\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
     shift
-    USAGEpager "$PATN" "$@"
+    USAGEpager "$dieUPATN" "$@"
     exit 1
 }
 # Parse arguments
@@ -842,14 +855,14 @@ LOGSIZEb=$((LOGSIZEb*1024))
 test -n "$STATICIFC" && CONTINUOUSTOPOLOGYDETECT=''
 
 log() {   
-    local PATN="%s  $1"; shift
-    logentry=$(printf "$PATN" "`date '+%Y-%m-%d %H:%M:%S %z'`" "$@")
+    logPATN="%s  $1"; shift
+    logentry=$(printf "$logPATN" "`date '+%Y-%m-%d %H:%M:%S %z'`" "$@")
     if [ -n "$LOGFILE" ]; then
         [ "$LOGSIZEb" -gt 0 ] && {
             # Remove top 10 lines until log file is smaller than LOGSIZEb,
             # silently skip if we can't lock the file
             if which flock >/dev/null 2>&1; then
-                local skip=''
+                skip=''
                 while [ -z "$skip" -a `stat --printf='%s' $LOGFILE` -gt $LOGSIZEb ]; do
                     flock -w1 "$LOGFILE" -c "cp '$LOGFILE' '$LOGFILE.$$' ; tail -n +11 '$LOGFILE.$$' >'$LOGFILE'; rm '$LOGFILE.$$'" || skip=y
                 done
@@ -912,9 +925,9 @@ alert() {
         ALERTCMD=`printf "%s" "$ALERTCMD" | sed -E "s/\%\{NEXTHOP\}/topology-not-yet-detected/g"`
     fi
 
-    local PATN="$1" ; shift
+    alertPATN="$1" ; shift
 
-    printf "\n\n$nwwatchdog $STATE ALERT!!!\n$PATN\n\n\n" "$@" | sh -c "$ALERTCMD"
+    printf "\n\n$nwwatchdog $STATE ALERT!!!\n$alertPATN\n\n\n" "$@" | sh -c "$ALERTCMD"
 
     case "$STATE" in
         "ERROR") LSTATE="  ERROR:";;
@@ -924,39 +937,39 @@ alert() {
             LSTATE="  ALERT: $STATE -"
             ;;
     esac
-    log "$LSTATE $PATN" "$@"
+    log "$LSTATE $alertPATN" "$@"
 }
 error() {
     [ $V -ge 1 ] || return
-    local PATN="$1" ; shift
-    log "  ERROR: $PATN" "$@"
+    errorPATN="$1" ; shift
+    log "  ERROR: $errorPATN" "$@"
     printf "\n\nERROR:\n$nwwatchdog '$TARGET'\n$PATN\n\n\n" "$@" | sh -c "$ALERTCMD"
 }
 die() {
-    local PATN="$1 ... aborting!" ; shift
-    error "$PATN" "$@"
+    diePATN="$1 ... aborting!" ; shift
+    error "$diePATN" "$@"
     exit 1
 }
 warn() {
     [ $V -ge 2 ] || return
-    local PATN="$1" ; shift
-    log "WARNING: $PATN" "$@"
+    warnPATN="$1" ; shift
+    log "WARNING: $warnPATN" "$@"
     printf "\n\nWARNING:\n$nwwatchdog '$TARGET'\n$PATN\n\n\n" "$@" | sh -c "$ALERTCMD"
 }
 info() {
     [ $V -ge 4 ] || return
-    local PATN="$1" ; shift
-    log "   INFO: $PATN" "$@"
+    infoPATN="$1" ; shift
+    log "   INFO: $infoPATN" "$@"
 }
 trace() {
     [ $V -ge 5 ] || return
-    local PATN="$1" ; shift
-    log "  TRACE: $PATN" "$@"
+    tracePATN="$1" ; shift
+    log "  TRACE: $tracePATN" "$@"
 }
 debug() {
     [ $V -ge 6 ] || return
-    local PATN="$1" ; shift
-    log "  DEBUG: $PATN" "$@"
+    debugPATN="$1" ; shift
+    log "  DEBUG: $debugPATN" "$@"
 }
 
 ifreset() {
@@ -1023,9 +1036,9 @@ nexthop() {
             # If it's a host-local address 'ip route get' will give lo as source interface even if addr is on different interface
             # which will cause 'ping -I$IFC' to fail, so let's figure which the interface with the address is instead
             [ "$NIFC" = "lo" ] && {
-                local ADDR=`printf '%s' "$TADDR" | sed -E 's/\./\\\\./g'`
-                [ -n "`ip addr | grep -E "inet $ADDR( |\/)"`" ] && {
-                    LIFC="`ip addr | grep -B9999 -E "inet $ADDR( |\/)" | grep -oE '^[0-9]+:\s+[^@:]+' | tail -1 | sed -E 's/.*\s//'`"
+                nexthopADDR=`printf '%s' "$TADDR" | sed -E 's/\./\\\\./g'`
+                [ -n "`ip addr | grep -E "inet $nexthopADDR( |\/)"`" ] && {
+                    LIFC="`ip addr | grep -B9999 -E "inet $nexthopADDR( |\/)" | grep -oE '^[0-9]+:\s+[^@:]+' | tail -1 | sed -E 's/.*\s//'`"
                     [ -n "$LIFC" ] && {
                         debug "Found $TADDR on local interface '$LIFC' (overriding '$NIFC')"
                         NIFC="$LIFC"
@@ -1109,40 +1122,40 @@ EOF
 }
 
 resolve_target() {
-    local OADDR="$TADDR"
+    rtOADDR="$TADDR"
     TADDR=`getent ahostsv4 "$TARGET" | head -1 | sed -E 's/^\s*([0-9.]+)\s.*/\1/'`
     [ -n "$TADDR" ] || {
-        TADDR=$OADDR
+        TADDR=$rtOADDR
         info "Failed to resolve target '%s', keeping '%s'" "$TARGET" "$TADDR"
         return 1
     }
-    if [ "$OADDR" = "$TADDR" ]; then
+    if [ "$rtOADDR" = "$TADDR" ]; then
         debug "Resolved target '%s' to '%s', already in cache." "$TARGET" "$TADDR"
     else
-        info "Target (%s) resolved to %s (instead of '%s')." "$TARGET" "$TADDR" "$OADDR"
+        info "Target (%s) resolved to %s (instead of '%s')." "$TARGET" "$TADDR" "$rtOADDR"
     fi
     return 0
 }
 
 isup() {
-    local ADDR="$1"
+    isupADDR="$1"
 
-    [ "$ADDR" = "$NEXTHOP" ] && {
+    [ "$isupADDR" = "$NEXTHOP" ] && {
         # addr is on local subnet (incl. host-local addrs) or peer-to-peer address 
-        ip neigh get dev $IFC $ADDR 2>&1 | grep -q 'REACHABLE' && { debug "$ADDR is arp1-up on $IFC" ; return 0 ;}
-        ping -q -w2 -c1 -I$IFC $ADDR >/dev/null 2>&1 && { debug "$ADDR is arp-ping-up on $IFC" ; return 0 ;} # also refreshes arp-cache
-        ip neigh get dev $IFC $ADDR 2>&1 | grep -q 'REACHABLE' && { debug "$ADDR is arp2-up on $IFC" ; return 0 ;}
+        ip neigh get dev $IFC $isupADDR 2>&1 | grep -q 'REACHABLE' && { debug "$isupADDR is arp1-up on $IFC" ; return 0 ;}
+        ping -q -w2 -c1 -I$IFC $isupADDR >/dev/null 2>&1 && { debug "$isupADDR is arp-ping-up on $IFC" ; return 0 ;} # also refreshes arp-cache
+        ip neigh get dev $IFC $isupADDR 2>&1 | grep -q 'REACHABLE' && { debug "$isupADDR is arp2-up on $IFC" ; return 0 ;}
     }
     
     # quick check if line is already up
-    ping -q -w1 -c1 -I$IFC $ADDR >/dev/null 2>&1 && {
-        debug "$ADDR is quick-up via $IFC"
+    ping -q -w1 -c1 -I$IFC $isupADDR >/dev/null 2>&1 && {
+        debug "$isupADDR is quick-up via $IFC"
         return 0
     }
     trace 'quick-up failed ... trying slow-up ...'
     
-    ping -qA -w$SUDEADLINE -W$SLOWUPTIMEOUT -c$SUCOUNT -I$IFC $ADDR >/dev/null 2>&1 && {
-        trace "$ADDR is slow-up via $IFC"
+    ping -qA -w$SUDEADLINE -W$SLOWUPTIMEOUT -c$SUCOUNT -I$IFC $isupADDR >/dev/null 2>&1 && {
+        trace "$isupADDR is slow-up via $IFC"
         return 0
     }
 
@@ -1157,29 +1170,29 @@ isup() {
     # double check that we're up (the above could potentially
     # (but unlikely due to -A) return 1 or 2 even if we're up)
     trace 'slow-up failed or ambigious result ... verifying ...'
-    ping -q -w2 -c1 -I$IFC $ADDR >/dev/null  2>&1 && {
-        trace '$ADDR is verified-up via $IFC'
+    ping -q -w2 -c1 -I$IFC $isupADDR >/dev/null  2>&1 && {
+        trace '$isupADDR is verified-up via $IFC'
         return 0
     }
     # We don't get traffic through
-    debug "$ADDR not-up via $IFC"
+    debug "$isupADDR not-up via $IFC"
 
     [ "$2" = "noresolve" ] && return 1
-    local OADDR=$TADDR
+    isupOADDR=$TADDR
     if resolve_target; then
-        [ "$OADDR" = "$TADDR" ] || {
-            info "Target '$TARGET' now resolves to '$TADDR', instead of '$OADDR'."
+        [ "$isupOADDR" = "$TADDR" ] || {
+            info "Target '$TARGET' now resolves to '$TADDR', instead of '$isupOADDR'."
             nexthop && {
-                if [ "$ADDR" = "$OADDR" ]; then # it was target that failed, test again with new TADDR
-                    ADDR=$TADDR
+                if [ "$isupADDR" = "$isupOADDR" ]; then # it was target that failed, test again with new TADDR
+                    isupADDR=$TADDR
                 else # it was nexthop that failed, test again with new NEXTHOP
-                    ADDR=$NEXTHOP;
+                    isupADDR=$NEXTHOP;
                 fi
-                isup "$ADDR" noresolve && return 0;
+                isup "$isupADDR" noresolve && return 0;
             }
         }
     else
-        TADDR=$OADDR
+        TADDR=$isupOADDR
         warn "Target '%s' no longer resolves to an ip address, will keep using '$TADDR'." "$TARGET"
     fi
     return 1
