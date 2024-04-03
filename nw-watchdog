@@ -92,7 +92,7 @@ else
 	exit 1
     }
 fi
-which sh >/dev/null 2>&1 || deperr which $lacking
+which sh >/dev/null 2>&1 || deperr which sh $lacking
 for x in $DEPENDENCIES; do which $x>/dev/null || lacking="$lacking $x"; done
 [ -n "$lacking" ] && deperr $lacking
 
