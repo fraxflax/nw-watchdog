@@ -1,0 +1,46 @@
+removed use of local variables to be fully POSIX compliant
+
+NOTCHECKED - expected to be shell-builtin or in PATH
+----------------------------------------------------
+echo (only used to output dependency error in case printf not available)
+
+POSIX shell - MUST be shell builtin
+-----------------------------------
+set
+
+SHELLBUILTIN(?) - tested if shell builtin
+-----------------------------------------
+printf
+which
+
+EXECUTABLES - must be in PATH (unless verified as shell builtin)
+----------------------------------------------------------------
+basename
+cat
+cut
+date
+getent
+grep
+head
+id
+ip
+ping
+! printf
+readlink
+sed
+! sh
+sleep
+stat
+tail
+touch
+wc
+! which
+
+WANTED - enhances the functionality if available
+------------------------------------------------
+tput
+fmt
+less
+more
+flock
+
