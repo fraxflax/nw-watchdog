@@ -1,5 +1,3 @@
-removed use of local variables to be fully POSIX compliant
-
 NOTCHECKED - expected to be shell-builtin or in PATH
 ----------------------------------------------------
 echo (only used to output dependency error in case printf not available)
@@ -38,9 +36,9 @@ wc
 
 WANTED - enhances the functionality if available
 ------------------------------------------------
-tput
+flock
 fmt
 less
 more
-flock
-
+tput
+wall
