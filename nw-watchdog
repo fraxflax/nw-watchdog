@@ -519,7 +519,7 @@ printf "        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n
        "               ip route add \$addr/32 via \`ip route show default | head -1 | cut -d\" \" -f3\` ;" \
        "             done ;" \
        "           ip route add 0.0.0.0/1 via 10.0.0.1 dev wg0 src 10.0.0.2 ;" \
-       "           ip route add 128.0.0.0/1 via 10.0.0.1 dev wg0 src 10.0.0.2 2>/dev/null'$__ $_b_\\" \
+       "           ip route add 128.0.0.0/1 via 10.0.0.1 dev wg0 src 10.0.0.2'$__ $_b_\\" \
        "  $_b_--ifcdown=$__'ip link del wg0' $_b_\\" \
        "  $_b_--install-systemd=${__}wg0"
 
@@ -528,7 +528,7 @@ printf "        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n
     $___${_b_}OBSERVE$__ that the entire $_b_--ifcup=$__'...' command needs to be on a single line without line breaks (linebreaks added above for readability):
 
 EOU
-printf "        %s\n" "$_b_--ifcup=$__'ip link add wg0 type wireguard ; ip link set wg0 up ; wg setconf wg0 /etc/wireguard/wg0.conf ; ip address add 10.0.0.2 peer 10.0.0.1 dev wg0 ; getent ahostsv4 wgserver.my.dom | grep -oE \"^[0-9.]+\" | uniq | while read addr; do ip route add \$addr/32 via \`ip route show default | head -1 | cut -d\" \" -f3\` ; done ; ip route add 0.0.0.0/1 via 10.0.0.1 dev wg0 src 10.0.0.2 ; ip route add 128.0.0.0/1 via 10.0.0.1 dev wg0 src 10.0.0.2 2>/dev/null'"
+printf "        %s\n" "$_b_--ifcup=$__'ip link add wg0 type wireguard ; ip link set wg0 up ; wg setconf wg0 /etc/wireguard/wg0.conf ; ip address add 10.0.0.2 peer 10.0.0.1 dev wg0 ; getent ahostsv4 wgserver.my.dom | grep -oE \"^[0-9.]+\" | uniq | while read addr; do ip route add \$addr/32 via \`ip route show default | head -1 | cut -d\" \" -f3\` ; done ; ip route add 0.0.0.0/1 via 10.0.0.1 dev wg0 src 10.0.0.2 ; ip route add 128.0.0.0/1 via 10.0.0.1 dev wg0 src 10.0.0.2'"
 $FMT<<EOU
 
     We use $_b_--no-ping-nexthop$__ as the NEXTHOP is the same as the ${___}TARGET${__} peer-to-peer address we monitor the connection for (in reality we don't need to specify it as it is the default behaviour if the ${___}TARGET${__} address is the same as the NEXTHOP address).
