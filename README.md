@@ -492,6 +492,9 @@ Below we see that the watchdog actually brings down all the vpn-interfaces and b
 ## DEPENDENCIES
 __nw-watchdog__ depends on the below executables being available in `/sbin:/bin:/usr/sbin:/usr/bin:$PATH` or being shell-builtin. A check is done at startup and if any of these tools are missing, __nw-watchdog__ will exit with an error telling which are lacking.
 	
+- `sh`
+- `printf`
+- `which`
 - `basename`
 - `cat`
 - `cut`
@@ -502,7 +505,6 @@ __nw-watchdog__ depends on the below executables being available in `/sbin:/bin:
 - `id`
 - `ip`
 - `ping`
-- `printf`
 - `readlink`
 - `sed`
 - `sleep`
@@ -517,15 +519,14 @@ __nw-watchdog__ will function without the below listed utilities, but will use t
   If available the logfile will be locked before truncated or written to.<br>
   If not available, there is a slight risk of log entries being lost if two or more instances of __nw-watchdog__ are concurently running using the same logfile and at least one of them have `--logsize` set to a value larger than 0.
 
-- `wall`<br>
-  If available it will be used as default `--alert` command. Otherwise, alerting will be done to stderr by default.
-
-- `tput`<br>
-  Is used to determine the terminal width and output bold and underlined text in this help page.
-
 - `fmt`<br>
   Is used to format the help message if available.
 
 - `less` (or `more`)<br>
   Is used to page this help unless $PAGER is set to something else.
 
+- `tput`<br>
+  Is used to determine the terminal width and output bold and underlined text in this help page.
+
+- `wall`<br>
+  If available it will be used as default `--alert` command. Otherwise, alerting will be done to stderr by default.
