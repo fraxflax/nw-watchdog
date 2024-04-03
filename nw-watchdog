@@ -45,6 +45,7 @@ IFCDOWNT='ip link set down %{IFC}'     # --ifcdown | -U
 ALERTCMDT='if which wall >/dev/null; then exec wall; else cat 1>&2; fi'
                                        # --alert | -a
 SYSTEMDSERVICENAME=''                  # --install-systemd
+##############################################################################
 
 
 # Ensure we have a POSIX (enough) shell
