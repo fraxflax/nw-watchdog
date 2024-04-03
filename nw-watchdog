@@ -48,7 +48,7 @@ SYSTEMDSERVICENAME=''                  # --install-systemd
 
 
 # Ensure we have a POSIX (enough) shell
-set >/dev/null 2>&1 && export PATH || {
+set >/dev/null 2>&1 && export PATH >/dev/null 2>&1 || {
     printf "\nThis script must be run in a POSIX compliant shell!\n\n" 1>&2 \
 	|| echo "This script must be run in a POSIX compliant shell!" 1>&2
     exit 1;
