@@ -477,7 +477,7 @@ $FMT<<EOU
 
     Firstly, we setup the $_b_$nwwatchdog$__ systemd service for the wireguard server which we reach via the default route:
 
-    $_b_$nwwatchdog$__ wgserver.domain.dom $_b_\\
+        $_b_$nwwatchdog$__ wgserver.domain.dom $_b_\\
 EOU
 printf "        %s\n        %s\n        %s\n        %s\n        %s\n" \
        "  $_b_--verbosity-level=${__}3 $_b_\\" \
@@ -615,16 +615,16 @@ EOU
         If not available, there is a slight risk of log entries being lost if two or more instances of $_b_$nwwatchdog$__ are concurently running using the same logfile and at least one of them have $_b_--logsize$__ set to a value larger than 0.
 
     - ${_b_}wall$__
-    If available it will be used as default $_b_--alert$__ command. Otherwise, alerting will be done to stderr by default.
+        If available it will be used as default $_b_--alert$__ command. Otherwise, alerting will be done to stderr by default.
 
     - ${_b_}tput$__
-    Is used to determine the terminal width and output bold and underlined text in this help page.
+        Is used to determine the terminal width and output bold and underlined text in this help page.
 
     - ${_b_}fmt$__
-    Is used to format the help message if available.
+        Is used to format the help message if available.
 
     - ${_b_}less$__ (or ${_b_}more$__)
-    Is used to page this help unless \$PAGER is set to something else.
+        Is used to page this help unless \$PAGER is set to something else.
 
 EOU
     [ -n "$1" ] && printf "$@"
