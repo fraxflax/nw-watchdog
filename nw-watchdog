@@ -47,8 +47,12 @@ ALERTCMDT='if which wall >/dev/null; then exec wall; else cat 1>&2; fi'
 SYSTEMDSERVICENAME=''                  # --install-systemd
 
 
-# Check shell-builtin dependencies
-set >/dev/null 2>&1 || { echo "This script must be run in a POSIX compliant shell" 1>&2; exit 1; }
+# Ensure we have a POSIX shell
+set >/dev/null 2>&1 || {
+    printf "\nThis script must be run in a POSIX compliant shell!\n\n" 1>&2 \
+	|| echo "This script must be run in a POSIX compliant shell!" 1>&2
+    exit 1;
+}
 
 # Let's put the "standard" paths first in PATH to ensure we get the standard utilities we need
 # and remove duplicates in PATH before exporting it
