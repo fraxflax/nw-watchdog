@@ -62,7 +62,7 @@ for p in $PATH; do
     esac
 done
 IFS="$OIFS"
-PATH=$NEWPATH
+PATH="$NEWPATH"
 export PATH
 
 DEPENDENCIES="basename cat cut date getent grep head id ip ping readlink sed sleep stat tail touch wc" 
