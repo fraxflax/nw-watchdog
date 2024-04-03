@@ -516,7 +516,7 @@ __nw-watchdog__ will function without the below listed utilities, but will use t
 - `tput`<br>
   Is used to determine the terminal width and output bold and underlined text in this help page.
 
-- fmt`<br>
+- `fmt`<br>
   Is used to format the help message if available.
 
 - `less` (or `more`)<br>
