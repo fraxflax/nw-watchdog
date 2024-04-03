@@ -73,12 +73,13 @@ DEPENDENCIES="basename cat cut date getent grep head id ip ping readlink sed sle
 lacking=''
 if printf '' 2>/dev/null; then 
     deperr() {
-	printf '(PATH=%s)\n\n~~~~~~~~~~~~~~~~\nDEPENDENCY ERROR\n~~~~~~~~~~~~~~~~\nThe following executable(s) are lacking in your PATH:\n   %s\n... aborting!\n\n' "$PATH" "$@" 1>&2
+	printf '\n(PATH=%s)\n\n~~~~~~~~~~~~~~~~\nDEPENDENCY ERROR\n~~~~~~~~~~~~~~~~\nThe following executable(s) are lacking in your PATH:\n   %s\n... aborting!\n\n' "$PATH" "$@" 1>&2
 	exit 1
     }
 else
     lacking='printf'
     deperr() { 
+	echo ' ' 1>&2
 	echo "(PATH=$PATH)" 1>&2
 	echo ' ' 1>&2
 	echo '~~~~~~~~~~~~~~~~' 1>&2
