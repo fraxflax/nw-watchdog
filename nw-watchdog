@@ -82,30 +82,30 @@ USAGE() {
     $FMT<<EOU
 $__
 ${_b_}NAME $__
-        $_b_$nwwatchdog$__ - Network Watchdog
+    $_b_$nwwatchdog$__ - Network Watchdog
 
 ${_b_}SYNOPSIS $__
 
-        $_b_$nwwatchdog$__ ${___}TARGET$__ [ OPTIONS ] 
+    $_b_$nwwatchdog$__ ${___}TARGET$__ [ OPTIONS ] 
 
 ${_b_}DESCRIPTION $__
-       $_b_$nwwatchdog$__ is a higly configurable network watchdog written in posix shell script for use in Linux, depending only on Linux most standard tools that are normally installed by default in all distributions (also see the ${_b_}DEPENDENCIES$__ section).
+    $_b_$nwwatchdog$__ is a higly configurable network watchdog written in posix shell script for use in Linux, depending only on Linux most standard tools that are normally installed by default in all distributions (also see the ${_b_}DEPENDENCIES$__ section).
 
-       It monitors the network connectivity to a specified ${___}TARGET${__} and/or the next hop towards that ${___}TARGET${__}, alerting upon lost connectivity explaining what is wrong. It can reset the source interface and will detect topology changes and, if allowed, reconfigure itself accordingly. It's intended to run as a daemon and has an option to install itself as a systemd service.  If you want to monitor the connectivity to several ${___}TARGET${__}s, you can run several instances of $_b_$nwwatchdog$__ using different $_b_--pidfile$__ option arguments.
+    It monitors the network connectivity to a specified ${___}TARGET${__} and/or the next hop towards that ${___}TARGET${__}, alerting upon lost connectivity explaining what is wrong. It can reset the source interface and will detect topology changes and, if allowed, reconfigure itself accordingly. It's intended to run as a daemon and has an option to install itself as a systemd service.  If you want to monitor the connectivity to several ${___}TARGET${__}s, you can run several instances of $_b_$nwwatchdog$__ using different $_b_--pidfile$__ option arguments.
 
-       $_b_$nwwatchdog$__ is free software written by Fredrik Ax <frax@axnet.nu>.
-       Feel free to modify and/or (re)distribute it in any way you like.
-       ... it's always nice to be mentioned though ;-)
-       It comes with ABSOLUTELY NO WARRANTY.
+    $_b_$nwwatchdog$__ is free software written by Fredrik Ax <frax@axnet.nu>.
+    Feel free to modify and/or (re)distribute it in any way you like.
+    ... it's always nice to be mentioned though ;-)
+    It comes with ABSOLUTELY NO WARRANTY.
 
-       Get the latest version from https://github.com/fraxflax/nw-watchdog
+    Get the latest version from https://github.com/fraxflax/nw-watchdog
 
 ${_b_}${___}TARGET$__
-       The mandatory argument ${___}TARGET$__ is the target (destination) to monitor the connection to. ${___}TARGET$__ can be an IP address or a resolvable hostname / FQDN. If it's a hostname / FQDN, it will be resolved to an IP address (first one found). The resolved IP address will be used for the monitoring. The name is continuously resolved and if the resolved ip address changes the new IP address will be used for the monitoring from there on.
-       Use $_b_--no-continuous-topology-detect$__ to resolve the ${___}TARGET${__} only at startup and failed connectivity checks.
+    The mandatory argument ${___}TARGET$__ is the target (destination) to monitor the connection to. ${___}TARGET$__ can be an IP address or a resolvable hostname / FQDN. If it's a hostname / FQDN, it will be resolved to an IP address (first one found). The resolved IP address will be used for the monitoring. The name is continuously resolved and if the resolved ip address changes the new IP address will be used for the monitoring from there on.
+    Use $_b_--no-continuous-topology-detect$__ to resolve the ${___}TARGET${__} only at startup and failed connectivity checks.
 
 ${_b_}OPTIONS $__(no arguments)
-       These options take no arguments, and may be specified in any order. They can be grouped (e.g. -vAP) in their short form, also having one of the OPTIONS that requires an argument last in the group.
+    These options take no arguments, and may be specified in any order. They can be grouped (e.g. -vAP) in their short form, also having one of the OPTIONS that requires an argument last in the group.
 
     $_b_--help | -h $__
         Shows this help, using \$PAGER if set to an executable, otherwise 'less' or 'more' if available in "/sbin:/bin:/usr/sbin:/usr/bin:\$PATH"
@@ -383,7 +383,7 @@ $FMT<<EOU
 
 ${_b_}EXAMPLES$__
 
-        ${___}ISP gateway monitoring:$__
+    ${___}ISP gateway monitoring:$__
 
         $_b_$nwwatchdog$__ 1.2.3.4 $_b_\\
 EOU
@@ -396,10 +396,10 @@ printf "        %s\n        %s\n        %s\n        %s\n        %s\n" \
 
 $FMT<<EOU
 
-        Checking once a minute ($_b_--interval=${__}60) that we have connectivity to the Internet Service Provider's gateway without actually pinging anything on the Internet ($_b_--no-ping-target$__ 1.2.3.4 ... any Intenet address will do) allowing interface and topology detection (not using --force-interface or --max-no-link=0) but still, if down, bring the supposed initial interface towards the ISP up on startup ($_b_--interface=${__}eth0) expecting the ISP gateway to have an RTT below 1 second ($_b_--slow-up-timeout=${__}1) and allowing the interface to be down for up to 5 minutes before considering it a permanent error rechecking topology ($_b_--ifup-grace=${__}300).
+    Checking once a minute ($_b_--interval=${__}60) that we have connectivity to the Internet Service Provider's gateway without actually pinging anything on the Internet ($_b_--no-ping-target$__ 1.2.3.4 ... any Intenet address will do) allowing interface and topology detection (not using --force-interface or --max-no-link=0) but still, if down, bring the supposed initial interface towards the ISP up on startup ($_b_--interface=${__}eth0) expecting the ISP gateway to have an RTT below 1 second ($_b_--slow-up-timeout=${__}1) and allowing the interface to be down for up to 5 minutes before considering it a permanent error rechecking topology ($_b_--ifup-grace=${__}300).
 
 
-        ${___}ISP gateway monitoring with forced interface:$__
+    ${___}ISP gateway monitoring with forced interface:$__
 
         $_b_$nwwatchdog$__ 1.2.3.4 $_b_\\
 EOU
@@ -412,11 +412,12 @@ printf "        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n
        "  $_b_--interval=${__}10$__"
 $FMT<<EOU
 
-        Same as above but enforcing the use of the eth0 interface as we know that the ISP gateway should always be reachable via that interface and that is the only Internet facing interface we have. It must be brought up on startup if not already up and there is no use rechecking the topology if it's not up ($_b_--force-interface=${__}eth0), so if down, we retry to reset it every 30 seconds ($_b_--ifup-grace=${__}30) forever ($_b_--max-no-link=${__}0), checking the connectivity every 10 seconds ($_b_--interval=${__}10).
+    Same as above but enforcing the use of the eth0 interface as we know that the ISP gateway should always be reachable via that interface and that is the only Internet facing interface we have. It must be brought up on startup if not already up and there is no use rechecking the topology if it's not up ($_b_--force-interface=${__}eth0), so if down, we retry to reset it every 30 seconds ($_b_--ifup-grace=${__}30) forever ($_b_--max-no-link=${__}0), checking the connectivity every 10 seconds ($_b_--interval=${__}10).
 
-        ${___}Management of Strongswan IPSec with VTI tunnel interface:$__
 
-        Firstly, we start a $_b_$nwwatchdog$__ for monitoring the connectivity to the IPSec peers public address (1.2.3.4 in this example), emailing alerts to the admin.
+    ${___}Management of Strongswan IPSec with VTI tunnel interface:$__
+
+    Firstly, we start a $_b_$nwwatchdog$__ for monitoring the connectivity to the IPSec peers public address (1.2.3.4 in this example), emailing alerts to the admin.
 
         $_b_$nwwatchdog$__ 1.2.3.4 $_b_\\
 EOU
@@ -430,9 +431,9 @@ printf "        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n
 
 $FMT<<EOU
 
-        Then we setup the monitor for the IPSec VTI tunnel which will also be created, configured and brought up.
-        Note that we are using different $_b_--pidfile$__ for the two watchdogs allowing them to run simultaneously.
-	It would be smoother to use a script and $_b_--ifcup=${__}/path/script, but it can also be done like this:
+    Then we setup the monitor for the IPSec VTI tunnel which will also be created, configured and brought up.
+    Note that we are using different $_b_--pidfile$__ for the two watchdogs allowing them to run simultaneously.
+    It would be smoother to use a script and $_b_--ifcup=${__}/path/script, but it can also be done like this:
 
         $_b_$nwwatchdog$__ 169.254.0.1 $_b_\\
 EOU
@@ -450,33 +451,33 @@ printf "        %s\n        %s\n        %s\n        %s\n        %s\n        %s\n
        "  $_b_--pidfile=/run/nw-watchdog-ipsectunnel.pid$__"
 $FMT<<EOU
 
-       $___${_b_}OBSERVE$__ that the entire $_b_--ifcup=$__'...' command needs to be on a single line without line breaks (linebreaks added above for readability):
+   $___${_b_}OBSERVE$__ that the entire $_b_--ifcup=$__'...' command needs to be on a single line without line breaks (linebreaks added above for readability):
 
 EOU
 printf "        %s\n" "$_b_--ifcup=$__'ipsec up connection-name ; ip tunnel add %{IFC} mode vti local 4.3.2.1 remote 1.2.3.4 ttl 255 key 111 ; ip addr add dev %{IFC} 169.254.0.2 remote 169.254.0.1 ; ip link set %{IFC} up multicast on mtu 1424 state UP ; ip route add 10.10.0.0/20 via 169.254.0.1 dev %{IFC}'"
 $FMT<<EOU
 
-        We use $_b_--ifup-grace=25$__ to allow enough time for IPSec to establish the connection upon start and interface reset.
-        $_b_--slow-up-timeout=5$__ (making the deadline 25 seconds for the slow-up ping test) should be enough for an idle IPSec conmnection to wakeup and start forwarding packets when monitored.
+    We use $_b_--ifup-grace=25$__ to allow enough time for IPSec to establish the connection upon start and interface reset.
+    $_b_--slow-up-timeout=5$__ (making the deadline 25 seconds for the slow-up ping test) should be enough for an idle IPSec conmnection to wakeup and start forwarding packets when monitored.
 
-        In the above example we monitor the connectivity to the peer address inside the VTI tunnel, which is also the NEXTHOP.
-        If we are interested in the connectivity to something in the remote network routed via the tunnel we could use that as a ${___}TARGET${__} instead of the peer address:
+    In the above example we monitor the connectivity to the peer address inside the VTI tunnel, which is also the NEXTHOP.
+    If we are interested in the connectivity to something in the remote network routed via the tunnel we could use that as a ${___}TARGET${__} instead of the peer address:
 
         $_b_$nwwatchdog$__ 10.10.1.1 $_b_ ...
-        and the rest of the options exactly the same.
+    and the rest of the options exactly the same.
 
-        This would give alerts if 10.10.1.1 is down.
-        In all other ways the effect would be the same as using 169.254.0.1 as ${___}TARGET${__}.
-        Even with ${___}TARGET${__} 10.10.1.1, the NEXTHOP (169.254.0.1) will also be monitored (we are NOT using --no-ping-nexthop) and the interface will NOT be reset as long as the NEXTHOP is reachable.
+    This would give alerts if 10.10.1.1 is down.
+    In all other ways the effect would be the same as using 169.254.0.1 as ${___}TARGET${__}.
+    Even with ${___}TARGET${__} 10.10.1.1, the NEXTHOP (169.254.0.1) will also be monitored (we are NOT using --no-ping-nexthop) and the interface will NOT be reset as long as the NEXTHOP is reachable.
 
 
-        ${___}Wireguard full tunnel management:$__
+    ${___}Wireguard full tunnel management:$__
 
-        This is an example of how one can use $_b_$nwwatchdog$__ to setup and monitor a wireguard full tunnel, also monitoring the connectivity to the wireguard server, running both whatchdogs as systemd services getting alerts via e-mail:
+    This is an example of how one can use $_b_$nwwatchdog$__ to setup and monitor a wireguard full tunnel, also monitoring the connectivity to the wireguard server, running both whatchdogs as systemd services getting alerts via e-mail:
 
-        Firstly, we setup the $_b_$nwwatchdog$__ systemd service for the wireguard server which we reach via the default route:
+    Firstly, we setup the $_b_$nwwatchdog$__ systemd service for the wireguard server which we reach via the default route:
 
-        $_b_$nwwatchdog$__ wgserver.domain.dom $_b_\\
+    $_b_$nwwatchdog$__ wgserver.domain.dom $_b_\\
 EOU
 printf "        %s\n        %s\n        %s\n        %s\n        %s\n" \
        "  $_b_--verbosity-level=${__}3 $_b_\\" \
@@ -486,8 +487,8 @@ printf "        %s\n        %s\n        %s\n        %s\n        %s\n" \
        "  $_b_--install-systemd=${__}wgserver"
     $FMT<<EOU
 
-        Then we setup the monitor for the wireguard full tunnel which will also create and configure and bring the tunnel up (if not already) upon start of the sytemd service, making sure we have a /32 routes to all of the wireguard server's ip addresses that the hostname resolves to.
-        Note: It would be smoother to use a script and $_b_--ifcup=${__}/path/script, but it can also be done like this:
+    Then we setup the monitor for the wireguard full tunnel which will also create and configure and bring the tunnel up (if not already) upon start of the sytemd service, making sure we have a /32 routes to all of the wireguard server's ip addresses that the hostname resolves to.
+    Note: It would be smoother to use a script and $_b_--ifcup=${__}/path/script, but it can also be done like this:
 
         $_b_$nwwatchdog$__ 10.0.0.1 $_b_\\
 EOU
@@ -520,20 +521,20 @@ $FMT<<EOU
     We use $_b_--no-ping-nexthop$__ as the NEXTHOP is the same as the ${___}TARGET${__} peer-to-peer address we monitor the connection for (in reality we don't need to specify it as it is the default behaviour if the ${___}TARGET${__} address is the same as the NEXTHOP address).
     
 
-        ${___}Several VPN paths with one preferred interface:$__
+    ${___}Several VPN paths with one preferred interface:$__
 
-        This is a (real life) cornor case but worth explaining to get an understanding of the capabilities of $_b_$nwwatchdog$__.
+    This is a (real life) cornor case but worth explaining to get an understanding of the capabilities of $_b_$nwwatchdog$__.
 
-        We have setup ifupdown to handle three different vpn-interfaces: vpnL vpnP and vpnF
-        They all use the same VPN server but have different routes via the server.
-        Only one of the interfaces can be up at any given time.
+    We have setup ifupdown to handle three different vpn-interfaces: vpnL vpnP and vpnF
+    They all use the same VPN server but have different routes via the server.
+    Only one of the interfaces can be up at any given time.
 
-        If vpnL is up we route just to the peer local network 10.0.10.0/24 via it.
-        If vpnP is up we route to all private addresses via it, including 10.0.0.0/8
-        If vpnF is up we use it as a full tunnel, routing all traffic (apart from the VPN-connection itself) via it.
-        
-        Our preferred interface is vpnL and if we can't get any traffic through the vpn-server, vpnL is the interface we want to reset.
-        BUT as long as we can get traffic through using any of the three interfaces, we don't want to get alerted and have any interface reset, so we can't use $_b_--force-interface$__. The soloution will be to allow continuous topology detection but hardcode the preferred interface in $_b_--ifcup$__ and --ifcdown$_b_.
+    If vpnL is up we route just to the peer local network 10.0.10.0/24 via it.
+    If vpnP is up we route to all private addresses via it, including 10.0.0.0/8
+    If vpnF is up we use it as a full tunnel, routing all traffic (apart from the VPN-connection itself) via it.
+    
+    Our preferred interface is vpnL and if we can't get any traffic through the vpn-server, vpnL is the interface we want to reset.
+    BUT as long as we can get traffic through using any of the three interfaces, we don't want to get alerted and have any interface reset, so we can't use $_b_--force-interface$__. The soloution will be to allow continuous topology detection but hardcode the preferred interface in $_b_--ifcup$__ and --ifcdown$_b_.
 
         $_b_$nwwatchdog$__ vpn.inside.dom \\
           $_b_--interface=${__}vpnL \\
@@ -543,87 +544,87 @@ $FMT<<EOU
           $_b_--ifcdown=${__}'ifdown vnpL ; ifdown vpnP  ; ifdown vpnF' \\
           $_b_--ifcup=${__}'ifup vpnL'
 
-       Starting the watchdog like the above with any of the three vpn-interfaces up, the vpn-interface that is up will be detected and used as source interface. The continuous topology detection will ensure switching to which ever interface currently is up. If all interfaces are down the topology detection will think the interface for the default gw is the one to monitor (in our example eth0) but since we have $_b_--no-ping-nexthop$__ and hardcoded the preferred vpn-interface in $_b_--ifcup$__ the watchdog will bring up vpnL. If any of the vpn interfaces are up, but have problems the watchdog will bring them all down and then bring up vpnL.
+    Starting the watchdog like the above with any of the three vpn-interfaces up, the vpn-interface that is up will be detected and used as source interface. The continuous topology detection will ensure switching to which ever interface currently is up. If all interfaces are down the topology detection will think the interface for the default gw is the one to monitor (in our example eth0) but since we have $_b_--no-ping-nexthop$__ and hardcoded the preferred vpn-interface in $_b_--ifcup$__ the watchdog will bring up vpnL. If any of the vpn interfaces are up, but have problems the watchdog will bring them all down and then bring up vpnL.
 
-       We add $_b_--verbosity-level=${__}5 to the above, allowing us to get a trace of what is happening in the logfile in the following scenario:
-       vpnL is up when $_b_$nwwatchdog$__ starts,
-       after a while we see that vpnF is replacing vpnL (as somebody brought up the full tunnel for a while)
-       then vpnF is brought down (as somebody did not need it anymore) and
-       $_b_$nwwatchdog$__ detetcs that the connectivity via the VPN-server is lost and brings up vpnL:
+    We add $_b_--verbosity-level=${__}5 to the above, allowing us to get a trace of what is happening in the logfile in the following scenario:
+    vpnL is up when $_b_$nwwatchdog$__ starts,
+    after a while we see that vpnF is replacing vpnL (as somebody brought up the full tunnel for a while)
+    then vpnF is brought down (as somebody did not need it anymore) and
+    $_b_$nwwatchdog$__ detetcs that the connectivity via the VPN-server is lost and brings up vpnL:
 
 EOU
 cat <<EOU
-       00:00:01   INFO: Target (vpn.inside.dom) resolved to 10.0.10.1 (instead of '').
-       00:00:01   INFO: Detected topology: IFC='vpnL' -> 'vpnL' ; NEXTHOP='' -> '10.0.10.1'
-$_b_       ^^^^^^^^^^^^^^^^ $__
-$_b_       This shows that vpnL is the interface that is up at start $__
+    00:00:01   INFO: Target (vpn.inside.dom) resolved to 10.0.10.1 (instead of '').
+    00:00:01   INFO: Detected topology: IFC='vpnL' -> 'vpnL' ; NEXTHOP='' -> '10.0.10.1'
+$_b_    ^^^^^^^^^^^^^^^^ $__
+$_b_    This shows that vpnL is the interface that is up at start $__
 
-       00:00:01  TRACE: Continuously checking if target is up...
-       00:00:01  TRACE: ... and for changes in topology
-       00:00:26   INFO: Detected topology: IFC='vpnL' -> 'vpnF' ; NEXTHOP='10.0.10.1' -> '10.0.10.1'
-$_b_       ^^^^^^^^^^^^^^^^ $__
-$_b_       Here somebody replaced vpnL with the full tunnel vpnF $__
+    00:00:01  TRACE: Continuously checking if target is up...
+    00:00:01  TRACE: ... and for changes in topology
+    00:00:26   INFO: Detected topology: IFC='vpnL' -> 'vpnF' ; NEXTHOP='10.0.10.1' -> '10.0.10.1'
+$_b_    ^^^^^^^^^^^^^^^^ $__
+$_b_    Here somebody replaced vpnL with the full tunnel vpnF $__
 
-       00:00:31   INFO: Detected topology: IFC='vpnF' -> 'eth0' ; NEXTHOP='10.0.10.1' -> '192.168.0.1'
-$_b_       ^^^^^^^^^^^^^^^^ $__
-$_b_       and here the full tunnel was brought down again (without replacing it with any of the other vpn-interfaces) $__
+    00:00:31   INFO: Detected topology: IFC='vpnF' -> 'eth0' ; NEXTHOP='10.0.10.1' -> '192.168.0.1'
+$_b_    ^^^^^^^^^^^^^^^^ $__
+$_b_    and here the full tunnel was brought down again (without replacing it with any of the other vpn-interfaces) $__
 
-       00:00:32  TRACE: quick-up failed ... trying slow-up ...
-       00:00:32  TRACE: slow-up failed or ambigious result ... verifying ...
-       00:00:34  TRACE: No reply from target 'vpn.inside.dom' (10.0.10.1), checking link and topology.
-       00:00:35  TRACE: quick-up failed ... trying slow-up ...
-       00:00:35  TRACE: slow-up failed or ambigious result ... verifying ...
-$_b_       ^^^^^^^^^^^^^^^^ $__
-$_b_       Here the $nwwatchdog gives up and concludes that the ${___}TARGET${__}$_b_ is down. $__
+    00:00:32  TRACE: quick-up failed ... trying slow-up ...
+    00:00:32  TRACE: slow-up failed or ambigious result ... verifying ...
+    00:00:34  TRACE: No reply from target 'vpn.inside.dom' (10.0.10.1), checking link and topology.
+    00:00:35  TRACE: quick-up failed ... trying slow-up ...
+    00:00:35  TRACE: slow-up failed or ambigious result ... verifying ...
+$_b_    ^^^^^^^^^^^^^^^^ $__
+$_b_    Here the $nwwatchdog gives up and concludes that the ${___}TARGET${__}$_b_ is down. $__
 
-       00:00:37  ALERT: DOWN - Not getting replies from target 'vpn.inside.dom' (10.0.10.1) on interface 'eth0'.
-                        Resetting interface:
-                        ifdown vpnL ; ifdown vpnP ; ifdown vpnF
-                        sleep 1
-                        ifup vpnL
-       00:00:37   INFO: Resetting interface (eth0).
-$_b_       ^^^^^^^^^^^^^^^^                      ^^^^ $__
-$_b_       This can be confusing since it's actually not eth0 that is reset (but it's the current source interface) $__
-$_b_       Below we see that the watchdog actually brings down all the vpn-interfaces and brings up vpnL $__
+    00:00:37  ALERT: DOWN - Not getting replies from target 'vpn.inside.dom' (10.0.10.1) on interface 'eth0'.
+                     Resetting interface:
+                     ifdown vpnL ; ifdown vpnP ; ifdown vpnF
+                     sleep 1
+                     ifup vpnL
+    00:00:37   INFO: Resetting interface (eth0).
+$_b_    ^^^^^^^^^^^^^^^^                      ^^^^ $__
+$_b_    This can be confusing since it's actually not eth0 that is reset (but it's the current source interface) $__
+$_b_    Below we see that the watchdog actually brings down all the vpn-interfaces and brings up vpnL $__
 
-       00:00:37  TRACE: sh -c 'ifdown vpnL ; ifdown vpnP ; ifdown vpnF'
-       00:00:38  TRACE: sh -c 'ifup vpnL'
-       00:00:38  TRACE: Sleeping for 35 seconds.
-$_b_       ^^^^^^^^^^^^^^^^ $__
-$_b_       This is the grace period we have set in --ifup-grace $__
-       00:01:13   INFO: Detected topology: IFC='eth0' -> 'vpnL' ; NEXTHOP='192.168.0.1' -> '10.0.10.1'
-       00:01:13  TRACE: Continuously checking if target is up...
-       00:01:13  TRACE: ... and for changes in topology
-       00:01:13  ALERT: UP - Target 'vpn.inside.dom' (10.0.10.1) is up.
+    00:00:37  TRACE: sh -c 'ifdown vpnL ; ifdown vpnP ; ifdown vpnF'
+    00:00:38  TRACE: sh -c 'ifup vpnL'
+    00:00:38  TRACE: Sleeping for 35 seconds.
+$_b_    ^^^^^^^^^^^^^^^^ $__
+$_b_    This is the grace period we have set in --ifup-grace $__
+    00:01:13   INFO: Detected topology: IFC='eth0' -> 'vpnL' ; NEXTHOP='192.168.0.1' -> '10.0.10.1'
+    00:01:13  TRACE: Continuously checking if target is up...
+    00:01:13  TRACE: ... and for changes in topology
+    00:01:13  ALERT: UP - Target 'vpn.inside.dom' (10.0.10.1) is up.
 EOU
 $FMT <<EOU
 
 ${_b_}DEPENDENCIES$__
-        $_b_$nwwatchdog$__ depends on the below executables being available in "/sbin:/bin:/usr/sbin:/usr/bin:\$PATH" or being shell-builtin. A check is done at startup and if any of these tools are missing, $_b_$nwwatchdog$__ will exit with an error telling which are lacking.
+    $_b_$nwwatchdog$__ depends on the below executables being available in "/sbin:/bin:/usr/sbin:/usr/bin:\$PATH" or being shell-builtin. A check is done at startup and if any of these tools are missing, $_b_$nwwatchdog$__ will exit with an error telling which are lacking.
         
 EOU
     for dep in $DEPENDENCIES; do
-                printf "        - ${_b_}%s$__\n" "$dep"
+                printf "    - ${_b_}%s$__\n" "$dep"
     done
     $FMT<<EOU
 
-        $_b_$nwwatchdog$__ will function without the below listed utilities, but will use them to enhance its functionality if available.
+    $_b_$nwwatchdog$__ will function without the below listed utilities, but will use them to enhance its functionality if available.
 
-        - ${_b_}flock$__
-            If available the logfile will be locked before truncated or written to.
-            If not available, there is a slight risk of log entries being lost if two or more instances of $_b_$nwwatchdog$__ are concurently running using the same logfile and at least one of them have $_b_--logsize$__ set to a value larger than 0.
+    - ${_b_}flock$__
+        If available the logfile will be locked before truncated or written to.
+        If not available, there is a slight risk of log entries being lost if two or more instances of $_b_$nwwatchdog$__ are concurently running using the same logfile and at least one of them have $_b_--logsize$__ set to a value larger than 0.
 
-        - ${_b_}wall$__
-        If available it will be used as default $_b_--alert$__ command. Otherwise, alerting will be done to stderr by default.
+    - ${_b_}wall$__
+    If available it will be used as default $_b_--alert$__ command. Otherwise, alerting will be done to stderr by default.
 
-        - ${_b_}tput$__
-        Is used to determine the terminal width and output bold and underlined text in this help page.
+    - ${_b_}tput$__
+    Is used to determine the terminal width and output bold and underlined text in this help page.
 
-        - ${_b_}fmt$__
-        Is used to format the help message if available.
+    - ${_b_}fmt$__
+    Is used to format the help message if available.
 
-        - ${_b_}less$__ (or ${_b_}more$__)
-        Is used to page this help unless \$PAGER is set to something else.
+    - ${_b_}less$__ (or ${_b_}more$__)
+    Is used to page this help unless \$PAGER is set to something else.
 
 EOU
     [ -n "$1" ] && printf "$@"
