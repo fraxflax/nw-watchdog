@@ -4,6 +4,7 @@ echo (only used to output dependency error in case printf not available)
 
 POSIX shell - MUST be shell builtin
 -----------------------------------
+export
 set
 
 SHELLBUILTIN(?) - tested if shell builtin
