@@ -1,5 +1,5 @@
 # CHANGELOG
-(Also see __[WIP-TODO.md](https://github.com/fraxflax/nw-watchdog/blob/main/documentation/WIP-TODO.md)__ for __Work in Progress__ (features changes currently being worked) on and future plans.)
+Also see __[WIP-TODO.md](https://github.com/fraxflax/nw-watchdog/blob/main/documentation/WIP-TODO.md)__ for __Work in Progress__ (features / changes currently being worked on) and future plans.
 
 ## IN MAIN 
 These changes are already merged into the main branch and available in https://github.com/fraxflax/nw-watchdog <br>
