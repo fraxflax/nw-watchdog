@@ -8,7 +8,7 @@ Unless plans change, they will be in the next release.
 * _currently nothing_
 
 ## WORK IN PROGRESS 
-These changes are currently worked on in a separate branches.
+These changes are currently being worked on in separate branches.
 
 * __LINKDOWN - LINKUP__ alert statees<br>
   In version 1.0.0, if there is no link on the interface a WARNING alert is sent with the idea of this could possibly be a configuration issue with to short --ifup-grace or tweaking --max-nolink BUT if the link is lost e.g. due to switch being down, cable out, etc and we use --force-interface and --max-nolink > 0 there will be repeated alerts on the same issue sent every ~ <ins>max-nolink * ifup-grace</ins> seconds.<br>
