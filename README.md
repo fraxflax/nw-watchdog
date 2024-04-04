@@ -26,7 +26,7 @@ Just copy / download the `nw-watchdog` script into your PATH and make it executa
 * All releases are available for download here: https://github.com/fraxflax/nw-watchdog/releases
 
 ## DOCUMENTATION
-Extensive documentation including examples, also shown below and available as [documentation/help.md](https://github.com/fraxflax/nw-watchdog/blob/main/documentation/help.md), is available by running:<br>
+See below for extensive documentation including examples. The full help document is available in [documentation/help.md](https://github.com/fraxflax/nw-watchdog/blob/main/documentation/help.md), and by running:<br>
 `nw-watchdog --help`<br>
 
 ---
