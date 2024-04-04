@@ -11,12 +11,13 @@ It comes with ABSOLUTELY NO WARRANTY.
 ## INSTALL
 Just download the script [nw-watchdog](https://raw.githubusercontent.com/fraxflax/nw-watchdog/main/nw-watchdog) into your PATH and make it executable:
 Full releases are available for download here: https://github.com/fraxflax/nw-watchdog/releases
+
 Latest release of the script is v1.0.0: [nw-watchdog](https://raw.githubusercontent.com/fraxflax/nw-watchdog/v1.0.0/nw-watchdog)
 ```
 curl -o /usr/local/bin/nw-watchdog https://raw.githubusercontent.com/fraxflax/nw-watchdog/v1.0.0/nw-watchdog ; chmod a+rx /usr/local/bin/nw-watchdog
 ```
 
-Latest version (main branch) which may contain new features / changes that will be in the next release: [nw-watchdog](https://raw.githubusercontent.com/fraxflax/nw-watchdog/main/nw-watchdog)
+Latest version (main branch) of the script may contain new features / changes that will be in the next release: [nw-watchdog](https://raw.githubusercontent.com/fraxflax/nw-watchdog/main/nw-watchdog)
 ```
 curl -o /usr/local/bin/nw-watchdog https://raw.githubusercontent.com/fraxflax/nw-watchdog/main/nw-watchdog ; chmod a+rx /usr/local/bin/nw-watchdog
 ```
