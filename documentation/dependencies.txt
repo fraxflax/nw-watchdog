@@ -7,8 +7,8 @@ POSIX shell - MUST be shell builtin
 export
 set
 
-SHELLBUILTIN(?) - tested if shell builtin
------------------------------------------
+SHELLBUILTIN(?) - explicitly tested if shell builtin
+----------------------------------------------------
 printf
 which
 
