@@ -9,7 +9,7 @@ Unless plans change, they will be in the next release.
 * _currently nothing_
 
 ## v. 1.0.0 - First stable Release, 2024-04-03
-https://github.com/fraxflax/nw-watchdog/tree/Release-version-1.0.0 <br>
+https://github.com/fraxflax/nw-watchdog/tree/v1.0.0 <br>
 Download release: https://github.com/fraxflax/nw-watchdog/releases/tag/v1.0.0 <br>
 Stability tested thoroughly.<br>
 POSIX and dependency checks are in place.<br>
