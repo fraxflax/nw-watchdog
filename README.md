@@ -9,11 +9,18 @@ Feel free to modify and/or (re)distribute it in any way you like.<br>
 It comes with ABSOLUTELY NO WARRANTY.
 
 ## INSTALL
+Just download the script [nw-watchdog](https://raw.githubusercontent.com/fraxflax/nw-watchdog/main/nw-watchdog) into your PATH and make it executable:
+Full releases are available for download here: https://github.com/fraxflax/nw-watchdog/releases
+Latest release of the script is v1.0.0: [nw-watchdog](https://raw.githubusercontent.com/fraxflax/nw-watchdog/v1.0.0/nw-watchdog)
+```
+curl -o /usr/local/bin/nw-watchdog https://raw.githubusercontent.com/fraxflax/nw-watchdog/v1.0.0/nw-watchdog ; chmod a+rx /usr/local/bin/nw-watchdog
+```
 
-Just download the script [nw-watchdog](https://raw.githubusercontent.com/fraxflax/nw-watchdog/main/nw-watchdog) into your PATH and make it executable, e.g. like this:
+Latest version (main branch) which may contain new features / changes that will be in the next release: [nw-watchdog](https://raw.githubusercontent.com/fraxflax/nw-watchdog/main/nw-watchdog)
 ```
 curl -o /usr/local/bin/nw-watchdog https://raw.githubusercontent.com/fraxflax/nw-watchdog/main/nw-watchdog ; chmod a+rx /usr/local/bin/nw-watchdog
 ```
+
 ## DOCUMENTATION
 Extensive documentation including examples, also shown below, is available by running:<br>
 `nw-watchdog --help`<br>
