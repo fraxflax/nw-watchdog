@@ -19,7 +19,7 @@ Just copy / download the `nw-watchdog` script into your PATH and make it executa
   ```
 * Latest release of the script is version 1.0.0.
   
-  Download version v1.0.0: [nw-watchdog](https://raw.githubusercontent.com/fraxflax/nw-watchdog/v1.0.0/nw-watchdog)
+  Download v1.0.0: [nw-watchdog](https://raw.githubusercontent.com/fraxflax/nw-watchdog/v1.0.0/nw-watchdog)
   ```
   curl -o /usr/local/bin/nw-watchdog https://raw.githubusercontent.com/fraxflax/nw-watchdog/v1.0.0/nw-watchdog ; chmod a+rx /usr/local/bin/nw-watchdog
   ```
