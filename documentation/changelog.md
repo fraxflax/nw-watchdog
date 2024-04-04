@@ -1,6 +1,5 @@
 # CHANGELOG
-For features changes currently being worked on and future plans, please see:
-[wip-todo.md](https://github.com/fraxflax/nw-watchdog/blob/main/wip-todo.md)
+(Also see __[wip-todo.md]([https://github.com/fraxflax/nw-watchdog/blob/main/wip-todo.md)__ for __Work in Progress__ (features changes currently being worked) on and __Future plans__.)
 
 ## IN MAIN 
 These changes are already merged into the main branch and available in https://github.com/fraxflax/nw-watchdog <br>
@@ -17,8 +16,8 @@ All functionality is documented.<br>
 Documentation is up to date with sufficient number of EXAMPLES to show the functionality.
 
 Please see
-[Release-version-1.0.0/README.md](https://github.com/fraxflax/nw-watchdog/blob/Release-version-1.0.0/README.md),
-or [Release-version-1.0.0/documentation/help.md](https://github.com/fraxflax/nw-watchdog/blob/Release-version-1.0.0/documentation/help.md) 
+[v1.0.0 README](https://github.com/fraxflax/nw-watchdog/blob/v1.0.0/README.md),
+or [v1.0.0 documentation/help.md](https://github.com/fraxflax/nw-watchdog/blob/v1.0.0/documentation/help.md) 
 for capabilities / fetures.
 
 
