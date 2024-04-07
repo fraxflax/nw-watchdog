@@ -12,7 +12,8 @@ It monitors the network connectivity to a specified <ins>TARGET</ins> and/or the
 __nw-watchdog__ is free software written by Fredrik Ax \<frax@axnet.nu\>.<br>
 Feel free to modify and/or (re)distribute it in any way you like.<br>
 ... it's always nice to be mentioned though ;-)<br>
-It comes with ABSOLUTELY NO WARRANTY.
+
+__nw-watchdog__ comes with ABSOLUTELY NO WARRANTY.
 
 Get the latest version from https://github.com/fraxflax/nw-watchdog
 
@@ -24,12 +25,14 @@ Use `--no-continuous-topology-detect` to resolve the <ins>TARGET</ins> only at s
 These options take no arguments, and may be specified in any order. They can be grouped (e.g. `-vAP`) in their short form, also having one of the OPTIONS that requires an argument last in the group.
 
 * __--help | -h__
-
 	Shows this help, using `$PAGER` if set to an executable, otherwise `less` or `more` if available in `/sbin:/bin:/usr/sbin:/usr/bin:$PATH`<br>
-(Use `PAGER=cat` to avoid using a pager).
+(Use `--no-pager` to avoid using a pager).
+
+* __--no-pager | --no-less | --no-more | -M__
+Do NOT use a pager for help and error messages.
+__--install-systemd__ implies __--no-pager__
 
 * __--no-ping-target | -P__
-
 	If the <ins>TARGET</ins> is the next hop (on the same subnet or a peer-to-peer address), reachability of the <ins>TARGET</ins> is checked by arp cache status and ping.<br>
 If the <ins>TARGET</ins> is not on the same subnet as the source, the reachability of the <ins>TARGET</ins> is checked by pinging it in a certain pattern (see `--slow-up-timeout` for details).
 
@@ -55,7 +58,7 @@ If the <ins>TARGET</ins> is not on the same subnet as the source, the reachabili
 * __--no-continuous-topology-detect | -T__<br>
   Normaly the topology (resolving the ip address of the <ins>TARGET</ins>, detecting which source interface to use and the ip address of the NEXTHOP towards the <ins>TARGET</ins>) is detected at startup and continuously monitored for changes.
 
-	`--no-continuous-topology-detect` disables the topology detection for as long as the <ins>TARGET</ins> replies (or in combination with `--no-ping-target` for as long as the NEXTHOP is reachable). The topology will only be detected at startup and if the <INS>TARGET</INS> does not reply or if the NEXTHOP cannot be reached, meaning that routing changes making the <INS>TARGET</INS> or NEXTHOP unreachable will not be detected as long as the <INS>TARGET</INS> / NEXTHOP can be reached using the old topology.
+	`--no-continuous-topology-detect` disables the topology detection for as long as the <ins>TARGET</ins> replies (or in combination with `--no-ping-target`, for as long as the NEXTHOP is reachable). The topology will only be detected at startup and if the <INS>TARGET</INS> does not reply or if the NEXTHOP cannot be reached, meaning that routing changes making the <INS>TARGET</INS> or NEXTHOP unreachable will not be detected as long as the <INS>TARGET</INS> / NEXTHOP can be reached using the old topology.
 
 	`--force-interface` implies `--no-continuous-topology-detect`.
     				       
@@ -64,7 +67,7 @@ If the <ins>TARGET</ins> is not on the same subnet as the source, the reachabili
 
 * __--verbose | -v__<br>
 	Shortcut for `--verbosity-level=5`<br>
-	If used in combination with `--verbosity-level`, the specified verbosity level will take precedence. 
+	If used in combination with `--verbosity-level`, the specified __--verbosity-level__ will take precedence. 
 
 * __--debug | -d__<br>
 	Shortcut for: `--verbosity-level=6  --logfile=- --logsize=0  --pidfile=/dev/null  --slow-up-timeout=1  --sleep=3 --ifup-grace=5 --alert='cat' --foreground` 
@@ -249,6 +252,8 @@ These opions takes a single argument each and may be specified in any order. Spe
 	  - DOWN for lost conenctivity to <INS>TARGET</INS>
 	  - UNREACHABLE for lost conenctivity to NEXTHOP (implies DOWN)
 	  - REACHABLE for restored connectivity to NEXTHOP
+	  - LINKDOWN for lost link on source interface
+	  - LINKUP for restored link on source interface
 	  - ERROR for permanent errors
 	  - WARNING for things that might need reconfiguration
 
@@ -276,12 +281,17 @@ These opions takes a single argument each and may be specified in any order. Spe
     This option requires root privileges.
 
 	Note:<br>
-	To completely remove the service do (as root):
+	__--remove-systemd=<ins>SERVICENAME</ins>__ completely removes the service.
+	
+* __--remove-systemd__ <ins>SERVICENAME</ins><br>
+	Stops and completely removes the systemd-service from the system by performing these steps:
     ```shell
 	systemctl stop nw-watchdog-SERVICENAME.service
 	systemctl disable nw-watchdog-SERVICENAME.service
 	rm /etc/systemd/system/nw-watchdog-SERVICENAME.service
 	```
+
+   This option requires root privileges.
 
 ## EXAMPLES
 
