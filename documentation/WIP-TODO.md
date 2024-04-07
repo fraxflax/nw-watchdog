@@ -15,6 +15,11 @@ These changes are currently being worked on in separate branches.
   BUT if the link is lost e.g. due to switch being down, cable damaged or fallen out, etc and we use `--force-interface` with a `--max-nolink` greater than 0, there will be repeated alerts on the same issue sent almost every _max-nolink * ifup-grace_ seconds.<br>
   With these new alert states thare will be only one alert if the link is down and we can't get it up, and one when it comes up.
 
+* __--no-pager | --no-less | --no-more | -M__<br>
+  option not to use pager for errors and help
+  __--install-systemd__ will enforce __--no-pager__ when installing systemd-services
+  will also update help to reflect the new option and no longer recommend using PAGER=cat not to use pageer with __--help__  .
+
 ## TODO:
 Planned future features / changes.
 
