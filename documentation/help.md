@@ -25,6 +25,9 @@ Get the latest version from https://github.com/fraxflax/nw-watchdog
 The mandatory argument <ins>TARGET</ins> is the target (destination) for which he connection is monitored. <ins>TARGET</ins> can be an IP address or a resolvable hostname / FQDN. If it's a hostname / FQDN, it will be resolved to an IPv4 address (first one found by getent). The resolved IP address will be used for the monitoring. The name is continuously resolved and if the resolved ip address changes the new IP address will be used for the monitoring from there on.<br>
 Use `--no-continuous-topology-detect` to resolve the <ins>TARGET</ins> only at startup and failed connectivity checks.
 
+<ins>TARGET</ins> can be placed before, afer or between valid OPTIONS.
+
+
 ## OPTIONS (no arguments)
 These options take no arguments, and may be specified in any order. They can be grouped (e.g. `-vAP`) in their short form, also having one of the OPTIONS that requires an argument last in the group.
 
