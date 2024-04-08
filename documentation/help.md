@@ -66,7 +66,9 @@ If the <ins>TARGET</ins> is not on the same subnet as the source, the reachabili
 	Run in foreground, do not fork / daemonize.
 
 * __--list-systemd__
-    If systemd is installed, a brief status of all installed nw-watchdog systemd-services are listed.
+    If systemd is installed, a brief status of all installed nw-watchdog systemd-services are listed to stdout.
+
+	Cannot be combined with any other options.
 	
 * __--verbose | -v__<br>
 	Shortcut for `--verbosity-level=5`<br>
@@ -283,12 +285,10 @@ These opions takes a single argument each and may be specified in any order. Spe
 
     This option requires root privileges.
 
-* __--remove-systemd__ <ins>SERVICENAME</ins><br>
+* __--remove-systemd__ <ins>SERVICENAME</ins> | <ins>UNITNAME<ins> <br>
     Default: none
-	
+	Specify either the short <ins>SERVICENAME</ins> or the full <ins>UNITNAME<ins> (`nw-watchdog-SERVICENAME.service`) to remove.
 	Stops and completely removes the `nw-watchdog-SERVICENAME.service` from the system if systemd is installed.
-
-	If SERVICENAME is empty (or no argument given), or `nw-watchdog-SERVICENAME.service` is not installed on the system, all installed nw-watchdog systemd-services are listed to stderr.
 
 	This option requires root privileges and cannot be combined with any other options.
 
@@ -530,10 +530,11 @@ __nw-watchdog__ depends on the below executables being available in `/sbin:/bin:
 
 __nw-watchdog__ will function without the below listed utilities, but will use them to enhance its functionality if available.
 
-- `systemd` (`mkdir`, `chmod`)<br>
+- `systemd` (`mkdir`, `chmod`, `rm`)<br>
   `systemd` is (obviously) required for the `--install-systemd`, `--list-systemd` and `--remove-systemd` options to be functional. The folder `/etc/systemd/system/` must exist, `systemctl` must be in the PATH and `systemd` must be running.<br>
-  Unless all required directories are already existing, `mkdir` and `chmod` are also used installing the systemd service.
-
+  Unless all required directories are already existing, `mkdir` and `chmod` are also used by `--install-systemd`.<br>
+  `rm` is used by `--remove-systemd` to remove the systemd unit file for the service.
+  
 - `flock`<br>
   If available the logfile will be locked before truncated or written to.<br>
   If not available, there is a slight risk of log entries being lost if two or more instances of __nw-watchdog__ are concurently running using the same logfile and at least one of them have `--logsize` set to a value larger than 0.

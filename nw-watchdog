@@ -680,10 +680,10 @@ dieUSAGEpager() {
     exit 1
 }
 # Parse arguments
-xTARGET='';xV='';xIFC='';xLOGFILE='';xLOGSIZE='';xPIDFILE='';xSLOWUPTIMEOUT='';xSLEEP='';xGRACE='';xMAXNOLINK='';xIFCUPT='';xIFCDOWNT='';xALERTCMDT='';xSYSTEMDSERVICENAME=''
+xTARGET='';xV='';xIFC='';xLOGFILE='';xLOGSIZE='';xPIDFILE='';xSLOWUPTIMEOUT='';xSLEEP='';xGRACE='';xMAXNOLINK='';xIFCUPT='';xIFCDOWNT='';xALERTCMDT='';xLISTSYSTEMD='';xREMOVESYSTEMD='';xINSTALLSYSTEMD='';xINSTALLSYSTEMD=''
 SOPTS='[hNPARTfDvd]' # Short options without arguments
 while [ $# -gt 0 ]; do
-    ARG="$1"; shift
+    ARG="$1"; [ $# -gt 0 ] && shift
     case "$ARG" in
         -h|--help)
             USAGEpager
@@ -710,6 +710,9 @@ while [ $# -gt 0 ]; do
         -v|--verbose)
             [ -z "$xV" ] && V=5
             ;;
+        --list-systemd)
+            xLISTSYSTEMD=1
+            ;;
         -d|--debug)
             [ -z "$xV" ] && V=6 
             [ -z "$xLOGFILE" ] &&  { LOGFILE=''; LOGSIZE=0; }
@@ -728,7 +731,7 @@ while [ $# -gt 0 ]; do
         -V*|--verbosity-level*)
             [ -z "$xV" ] || dieUSAGEpager "verbosity-level specified multiple times\n%s" \
                                           "(exclusively use '-V' or '--verbosity-level' only once)"
-            if [ "$ARG" = "-V" -o "$ARG" = "--verbosity-level" ]; then V="$1"; shift
+            if [ "$ARG" = "-V" -o "$ARG" = "--verbosity-level" ]; then V="$1"; [ $# -gt 0 ] && shift
             elif printf "%s" "$ARG" | grep -qEe '-(-verbosity-level|V)=.*' ; then V="${ARG#*=}"
             else V=`printf "%s" "$ARG" | sed -E 's/-(-verbosity-level|V)//'`; fi
             [ "$V" -ge 0 ] 2>/dev/null || dieUSAGEpager "Invalid verbosity level '$V' (must be integer >= 0)"
@@ -737,7 +740,7 @@ while [ $# -gt 0 ]; do
         -i*|--interface*)
             [ -z "$xIFC" ] || dieUSAGEpager "interface specified multiple times\n%s" \
                                             "(exclusively use '-i', '--interface', '-I' or '--force-interface' only once)"
-            if [ "$ARG" = "-i" -o "$ARG" = "--interface" ]; then IFC="$1"; shift
+            if [ "$ARG" = "-i" -o "$ARG" = "--interface" ]; then IFC="$1"; [ $# -gt 0 ] && shift
             elif printf "%s" "$ARG" | grep -qEe '-(-interface|i)=.*' ; then IFC="${ARG#*=}"
             else IFC=`printf "%s" "$ARG" | sed -E 's/-(-interface|i)//'`; fi
             xIFC=1;
@@ -745,7 +748,7 @@ while [ $# -gt 0 ]; do
         -I*|--force-interface*)
             [ -z "$xIFC" ] || dieUSAGEpager "interface specified multiple times\n%s" \
                                             "(exclusively use '-i', '--interface', '-I' or '--force-interface' only once)"
-            if [ "$ARG" = "-I" -o "$ARG" = "--force-interface" ]; then STATICIFC="$1"; shift
+            if [ "$ARG" = "-I" -o "$ARG" = "--force-interface" ]; then STATICIFC="$1"; [ $# -gt 0 ] && shift
             elif printf "%s" "$ARG" | grep -qEe '-(-force-interface|I)=.*' ; then STATICIFC="${ARG#*=}"
             else STATICIFC=`printf "%s" "$ARG" | sed -E 's/-(-force-interface|I)//'`; fi
             IFC=$STATICIFC
@@ -754,7 +757,7 @@ while [ $# -gt 0 ]; do
         -l*|--logfile*)
             [ -z "$xLOGFILE" ] || dieUSAGEpager "logfile specified multiple times\n%s" \
                                                 "(exclusively use '-l', or '--logfile' only once)"
-            if [ "$ARG" = "-l" -o "$ARG" = "--logfile" ]; then LOGFILE="$1"; shift
+            if [ "$ARG" = "-l" -o "$ARG" = "--logfile" ]; then LOGFILE="$1"; [ $# -gt 0 ] && shift
             elif printf "%s" "$ARG" | grep -qEe '-(-logfile|l)=.*' ; then LOGFILE="${ARG#*=}"
             else LOGFILE=`printf "%s" "$ARG" | sed -E 's/-(-logfile|l)//'`; fi
             xLOGFILE=1;
@@ -762,7 +765,7 @@ while [ $# -gt 0 ]; do
         -z*|--logsize*)
             [ -z "$xLOGSIZE" ] || dieUSAGEpager "logsize specified multiple times\n%s" \
                                                 "(exclusively use '-z' or '--logsize' only once)"
-            if [ "$ARG" = "-z" -o "$ARG" = "--logsize" ]; then LOGSIZE="$1"; shift
+            if [ "$ARG" = "-z" -o "$ARG" = "--logsize" ]; then LOGSIZE="$1"; [ $# -gt 0 ] && shift
             elif printf "%s" "$ARG" | grep -qEe '-(-logsize|z)=.*' ; then LOGSIZE="${ARG#*=}"
             else LOGSIZE=`printf "%s" "$ARG" | sed -E 's/-(-logsize|z)//'`; fi
             printf "%s" "$LOGSIZE" | grep -iqE '^[0-9]+*[KMG]*$' || dieUSAGEpager "Invalid logsize '$LOGSIZE'"
@@ -771,7 +774,7 @@ while [ $# -gt 0 ]; do
         -p*|--pidfile*)
             [ -z "$xPIDFILE" ] || dieUSAGEpager "pidfile specified multiple times\n%s" \
                                                 "(exclusively use '-p', or '--pidfile' only once)"
-            if [ "$ARG" = "-p" -o "$ARG" = "--pidfile" ]; then PIDFILE="$1"; shift
+            if [ "$ARG" = "-p" -o "$ARG" = "--pidfile" ]; then PIDFILE="$1"; [ $# -gt 0 ] && shift
             elif printf "%s" "$ARG" | grep -qEe '-(-pidfile|p)=.*' ; then PIDFILE="${ARG#*=}"
             else PIDFILE=`printf "%s" "$ARG" | sed -E 's/-(-pidfile|p)//'`; fi
             xPIDFILE=1;
@@ -779,7 +782,7 @@ while [ $# -gt 0 ]; do
         -t*|--slow-up-timeout*)
             [ -z "$xSLOWUPTIMEOUT" ] || dieUSAGEpager "slow-up-timeout specified multiple times\n%s" \
                                                       "(exclusively use '-t' or '--slow-up-timeout' only once)"
-            if [ "$ARG" = "-t" -o "$ARG" = "--slow-up-timeout" ]; then SLOWUPTIMEOUT="$1"; shift
+            if [ "$ARG" = "-t" -o "$ARG" = "--slow-up-timeout" ]; then SLOWUPTIMEOUT="$1"; [ $# -gt 0 ] && shift
             elif printf "%s" "$ARG" | grep -qEe '-(-slow-up-timeout|t)=.*' ; then SLOWUPTIMEOUT="${ARG#*=}"
             else SLOWUPTIMEOUT=`printf "%s" "$ARG" | sed -E 's/-(-slow-up-timeout|t)//'`; fi
             [ "$SLOWUPTIMEOUT" -ge 1 ] 2>/dev/null || dieUSAGEpager "Invalid slow-up-timeout interval '$SLOWUPTIMEOUT' (must be integer >= 1)"
@@ -788,7 +791,7 @@ while [ $# -gt 0 ]; do
         -s*|--sleep*|--interval*)
             [ -z "$xSLEEP" ] || dieUSAGEpager "interval specified multiple times\n%s" \
                                               "(exclusively use '-s', '--sleep' or '--interval' only once)"
-            if [ "$ARG" = "-s" -o "$ARG" = "--sleep" -o "$ARG" = "--interval" ]; then SLEEP="$1"; shift
+            if [ "$ARG" = "-s" -o "$ARG" = "--sleep" -o "$ARG" = "--interval" ]; then SLEEP="$1"; [ $# -gt 0 ] && shift
             elif printf "%s" "$ARG" | grep -qEe '-(-(sleep|interval)|s)=.*' ; then SLEEP="${ARG#*=}"
             else SLEEP=`printf "%s" "$ARG" | sed -E 's/-(-(sleep|interval)|s)//'`; fi
             [ "$SLEEP" -ge 1 ] 2>/dev/null || dieUSAGEpager "Invalid sleep interval '$SLEEP' (must be integer >= 1)"
@@ -797,7 +800,7 @@ while [ $# -gt 0 ]; do
         -g*|--ifup-grace*)
             [ -z "$xGRACE" ] || dieUSAGEpager "ifup-grace specified multiple times\n%s" \
                                               "(exclusively use '-g' or '--ifup-grace' only once)"
-            if [ "$ARG" = "-g" -o "$ARG" = "--ifup-grace" ]; then GRACE="$1"; shift
+            if [ "$ARG" = "-g" -o "$ARG" = "--ifup-grace" ]; then GRACE="$1"; [ $# -gt 0 ] && shift
             elif printf "%s" "$ARG" | grep -qEe '-(-ifup-grace|g)=.*' ; then GRACE="${ARG#*=}"
             else GRACE=`printf "%s" "$ARG" | sed -E 's/-(-ifup-grace|g)//'`; fi
             [ "$GRACE" -ge 1 ] 2>/dev/null || dieUSAGEpager "Invalid ifup-grace '$GRACE' (must be integer >= 1)"
@@ -806,7 +809,7 @@ while [ $# -gt 0 ]; do
         -n*|--max-nolink*)
             [ -z "$xMAXNOLINK" ] || dieUSAGEpager "max-nolink specified multiple times\n%s" \
                                                   "(exclusively use '-n' or '--max-nolink' only once)"
-            if [ "$ARG" = "-n" -o "$ARG" = "--max-nolink" ]; then MAXNOLINK="$1"; shift
+            if [ "$ARG" = "-n" -o "$ARG" = "--max-nolink" ]; then MAXNOLINK="$1"; [ $# -gt 0 ] && shift
             elif printf "%s" "$ARG" | grep -qEe '-(-max-nolink|n)=.*' ; then MAXNOLINK="${ARG#*=}"
             else MAXNOLINK=`printf "%s" "$ARG" | sed -E 's/-(-max-nolink|n)//'`; fi
             [ "$MAXNOLINK" -ge 1 ] 2>/dev/null || dieUSAGEpager "Invalid max-nolink '$MAXNOLINK' (must be integer >= 1)"
@@ -815,7 +818,7 @@ while [ $# -gt 0 ]; do
         -u*|--ifcup*)
             [ -z "$xIFCUPT" ] || dieUSAGEpager "ifcup specified multiple times\n%s" \
                                                "(exclusively use '-u', or '--ifcup' only once)"
-            if [ "$ARG" = "-u" -o "$ARG" = "--ifcup" ]; then IFCUPT="$1"; shift
+            if [ "$ARG" = "-u" -o "$ARG" = "--ifcup" ]; then IFCUPT="$1"; [ $# -gt 0 ] && shift
             elif printf "%s" "$ARG" | grep -qEe '-(-ifcup|u)=.*' ; then IFCUPT="${ARG#*=}"
             else IFCUPT=`printf "%s" "$ARG" | sed -E 's/-(-ifcup|u)//'`; fi
             xIFCUPT=1;
@@ -823,7 +826,7 @@ while [ $# -gt 0 ]; do
         -U*|--ifcdown*)
             [ -z "$xIFCDOWNT" ] || dieUSAGEpager "ifcdown specified multiple times\n%s" \
                                                  "(exclusively use '-U', or '--ifcdown' only once)"
-            if [ "$ARG" = "-U" -o "$ARG" = "--ifcdown" ]; then IFCDOWNT="$1"; shift
+            if [ "$ARG" = "-U" -o "$ARG" = "--ifcdown" ]; then IFCDOWNT="$1"; [ $# -gt 0 ] && shift
             elif printf "%s" "$ARG" | grep -qEe '-(-ifcdown|U)=.*' ; then IFCDOWNT="${ARG#*=}"
             else IFCDOWNT=`printf "%s" "$ARG" | sed -E 's/-(-ifcdown|U)//'`; fi
             xIFCDOWNT=1;
@@ -831,18 +834,26 @@ while [ $# -gt 0 ]; do
         -a*|--alert*)
             [ -z "$xALERTCMDT" ] || dieUSAGEpager "alert specified multiple times\n%s" \
                                                  "(exclusively use '-a', or '--alert' only once)"
-            if [ "$ARG" = "-a" -o "$ARG" = "--alert" ]; then ALERTCMDT="$1"; shift
+            if [ "$ARG" = "-a" -o "$ARG" = "--alert" ]; then ALERTCMDT="$1"; [ $# -gt 0 ] && shift
             elif printf "%s" "$ARG" | grep -qEe '-(-alert|a)=.*' ; then ALERTCMDT="${ARG#*=}"
             else ALERTCMDT=`printf "%s" "$ARG" | sed -E 's/-(-alert|a)//'`; fi
             xALERTCMDT=1;
             ;;
         --install-systemd*)
-            [ -z "$xSYSTEMDSERVICENAME" ] || dieUSAGEpager "install-systemd specified multiple times\n%s" \
-                                                           "(exclusively use '-a', or '--install-systemd' only once)"
-            if [ "$ARG" = "--install-systemd" ]; then SYSTEMDSERVICENAME="$1"; shift
+            [ -z "$xINSTALLSYSTEMD" ] || dieUSAGEpager "--install-systemd specified multiple times\n%s" \
+                                                           "(exclusively use '--install-systemd' only once)"
+            if [ "$ARG" = "--install-systemd" ]; then SYSTEMDSERVICENAME="$1"; [ $# -gt 0 ] && shift
             elif printf "%s" "$ARG" | grep -qEe '--install-systemd=.*' ; then SYSTEMDSERVICENAME="${ARG#*=}"
             else SYSTEMDSERVICENAME=`printf "%s" "$ARG" | sed -E 's/--install-systemd//'`; fi
-            xSYSTEMDSERVICENAME=1;
+            xINSTALLSYSTEMD=1;
+            ;;
+        --remove-systemd*)
+            [ -z "$xREMOVESYSTEMD" ] || dieUSAGEpager "--remove-systemd specified multiple times\n%s" \
+                                                           "(exclusively use '--remove-systemd' only once)"
+            if [ "$ARG" = "--remove-systemd" ]; then SYSTEMDSERVICENAME="$1"; [ $# -gt 0 ] && shift
+            elif printf "%s" "$ARG" | grep -qEe '--remove-systemd=.*' ; then SYSTEMDSERVICENAME="${ARG#*=}"
+            else SYSTEMDSERVICENAME=`printf "%s" "$ARG" | sed -E 's/--remove-systemd//'`; fi
+            xREMOVESYSTEMD=1;
             ;;
         *)
             [ -z "$xTARGET" ] || dieUSAGEpager "More than one target specified ('%s' + '%s')" "$TARGET" "$ARG"
@@ -850,11 +861,45 @@ while [ $# -gt 0 ]; do
             ;;
     esac
 done
+
+#printf '%s\n%s\n' "$xTARGET$xV$xIFC$xLOGFILE$xLOGSIZE$xPIDFILE$xSLOWUPTIMEOUT$xSLEEP$xGRACE$xMAXNOLINK$xIFCUPT$xIFCDOWNT$xALERTCMDT$xINSTALLSYSTEMD" "xTARGET=$xTARGET xV=$xV xIFC=$xIFC xLOGFILE=$xLOGFILE xLOGSIZE=$xLOGSIZE xPIDFILE=$xPIDFILE $xSLOWUPTIMEOUT xSLEEP=$xSLEEP xGRACE=$xGRACE xMAXNOLINK=$xMAXNOLINK xIFCUPT=$xIFCUPT xIFCDOWNT=$xIFCDOWNT xALERTCMDT=$xALERTCMDT xINSTALLSYSTEMD=$xINSTALLSYSTEMD"
+
+[ -n "$xLISTSYSTEMD" -o -n "$xREMOVESYSTEMD" ] && {
+    [ -n "$xTARGET$xV$xIFC$xLOGFILE$xLOGSIZE$xPIDFILE$xSLOWUPTIMEOUT$xSLEEP$xGRACE$xMAXNOLINK$xIFCUPT$xIFCDOWNT$xALERTCMDT$xINSTALLSYSTEMD" ] \
+	|| [ -n "$xLISTSYSTEMD" -a -n "$xREMOVESYSTEMD" ] \
+	&& dieUSAGEpager "--list-systemd and --remove-systemd cannot be combined with any other option!"
+    [ -d /etc/systemd/system/. ] || die "'/etc/systemd/system/' does not exists, is systemd installed and running?"
+    [  -n "$xLISTSYSTEMD" ] && {
+	printf "\n\n--- Listing all loaded nw-watchdog systemd units: ---\n"
+	systemctl list-units --all nw-watchdog-\* 2>/dev/null | grep -oE 'nw-watchdog-.*\.service.*'
+	printf "\n--- Listing all installed systemd units: ---\n"
+	systemctl list-unit-files --all nw-watchdog-\* 2>/dev/null
+	exit 0
+    }
+    [ -n "$SYSTEMDSERVICENAME" ] || dieUSAGEpager "You must specify the systemd service name to remove!\n%s" \
+						   "Use --list-systemd to list all nw-watchdog systemd units."
+    [ `id -u` -eq 0 ] || dieUSAGEpager "$nwwatchdog --remove-systemd must be run as root"
+    systemctl daemon-reload || dieUSAGEpager "Failed to reload systemd. Is systemd installed and running?"
+    UNITNAME="$SYSTEMDSERVICENAME"
+    systemctl list-unit-files "$UNITNAME" >/dev/null 2>&1 || {
+	UNITNAME="nw-watchdog-$SYSTEMDSERVICENAME.service"
+	systemctl list-unit-files "nw-watchdog-$SYSTEMDSERVICENAME.service" >/dev/null 2>&1 \
+	    || dieUSAGEpager "Neither '%s' or '%s' is a valid systemd service unit name.\n%s" \
+			     "$SYSTEMDSERVICENAME" "$UNITNAME" \
+	                     "Use --list-systemd to list all nw-watchdog systemd units."
+    }
+    systemctl stop "$UNITNAME" || printf "\nWARNING: failed to stop the $SYSTEMDSERVICENAME.service\n" 1>&2
+    systemctl disable "$UNITNAME" || printf "\nWARNING: failed to disable the $SYSTEMDSERVICENAME.service\n" 1>&2
+    rm -vf "/etc/systemd/system/$UNITNAME" || printf "\nWARNING: failed to remove the $SYSTEMDSERVICENAME.service\n" 1>&2
+    systemctl daemon-reload || printf "\nWARNING: Failed to reload systemd." 1>&2
+    exit 0
+}
+
 [ -z "$PINGTARGET" -a -z "$PINGNEXTHOP" ] && dieUSAGEpager "You must allow pinging of target and/or nexthop!\n%s" \
                                                            "(can't use --no-ping-target and --no-ping-nexthop at the same time)"
 [ -n "$TARGET" ] || dieUSAGEpager "%s\n%s" \
                                   "Target not specified!" "Specify IP address or resolvable hostname."
-[ -z "$xSYSTEMDSERVICENAME" ] && {
+[ -z "$xINSTALLSYSTEMD" ] && {
     [ "$LOGFILE" = '-' ] && { LOGFILE=''; LOGSIZE=0 ; LOGSIZEb=0 ;}
     [ -n "$LOGFILE" ] && {
 	touch "$LOGFILE" 2>/dev/null || {
