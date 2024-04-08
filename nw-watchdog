@@ -872,7 +872,7 @@ done
     [  -n "$xLISTSYSTEMD" ] && {
 	printf "\n\n--- Listing all loaded nw-watchdog systemd units: ---\n"
 	systemctl list-units --all nw-watchdog-\* 2>/dev/null | grep -oE 'nw-watchdog-.*\.service.*'
-	printf "\n--- Listing all installed systemd units: ---\n"
+	printf "\n--- Listing all installed nw-watchdog systemd units: ---\n"
 	systemctl list-unit-files --all nw-watchdog-\* 2>/dev/null
 	exit 0
     }
