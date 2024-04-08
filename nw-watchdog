@@ -888,9 +888,9 @@ done
 			     "$SYSTEMDSERVICENAME" "$UNITNAME" \
 	                     "Use --list-systemd to list all nw-watchdog systemd units."
     }
-    systemctl stop "$UNITNAME" || printf "\nWARNING: failed to stop the $SYSTEMDSERVICENAME.service\n" 1>&2
-    systemctl disable "$UNITNAME" || printf "\nWARNING: failed to disable the $SYSTEMDSERVICENAME.service\n" 1>&2
-    rm -vf "/etc/systemd/system/$UNITNAME" || printf "\nWARNING: failed to remove the $SYSTEMDSERVICENAME.service\n" 1>&2
+    systemctl stop "$UNITNAME" || printf "\nWARNING: failed to stop '$UNITNAME'\n" 1>&2
+    systemctl disable "$UNITNAME" || printf "\nWARNING: failed to disable '$UNITNAME'\n" 1>&2
+    rm -vf "/etc/systemd/system/$UNITNAME" || printf "\nWARNING: failed to remove '/etc/systemd/system/$UNITNAME'\n" 1>&2
     systemctl daemon-reload || printf "\nWARNING: Failed to reload systemd." 1>&2
     exit 0
 }
