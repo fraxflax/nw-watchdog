@@ -18,7 +18,7 @@ __nw-watchdog__ comes with ABSOLUTELY NO WARRANTY.
 Get the latest version from https://github.com/fraxflax/nw-watchdog
 
 ## <INS>TARGET</INS>
-The mandatory argument <ins>TARGET</ins> is the target (destination) to monitor the connection to. <ins>TARGET</ins> can be an IP address or a resolvable hostname / FQDN. If it's a hostname / FQDN, it will be resolved to an IP address (first one found). The resolved IP address will be used for the monitoring. The name is continuously resolved and if the resolved ip address changes the new IP address will be used for the monitoring from there on.<br>
+The mandatory argument <ins>TARGET</ins> is the target (destination) for which he connection is monitored. <ins>TARGET</ins> can be an IP address or a resolvable hostname / FQDN. If it's a hostname / FQDN, it will be resolved to an IPv4 address (first one found by getent). The resolved IP address will be used for the monitoring. The name is continuously resolved and if the resolved ip address changes the new IP address will be used for the monitoring from there on.<br>
 Use `--no-continuous-topology-detect` to resolve the <ins>TARGET</ins> only at startup and failed connectivity checks.
 
 ## OPTIONS (no arguments)
@@ -33,7 +33,7 @@ Do NOT use a pager for help and error messages.
 __--install-systemd__ implies __--no-pager__
 
 * __--no-ping-target | -P__
-	If the <ins>TARGET</ins> is the next hop (on the same subnet or a peer-to-peer address), reachability of the <ins>TARGET</ins> is checked by arp cache status and ping.<br>
+	If the <ins>TARGET</ins> is the next hop (on the same subnet), reachability of the <ins>TARGET</ins> is checked by arp cache status and ping.<br>
 If the <ins>TARGET</ins> is not on the same subnet as the source, the reachability of the <ins>TARGET</ins> is checked by pinging it in a certain pattern (see `--slow-up-timeout` for details).
 
 	`--no-ping-target` disables the ping-checks for the <ins>TARGET</ins>. Only connectivity to the NEXTHOP for the <ins>TARGET</ins> is checked.<br>
@@ -42,7 +42,7 @@ If the <ins>TARGET</ins> is not on the same subnet as the source, the reachabili
 	`--no-ping-target` cannot be used in combination with `--no-ping-nexthop`.
 
 * __--no-ping-nexthop | -N | --no-ping-gateway | -G__<br>
-	By default, if the connectivity to the <ins>TARGET</ins> cannot be verified, the reachability of the NEXTHOP (usually a gateway) is checked, firstly by checking it's status in the arp cache and then by pinging it, rechecking the arp cache status upon failed ping. 
+	By default, if the connectivity to the <ins>TARGET</ins> cannot be verified, and the next hop (NEXTHOP) is not the <ins>TARGET</ins> itself, the reachability of the NEXTHOP (usually a gateway) is checked, firstly by checking it's status in the arp cache and then by pinging it, rechecking the arp cache status upon failed ping. 
 
 	`--no-ping-nexthop` disbles the reachaility check for the NEXTHOP so only connectivity to <ins>TARGET</ins> itself is checked. Useful if the NEXTHOP is a peer-to-peer address and not setup to reply to ping.
 
@@ -65,6 +65,9 @@ If the <ins>TARGET</ins> is not on the same subnet as the source, the reachabili
 * __--foreground | -f | --no-daemonize | -D__<br>
 	Run in foreground, do not fork / daemonize.
 
+* __--list-systemd__
+    If systemd is installed, a brief status of all installed nw-watchdog systemd-services are listed.
+	
 * __--verbose | -v__<br>
 	Shortcut for `--verbosity-level=5`<br>
 	If used in combination with `--verbosity-level`, the specified __--verbosity-level__ will take precedence. 
@@ -267,9 +270,9 @@ These opions takes a single argument each and may be specified in any order. Spe
 * __--install-systemd__ <ins>SERVICENAME</ins><br>
   Default: none
 	
-  Will write a systemd service file `/etc/systemd/system/nw-watchdog-SERVICENAME.service` launching __nw-watchdog__ as a daemon with<br>
-  `--pidfile=/run/nw-watchdog-SERVICENAME.pid`<br>
-  `--logfile=/var/log/nw-watchdog-SERVICENAME.log`<br>
+	If systemd is installed, a systemd service file is written to `/etc/systemd/system/nw-watchdog-SERVICENAME.service` launching __nw-watchdog__ as a daemon with<br>
+  `--pidfile=/run/nw-watchdog/SERVICENAME.pid`<br>
+  `--logfile=/var/log/nw-watchdog/SERVICENAME.log`<br>
 	and otherwise with the exact same options as run (apart from the `--install-systemd` option itself of course).
 
 	If `/etc/systemd/system/nw-watchdog-SERVICENAME.service` already exists, the service will be stopped and the file overwritten.
@@ -283,13 +286,19 @@ These opions takes a single argument each and may be specified in any order. Spe
 * __--remove-systemd__ <ins>SERVICENAME</ins><br>
     Default: none
 	
-	Stops and completely removes the `nw-watchdog-SERVICENAME.service` from the system.
+	Stops and completely removes the `nw-watchdog-SERVICENAME.service` from the system if systemd is installed.
 
 	If SERVICENAME is empty (or no argument given), or `nw-watchdog-SERVICENAME.service` is not installed on the system, all installed nw-watchdog systemd-services are listed to stderr.
 
 	This option requires root privileges and cannot be combined with any other options.
 
-	Note: To manually remove `nw-watchdog-SERVICENAME.service` service completely do:
+	Note: The logfile, `/var/log/nw-watchdog/SERVICENAME.log`, will NOT be removed by `--remove-systemd`
+	To manually remove the logfile do:
+	```shell
+	sudo rm `/var/log/nw-watchdog/SERVICENAME.log`
+	```
+
+	To manually (instead of using `--remove-systemd`) remove the `nw-watchdog-SERVICENAME.service` systemd service completely do:
 	```shell
 	sudo systemctl stop nw-watchdog-SERVICENAME.service
 	sudo systemctl disable nw-watchdog-SERVICENAME.service
@@ -520,6 +529,10 @@ __nw-watchdog__ depends on the below executables being available in `/sbin:/bin:
 - `wc`
 
 __nw-watchdog__ will function without the below listed utilities, but will use them to enhance its functionality if available.
+
+- `systemd` (`mkdir`, `chmod`)<br>
+  `systemd` is (obviously) required for the `--install-systemd`, `--list-systemd` and `--remove-systemd` options to be functional. The folder `/etc/systemd/system/` must exist, `systemctl` must be in the PATH and `systemd` must be running.<br>
+  Unless all required directories are already existing, `mkdir` and `chmod` are also used installing the systemd service.
 
 - `flock`<br>
   If available the logfile will be locked before truncated or written to.<br>
