@@ -22,7 +22,7 @@ __nw-watchdog__ comes with ABSOLUTELY NO WARRANTY.
 Get the latest version from https://github.com/fraxflax/nw-watchdog
 
 ## <INS>TARGET</INS>
-The mandatory argument <ins>TARGET</ins> is the target (destination) for which he connection is monitored. <ins>TARGET</ins> can be an IP address or a resolvable hostname / FQDN. If it's a hostname / FQDN, it will be resolved to an IPv4 address (first one found by getent). The resolved IP address will be used for the monitoring. The name is continuously resolved and if the resolved ip address changes the new IP address will be used for the monitoring from there on.<br>
+The mandatory (unless `--list-systemd` or `--remove-systemd` is specified) argument <ins>TARGET</ins> is the target (destination) for which he connection is monitored. <ins>TARGET</ins> can be an IP address or a resolvable hostname / FQDN. If it's a hostname / FQDN, it will be resolved to an IPv4 address (first one found by getent). The resolved IP address will be used for the monitoring. The name is continuously resolved and if the resolved ip address changes the new IP address will be used for the monitoring from there on.<br>
 Use `--no-continuous-topology-detect` to resolve the <ins>TARGET</ins> only at startup and failed connectivity checks.
 
 <ins>TARGET</ins> can be placed before, after or between valid OPTIONS.
