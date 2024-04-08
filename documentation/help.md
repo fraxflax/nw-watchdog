@@ -2,8 +2,10 @@
 __nw-watchdog__ - Network Watchdog
 
 ## SYNOPSIS
-__nw-watchdog__ <ins>TARGET</ins> [ OPTIONS ]<br>
-__nw-watchdog__ __--list-systemd__<br>
+__nw-watchdog__ <ins>TARGET</ins> [ OPTIONS ]
+
+__nw-watchdog__ __--list-systemd__
+
 __nw-watchdog__ __--remove-systemd__ <ins>SERVICENAME</ins> | <ins>UNITNAME<ins>
 
 ## DESCRIPTION
