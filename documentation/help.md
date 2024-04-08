@@ -3,6 +3,8 @@ __nw-watchdog__ - Network Watchdog
 
 ## SYNOPSIS
 __nw-watchdog__ <ins>TARGET</ins> [ OPTIONS ] 
+__nw-watchdog__ __--list-systemd__ 
+__nw-watchdog__ __--remove-systemd__ <ins>SERVICENAME</ins> | <ins>UNITNAME<ins> <br> ]
 
 ## DESCRIPTION
 __nw-watchdog__ is a higly configurable network watchdog written in POSIX shell script for use in Linux, depending only on Linux most standard tools that are normally installed by default in all distributions (also see the __DEPENDENCIES__ section).
