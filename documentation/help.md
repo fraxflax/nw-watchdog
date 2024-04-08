@@ -299,7 +299,7 @@ These opions takes a single argument each and may be specified in any order. Spe
 	This option requires root privileges and cannot be combined with any other options.
 
 	Note:<br>
-	The logfile, `/var/log/nw-watchdog/SERVICENAME.log` will NOT be removed by `--remove-systemd`
+	The logfile, `/var/log/nw-watchdog/SERVICENAME.log` will NOT be removed by `--remove-systemd`.<br>
 	To manually remove the logfile do:
 	```shell
 	sudo rm `/var/log/nw-watchdog/SERVICENAME.log`
