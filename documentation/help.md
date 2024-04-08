@@ -303,6 +303,7 @@ These opions takes a single argument each and may be specified in any order. Spe
 	sudo systemctl stop nw-watchdog-SERVICENAME.service
 	sudo systemctl disable nw-watchdog-SERVICENAME.service
 	sudo rm /etc/systemd/system/nw-watchdog-SERVICENAME.service
+	sudo systemctl daemon-reload
 	```
 
 ## EXAMPLES

@@ -883,7 +883,7 @@ done
     UNITNAME="$SYSTEMDSERVICENAME"
     systemctl list-unit-files "$UNITNAME" >/dev/null 2>&1 || {
 	UNITNAME="nw-watchdog-$SYSTEMDSERVICENAME.service"
-	systemctl list-unit-files "nw-watchdog-$SYSTEMDSERVICENAME.service" >/dev/null 2>&1 \
+	systemctl list-unit-files "$UNITNAME" >/dev/null 2>&1 \
 	    || dieUSAGEpager "Neither '%s' or '%s' is a valid systemd service unit name.\n%s" \
 			     "$SYSTEMDSERVICENAME" "$UNITNAME" \
 	                     "Use --list-systemd to list all nw-watchdog systemd units."
