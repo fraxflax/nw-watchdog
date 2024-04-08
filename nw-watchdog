@@ -395,8 +395,8 @@ $FMT<<EOU
         Default: none
 
         Will write a systemd service file /etc/systemd/system/nw-watchdog-${___}SERVICENAME$__.service launching $_b_$nwwatchdog$__ as a daemon with
-        $_b_--pidfile$__=/run/nw-watchdog-${___}SERVICENAME$__.pid$__
-        $_b_--logfile$__=/var/log/nw-watchdog-${___}SERVICENAME$__.log$__
+        $_b_--pidfile$__=/run/nw-watchdog/${___}SERVICENAME$__.pid$__
+        $_b_--logfile$__=/var/log/nw-watchdog/${___}SERVICENAME$__.log$__
         and otherwise with the exact same options as run (apart from the $_b_--install-systemd$__ option itself of course).
 
         If /etc/systemd/system/nw-watchdog-${___}SERVICENAME$__.service already exists, the service will be stopped and the file overwritten.
@@ -854,13 +854,15 @@ done
                                                            "(can't use --no-ping-target and --no-ping-nexthop at the same time)"
 [ -n "$TARGET" ] || dieUSAGEpager "%s\n%s" \
                                   "Target not specified!" "Specify IP address or resolvable hostname."
-[ "$LOGFILE" = '-' ] && { LOGFILE=''; LOGSIZE=0 ; LOGSIZEb=0 ;}
-[ -n "$LOGFILE" ] && {
-    touch "$LOGFILE" 2>/dev/null || {
-        printf "\nERROR: %s\n%s" \
-               "Cannot write to logfile '$LOGFILE'." \
-               "Fix permissions, run as user with access or specify another --logfile." 1>&2
-        exit 1
+[ -z "$xSYSTEMDSERVICENAME" ] && {
+    [ "$LOGFILE" = '-' ] && { LOGFILE=''; LOGSIZE=0 ; LOGSIZEb=0 ;}
+    [ -n "$LOGFILE" ] && {
+	touch "$LOGFILE" 2>/dev/null || {
+            printf "\nERROR: %s\n%s" \
+		   "Cannot write to logfile '$LOGFILE'." \
+		   "Fix permissions, run as user with access or specify another --logfile." 1>&2
+            exit 1
+	}
     }
 }
 LOGSIZEb="$LOGSIZE"
@@ -1108,6 +1110,7 @@ nexthop() {
 }
 ### Systemd service creation
 [ -n "$SYSTEMDSERVICENAME" ] && {
+    LOGFILE=''
     printf "%s" "$SYSTEMDSERVICENAME" | grep -qEe '^[a-zA-Z0-9_-]+$' || \
         dieUSAGEpager "Invalid systemd service name '%s'\n%s" "$SYSTEMDSERVICENAME" \
                       "The SYSTEMDSERVICENAME must contain only alphanumeric characters, hyphens and underscores and be no longer than 236 characters."
@@ -1116,7 +1119,13 @@ nexthop() {
     [ `id -u` -eq 0 ] || die "$nwwatchdog --install-systemd must be run as root"
     
     [ -d /etc/systemd/system/. ] || die "'/etc/systemd/system/' does not exists, systemd '$SYSTEMDSERVICENAME.service' NOT installed!"
-
+    for DIR in /run/nw-watchdog /var/log/nw-watchdog; do # /var/log/nw-watchdog/$SYSTEMDSERVICENAME.systemd; do
+	[ -d $DIR ] || {
+	    mkdir $DIR || die "Failed to create directory '%s', systemd '%s.service' NOT installed!" $DIR $SYSTEMDSERVICENAME
+	}
+	chmod 0755 $DIR || printf "WARNING: Failed to set permissions on '$DIR'!" 1>&2
+    done
+	
     #cat<<EOF
     cat>/etc/systemd/system/nw-watchdog-$SYSTEMDSERVICENAME.service<<EOF
 [Unit]
@@ -1126,8 +1135,8 @@ Wants=network.target
 [Service]
 Type=forking
 KillMode=process
-PIDFile=/var/run/nw-watchdog-$SYSTEMDSERVICENAME.pid
-ExecStart=/bin/sh '`readlink -e "$0"`' '$TARGET' -$NOPTS$AOPTS -p/var/run/nw-watchdog-$SYSTEMDSERVICENAME.pid -l/var/log/nw-watchdog-$SYSTEMDSERVICENAME.log
+PIDFile=/var/run/nw-watchdog/$SYSTEMDSERVICENAME.pid
+ExecStart=/bin/sh '`readlink -e "$0"`' '$TARGET' -$NOPTS$AOPTS -p/var/run/nw-watchdog/$SYSTEMDSERVICENAME.pid -l/var/log/nw-watchdog/$SYSTEMDSERVICENAME.log
 
 [Install]
 WantedBy=sysinit.target
@@ -1219,7 +1228,7 @@ isup() {
 
 [ -n "$PIDFILE" ] || PIDFILE=/run/nw-watchdog.pid
 touch "$PIDFILE" 2>/dev/null || die "%s\n%s" "Cannot write to pidfile '$PIDFILE'." \
-                                    "Specify another --pidfile or check permissions or privileges of effective user (userid=`id -u`)"
+					"Specify another --pidfile or check permissions or privileges of effective user (userid=`id -u`)"
 PID=`cat "$PIDFILE"`
 [ "$PID" -qt 0 ] 2>/dev/null && [ -d /proc/$PID ] && die "Process already running with pid $PID"
 
