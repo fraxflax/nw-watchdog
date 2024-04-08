@@ -294,8 +294,7 @@ These opions takes a single argument each and may be specified in any order. Spe
 
 * __--remove-systemd__ <ins>SERVICENAME</ins> | <ins>UNITNAME</ins><br>
     Default: none<br>
-	Specify either the short <ins>SERVICENAME</ins> or the full <ins>UNITNAME<ins> (`nw-watchdog-SERVICENAME.service`) to remove.
-	Stops and completely removes the `nw-watchdog-SERVICENAME.service` from the system if systemd is installed.
+	Specify either the short <ins>SERVICENAME</ins> or the full <ins>UNITNAME</ins> (as shown by `--list-systemd`) to stop and completely remove the `nw-watchdog-SERVICENAME.service` from the system.
 
 	This option requires root privileges and cannot be combined with any other options.
 
