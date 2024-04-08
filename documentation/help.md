@@ -65,7 +65,7 @@ If the <ins>TARGET</ins> is not on the same subnet as the source, the reachabili
 * __--foreground | -f | --no-daemonize | -D__<br>
 	Run in foreground, do not fork / daemonize.
 
-* __--list-systemd__
+* __--list-systemd__<br>
     If systemd is installed, a brief status of all installed nw-watchdog systemd-services are listed to stdout.
 
 	Cannot be combined with any other options.
