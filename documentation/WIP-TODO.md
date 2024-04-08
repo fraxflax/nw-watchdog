@@ -20,7 +20,13 @@ These changes are currently being worked on in separate branches.
   __--install-systemd__ will enforce __--no-pager__ when installing systemd-services
   will also update help to reflect the new option and no longer recommend using PAGER=cat not to use pageer with __--help__  .
 
-* __--remove-systemd=<ins>SERVICENAME</ins>__
+* Introduced __--remove-systemd=<ins>SERVICENAME</ins>__.
+
+* Introduced __--list-systemd=<ins>SERVICENAME</ins>__
+
+* Changed logfile and pidfile when installing systemd service:<br>
+  `--pidfile=/run/nw-watchdog/SERVICENAME.pid` instead of `/run/nw-watchdog-SERVICENAME.pid`<br>
+  and `--logfile=/var/log/nw-watchdog/SERVICENAME.log` instead of `/var/log/nw-watchdog-SERVICENAME.log`
 
 ## TODO:
 Planned future features / changes.
