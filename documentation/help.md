@@ -310,7 +310,7 @@ These opions takes a single argument each and may be specified in any order. Spe
 	The logfile, `/var/log/nw-watchdog/SERVICENAME.log` will NOT be removed by `--remove-systemd`.<br>
 	To manually remove the logfile do:
 	```shell
-	sudo rm `/var/log/nw-watchdog/SERVICENAME.log`
+	sudo rm /var/log/nw-watchdog/SERVICENAME.log
 	```
 
 ## EXAMPLES
