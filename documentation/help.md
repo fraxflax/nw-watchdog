@@ -280,18 +280,17 @@ These opions takes a single argument each and may be specified in any order. Spe
 
     This option requires root privileges.
 
-	Note:<br>
-	__--remove-systemd=<ins>SERVICENAME</ins>__ completely removes the service.
-	
 * __--remove-systemd__ <ins>SERVICENAME</ins><br>
-	Stops and completely removes the systemd-service from the system by performing these steps:
-    ```shell
-	systemctl stop nw-watchdog-SERVICENAME.service
-	systemctl disable nw-watchdog-SERVICENAME.service
-	rm /etc/systemd/system/nw-watchdog-SERVICENAME.service
-	```
+	Stops and completely removes the `nw-watchdog-SERVICENAME.service` from the system by performing these steps:
 
-   This option requires root privileges.
+	This option requires root privileges.
+
+	Note: To manually remove the service completely do:
+	```shell
+	sudo systemctl stop nw-watchdog-SERVICENAME.service
+	sudo systemctl disable nw-watchdog-SERVICENAME.service
+	sudo rm /etc/systemd/system/nw-watchdog-SERVICENAME.service
+	```
 
 ## EXAMPLES
 
