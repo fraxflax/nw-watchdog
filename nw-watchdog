@@ -686,7 +686,7 @@ EOU
 
     - Installed and running ${_b_}systemd$__  with ${_b_}systemctl$__ (and ${_b_}mkdir$__, ${_b_}chmod$__, ${_b_}rm$__)
       ${_b_}systemd$__ is (obviously) required for the ${_b_}--install-systemd$__, ${_b_}--list-systemd$__ and ${_b_}--remove-systemd$__ options to be functional. The folder ${_b_}/etc/systemd/system/$__ must exist, ${_b_}systemctl$__ must be in the PATH and ${_b_}systemd$__ must be running.
-Unless all required directories are already existing, ${_b_}mkdir$__ and ${_b_}chmod$__ are also used by ${_b_}--install-systemd$__.
+      Unless all required directories are already existing, ${_b_}mkdir$__ and ${_b_}chmod$__ are also used by ${_b_}--install-systemd$__.
       ${_b_}rm$__ is used by ${_b_}--remove-systemd$__ to remove the systemd unit file for the service.
 
     - ${_b_}flock$__
