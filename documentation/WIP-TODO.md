@@ -18,7 +18,7 @@ These changes are currently being worked on in separate branches.
   
 
 * No warning alert for conflicting topology with `--force-interface`
-  If conflicting topology is detected whilst using `--force-interface` this will be logged with at `--verbosity-level=4` (info which is the default) or higher, but no alert will be sent (to avoid repeated alerts on the same problem).
+  If conflicting topology is detected whilst using `--force-interface` this will be logged with at `--verbosity-level=4` (=info, which is the default) or higher, but no alert will be sent (to avoid repeated alerts on the same problem).
 
 * __LIST ALL ERRORS__<br>
   Instead of dying with an error message immediately when an argument/option error is found, parse all options and arguments firstly, then list all errors and show USAGE
