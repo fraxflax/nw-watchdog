@@ -23,8 +23,8 @@ These changes are currently being worked on in separate branches.
 * __LIST ALL ERRORS__<br>
   Instead of dying with an error message immediately when an argument/option error is found, parse all options and arguments firstly, then list all errors and show USAGE
 
-* Introduced __--no-pager | --no-less | --no-more | -M__<br>
-  no longer recommend using PAGER=cat not to use pager<br>
+* New option: __--no-pager | --no-less | --no-more | -M__<br>
+  No longer recommending using PAGER=cat not to use pager.<br>
   __--install-systemd__ will enforce __--no-pager__ when installing systemd-services
 
 * New option: __--remove-systemd=<ins>SERVICENAME</ins>__.
