@@ -52,7 +52,7 @@ SYSTEMDSERVICENAME=''                  # --install-systemd
 # Ensure we have a POSIX (enough) shell
 set >/dev/null 2>&1 && export PATH >/dev/null 2>&1 || {
     printf "\nThis script must be run in a POSIX compliant shell!\n\n" 1>&2 \
-	|| echo "This script must be run in a POSIX compliant shell!" 1>&2
+        || echo "This script must be run in a POSIX compliant shell!" 1>&2
     exit 1
 }
 
@@ -63,8 +63,8 @@ OIFS="$IFS"
 IFS=':'
 for p in $PATH; do
     case ":$NEWPATH:" in
-	*:"$p":*) ;;
-	*) NEWPATH="$NEWPATH:$p" ;;
+        *:"$p":*) ;;
+        *) NEWPATH="$NEWPATH:$p" ;;
     esac
 done
 IFS="$OIFS"
@@ -75,23 +75,23 @@ DEPENDENCIES="basename cat cut date getent grep head id ip ping readlink sed sle
 lacking=''
 if printf '' 2>/dev/null; then 
     deperr() {
-	printf '\n(PATH=%s)\n\n~~~~~~~~~~~~~~~~\nDEPENDENCY ERROR\n~~~~~~~~~~~~~~~~\nThe following executable(s) are lacking in your PATH:\n   %s\n... aborting!\n\n' "$PATH" "$@" 1>&2
-	exit 1
+        printf '\n(PATH=%s)\n\n~~~~~~~~~~~~~~~~\nDEPENDENCY ERROR\n~~~~~~~~~~~~~~~~\nThe following executable(s) are lacking in your PATH:\n   %s\n... aborting!\n\n' "$PATH" "$@" 1>&2
+        exit 1
     }
 else
     lacking='printf'
     deperr() { 
-	echo ' ' 1>&2
-	echo "(PATH=$PATH)" 1>&2
-	echo ' ' 1>&2
-	echo '~~~~~~~~~~~~~~~~' 1>&2
-	echo 'DEPENDENCY ERROR' 1>&2
-	echo '~~~~~~~~~~~~~~~~' 1>&2
-	echo 'The following executable(s) are lacking in your PATH:' 1>&2
-	echo "   $@" 1>&2
-	echo '... aborting!' 1>&2
-	echo ' ' 1>&2
-	exit 1
+        echo ' ' 1>&2
+        echo "(PATH=$PATH)" 1>&2
+        echo ' ' 1>&2
+        echo '~~~~~~~~~~~~~~~~' 1>&2
+        echo 'DEPENDENCY ERROR' 1>&2
+        echo '~~~~~~~~~~~~~~~~' 1>&2
+        echo 'The following executable(s) are lacking in your PATH:' 1>&2
+        echo "   $@" 1>&2
+        echo '... aborting!' 1>&2
+        echo ' ' 1>&2
+        exit 1
     }
 fi
 which sh >/dev/null 2>&1 || deperr which sh $lacking
@@ -121,6 +121,10 @@ ${_b_}SYNOPSIS $__
 
     $_b_$nwwatchdog$__ ${___}TARGET$__ [ OPTIONS ] 
 
+    $_b_$nwwatchdog --list-systemd$__
+
+    $_b_$nwwatchdog --remove-systemd$__ ${___}SERVICENAME$__ | ${___}UNITNAME$__
+
 ${_b_}DESCRIPTION $__
     $_b_$nwwatchdog$__ is a higly configurable network watchdog written in POSIX shell script for use in Linux, depending only on Linux most standard tools that are normally installed by default in all distributions (also see the ${_b_}DEPENDENCIES$__ section).
 
@@ -129,27 +133,32 @@ ${_b_}DESCRIPTION $__
     $_b_$nwwatchdog$__ is free software written by Fredrik Ax <frax@axnet.nu>.
     Feel free to modify and/or (re)distribute it in any way you like.
     ... it's always nice to be mentioned though ;-)
-    It comes with ABSOLUTELY NO WARRANTY.
+
+    $_b_$nwwatchdog$__ comes with ABSOLUTELY NO WARRANTY.
 
     Get the latest version from https://github.com/fraxflax/nw-watchdog
 
 ${_b_}${___}TARGET$__
-    The mandatory argument ${___}TARGET$__ is the target (destination) to monitor the connection to. ${___}TARGET$__ can be an IP address or a resolvable hostname / FQDN. If it's a hostname / FQDN, it will be resolved to an IP address (first one found). The resolved IP address will be used for the monitoring. The name is continuously resolved and if the resolved ip address changes the new IP address will be used for the monitoring from there on.
+    The mandatory (unless $_b_--list-systemd$__ or $_b_--remove-systemd$__ is specified) argument ${___}TARGET$__ is the target (destination) for which he connection is monitored. ${___}TARGET$__ can be an IP address or a resolvable hostname / FQDN. If it's a hostname / FQDN, it will be resolved to an IPv4 address (first one found by getent). The resolved IP address will be used for the monitoring. The name is continuously resolved and if the resolved ip address changes the new IP address will be used for the monitoring from there on.
     Use $_b_--no-continuous-topology-detect$__ to resolve the ${___}TARGET${__} only at startup and failed connectivity checks.
+
+    ${___}TARGET$__ can be placed before, after or between valid OPTIONS.
 
 ${_b_}OPTIONS $__(no arguments)
     These options take no arguments, and may be specified in any order. They can be grouped (e.g. -vAP) in their short form, also having one of the OPTIONS that requires an argument last in the group.
 
     $_b_--help | -h $__
         Shows this help, using \$PAGER if set to an executable, otherwise 'less' or 'more' if available in "/sbin:/bin:/usr/sbin:/usr/bin:\$PATH"
-        (Use PAGER=cat to avoid using a pager).
 
-    * $_b_--no-pager | --no-less | --no-more | -M__
-    Do NOT use a pager for help and error messages.
-    __--install-systemd__ implies __--no-pager__
+        (Use `--no-pager` to avoid using a pager).
+
+    $_b_--no-pager | --no-less | --no-more | -M__
+        Do NOT use a pager for help and error messages.
+
+        $_b_--install-systemd$__ implies $_b_--no-pager$__
 
     $_b_--no-ping-target | -P $__
-        If the ${___}TARGET${__} is the next hop (on the same subnet or a peer-to-peer address), reachability of the ${___}TARGET${__} is checked by arp cache status and ping.
+        If the ${___}TARGET${__} is the next hop (on the same subnet), reachability of the ${___}TARGET${__} is checked by arp cache status and ping.
         If the ${___}TARGET${__} is not on the same subnet as the source, the reachability of the ${___}TARGET${__} is checked by pinging it in a certain pattern (see $_b_--slow-up-timeout$__ for details).
 
         $_b_--no-ping-target$__ disables the ping-checks for the ${___}TARGET${__}. Only connectivity to the NEXTHOP for the ${___}TARGET${__} is checked.
@@ -158,7 +167,7 @@ ${_b_}OPTIONS $__(no arguments)
         $_b_--no-ping-target$__ cannot be used in combination with $_b_--no-ping-nexthop$__.
 
     $_b_--no-ping-nexthop | -N | --no-ping-gateway | -G $__
-        By default, if the connectivity to the ${___}TARGET${__} cannot be verified, the reachability of the NEXTHOP (usually a gateway) is checked, firstly by checking it's status in the arp cache and then by pinging it, rechecking the arp cache status upon failed ping. 
+        By default, if the connectivity to the ${___}TARGET${__} cannot be verified, and the next hop (NEXTHOP) is not the ${___}TARGET${__} itself, the reachability of the NEXTHOP (usually a gateway) is checked, firstly by checking it's status in the arp cache and then by pinging it, rechecking the arp cache status upon failed ping.
 
         $_b_--no-ping-nexthop$__ disbles the reachaility check for the NEXTHOP so only connectivity to ${___}TARGET${__} itself is checked. Useful if the NEXTHOP is a peer-to-peer address and not setup to reply to ping.
 
@@ -174,16 +183,21 @@ ${_b_}OPTIONS $__(no arguments)
     $_b_--no-continuous-topology-detect | -T $__
         Normaly the topology (resolving the ip address of the ${___}TARGET${__}, detecting which source interface to use and the ip address of the NEXTHOP towards the ${___}TARGET${__}) is detected at startup and continuously monitored for changes.
 
-        $_b_--no-continuous-topology-detect$__ disables the topology detection for as long as the ${___}TARGET${__} replies (or in combination with $_b_--no-ping-target$__ for as long as the NEXTHOP is reachable). The topology will only be detected at startup and if the ${___}TARGET${__} does not reply or if the NEXTHOP cannot be reached, meaning that routing changes making the ${___}TARGET${__} or NEXTHOP unreachable will not be detected as long as the ${___}TARGET${__} / NEXTHOP can be reached using the old topology.
+        $_b_--no-continuous-topology-detect$__ disables the topology detection for as long as the ${___}TARGET${__} replies (or in combination with $_b_--no-ping-target$__, for as long as the NEXTHOP is reachable). The topology will only be detected at startup and if the ${___}TARGET${__} does not reply or if the NEXTHOP cannot be reached, meaning that routing changes making the ${___}TARGET${__} or NEXTHOP unreachable will not be detected as long as the ${___}TARGET${__} / NEXTHOP can be reached using the old topology.
 
         $_b_--force-interface$__ implies $_b_--no-continuous-topology-detect$__.
                                        
     $_b_--foreground | -f | --no-daemonize | -D $__
         Run in foreground, do not fork / daemonize.
 
+    $_b_--list-systemd$__ 
+        If systemd is installed, a brief status of all installed nw-watchdog systemd-services are listed to stdout.
+
+        Cannot be combined with any other options.
+       
     $_b_--verbose | -v $__
         Shortcut for $_b_--verbosity-level=5$__
-        If used in combination with $_b_--verbosity-level$__, the specified verbosity level will take precedence. 
+        If used in combination with $_b_--verbosity-level$__, the specified $_b_--verbosity-level$__ level will take precedence. 
 
     $_b_--debug | -d $__
         Shortcut for: $_b_--verbosity-level=6 $_b_--logfile=- $_b_--logsize=0 $_b_--pidfile=/dev/null $_b_--slow-up-timeout=1 $_b_--sleep=3 $_b_--ifup-grace=5 $_b_--alert='cat' $_b_--foreground$__ 
@@ -320,7 +334,7 @@ $FMT<<EOU
     $_b_--ifcup | -u $__ ${___}STRING$__ 
         Default: '$IFCUPT'
         ${___}STRING$__ will be passed to 'sh -c' to bring the interface up.
-        %{IFC} will be dynmaically replaced with the interface name currently in use as source interface.
+        $_b_%{IFC}$__ will be dynmaically replaced with the interface name currently in use as source interface.
 
         Examples:
             ifupdown:
@@ -345,7 +359,7 @@ $FMT<<EOU
     $_b_--ifcdown | -U $__ ${___}STRING$__
         Default: '$IFCDOWNT' 
         ${___}STRING$__ will be passed to 'sh -c' to bring the interface down.
-        %{IFC} will be dynmaically replaced with the interface name currently in use as source interface.
+        $_b_%{IFC}$__ will be dynmaically replaced with the interface name currently in use as source interface.
 
         Examples:
             ifupdown:
@@ -373,25 +387,33 @@ $FMT<<EOU
         Errors, warnings and alerts regarding change of state will be piped to: sh -c '${___}STRING$__'
         Within ${___}STRING$__ the following placeholders can be used:          
 
-        %{IFC} - the interface name
+        $_b_%{IFC}$__ - the interface name
 
-        %{TARGET} - the ${___}TARGET${__} for which the connection is monitored
+        $_b_%{TARGET}$__ - the ${___}TARGET${__} for which the connection is monitored
 
-        %{TADDR} - the IP address of the ${___}TARGET${__}
+        $_b_%{TADDR}$__ - the IP address of the ${___}TARGET${__}
 
-        %{NEXTHOP}  - the IP address of the NEXTHOP towards ${___}TARGET${__}
+        $_b_%{NEXTHOP}$__  - the IP address of the NEXTHOP towards ${___}TARGET${__}
 
-        %{STATE} - the state of the alert:
-        - UP for restored connectivity to ${___}TARGET${__} (implies REACHABLE)
-        - DOWN for lost conenctivity to ${___}TARGET${__}
-        - UNREACHABLE for lost conenctivity to NEXTHOP (implies DOWN)
-        - REACHABLE for restored connectivity to NEXTHOP
-        - ERROR for permanent errors
-        - WARNING for things that might need reconfiguration
+        $_b_%{STATE}$__ - the state of the alert:
+        - ${_b_}ERROR$__ for permanent errors
+        - ${_b_}WARNING$__ for things that might need reconfiguration
+        - ${_b_}DOWN$__ for lost conenctivity to ${___}TARGET${__}
+          (will not be fired if already in DOWN, UNREACHABLE or LINKDOWN state)
+        - ${_b_}UNREACHABLE$__ for lost conenctivity to NEXTHOP (implies DOWN)
+          (will not be fired if already in UNREACHABLE or LINKDOWN state)
+        - ${_b_}LINKDOWN$__ no link on source interface after $_b_--max-nolink$__ reset attempts (implies UNREACHABLE + DOWN)
+          (will not be fired if already in LINKDOWN state)
+        - ${_b_}LINKUP$__ link up on source interface
+          (will not be fired if already in LINKUP, REACHABLE or UP state)
+        - ${_b_}REACHABLE$__ for restored connectivity to NEXTHOP (implies LINKUP)
+          (will not be fired if already in REACHABLE or UP state)
+        - ${_b_}UP$__ for restored connectivity to ${___}TARGET${__} (implies REACHABLE and LINKUP)
+          (will not be fired if already in UP state)
 
         The alert command will be launched for every ERROR and WARNING, even repeated ones.
-        For the other states (UP, DOWN, UNREACHABLE, REACHABLE) the alert command will be launched only upon state change.
-        E.g. if the state goes from UP to DOWN the DOWN alert is triggered but if the next check is also DOWN, no further alert will be sent (until the state changes again).
+        For the other states the alert command will be launched only upon state change.
+        E.g. if the state goes from UP to DOWN the DOWN alert is triggered, but if the next check is also DOWN, no further alert will be sent (until the state changes again).
 
         EXAMPLE of how to email the alert messages using mailx (mailutils) with a custom from address:
             --alert='mailx -a "From: nw-watchdog@this.hst" -s "nw-watchdog %{STATE} alert for %{TARGET} via %{IFC}" my@email.adr'
@@ -400,9 +422,12 @@ $FMT<<EOU
         Default: none
 
         Will write a systemd service file /etc/systemd/system/nw-watchdog-${___}SERVICENAME$__.service launching $_b_$nwwatchdog$__ as a daemon with
+        and otherwise with the exact same options as run (apart from the $_b_--install-systemd$__ option itself of course).
+
+        If systemd is installed, a systemd service file is written to /etc/systemd/system/nw-watchdog-${___}SERVICENAME$__.service launching $_b_$nwwatchdog$__ as a daemon with
         $_b_--pidfile$__=/run/nw-watchdog/${___}SERVICENAME$__.pid$__
         $_b_--logfile$__=/var/log/nw-watchdog/${___}SERVICENAME$__.log$__
-        and otherwise with the exact same options as run (apart from the $_b_--install-systemd$__ option itself of course).
+        and otherwise with the exact same options as run (apart from the `--install-systemd` option itself of course).
 
         If /etc/systemd/system/nw-watchdog-${___}SERVICENAME$__.service already exists, the service will be stopped and the file overwritten.
 
@@ -412,11 +437,23 @@ $FMT<<EOU
 
         This option requires root privileges.
 
+    $_b_--remove-systemd$__ ${___}SERVICENAME$__ | ${___}UNITNAME$__
+        Default: none
+        Specify either the short ${___}SERVICENAME$__ or the full ${___}UNITNAME$__ (as shown by $_b_--list-systemd$__) to stop and completely remove the nw-watchdog-${___}SERVICENAME$__.service from the system.
+
+        This option requires root privileges and cannot be combined with any other options.
+
+        To manually (instead of using $_b_--remove-systemd$__) remove the nw-watchdog-${___}SERVICENAME$__.service systemd service completely do:
+
+            sudo systemctl stop nw-watchdog-SERVICENAME.service
+            sudo systemctl disable nw-watchdog-SERVICENAME.service
+            sudo rm /etc/systemd/system/nw-watchdog-SERVICENAME.service
+            sudo systemctl daemon-reload
+
         Note:
-        To completely remove the service do (as root):
-            systemctl stop nw-watchdog-${___}SERVICENAME$__.service
-            systemctl disable nw-watchdog-${___}SERVICENAME$__.service
-            rm /etc/systemd/system/nw-watchdog-${___}SERVICENAME$__.service
+        The logfile, /var/log/nw-watchdog/${___}SERVICENAME$__.log will NOT be removed by $_b_--remove-systemd$__.
+        To manually remove the logfile do:
+            sudo rm /var/log/nw-watchdog/SERVICENAME.log
 
 ${_b_}EXAMPLES$__
 
@@ -647,6 +684,11 @@ EOU
 
     $_b_$nwwatchdog$__ will function without the below listed utilities, but will use them to enhance its functionality if available.
 
+    - ${_b_}systemd$__ (${_b_}mkdir$__, ${_b_}chmod$__, ${_b_}rm$__)
+      ${_b_}systemd$__ is (obviously) required for the ${_b_}--install-systemd$__, ${_b_}--list-systemd$__ and ${_b_}--remove-systemd$__ options to be functional. The folder ${_b_}/etc/systemd/system/$__ must exist, ${_b_}systemctl$__ must be in the PATH and ${_b_}systemd$__ must be running.
+Unless all required directories are already existing, ${_b_}mkdir$__ and ${_b_}chmod$__ are also used by ${_b_}--install-systemd$__.
+      ${_b_}rm$__ is used by ${_b_}--remove-systemd$__ to remove the systemd unit file for the service.
+
     - ${_b_}flock$__
         If available the logfile will be locked before truncated or written to.
         If not available, there is a slight risk of log entries being lost if two or more instances of $_b_$nwwatchdog$__ are concurently running using the same logfile and at least one of them have $_b_--logsize$__ set to a value larger than 0.
@@ -668,8 +710,8 @@ EOU
 }
 USAGEpager() {
     [ -n "$PAGERUSE" ] || {
-	USAGE "$@"
-	return
+        USAGE "$@"
+        return
     }
     if which "$PAGER" >/dev/null 2>&1; then
         LESS="$LESS -R"; export LESS # make sure less, if used, passes ANSI color escape sequences to terminal
@@ -695,7 +737,7 @@ while [ $# -gt 0 ]; do
     ARG="$1"; shift
     case "$ARG" in
         -h|--help) xHELP=1 ;;
-	-M|--no-pager|--no-less|--no-more) PAGERUSE='' ;;
+        -M|--no-pager|--no-less|--no-more) PAGERUSE='' ;;
         -N|--no-ping-nexthop|-G|--no-ping-gateway) PINGNEXTHOP='' ;;
         -P|--no-ping-target) PINGTARGET='' ;;
         -A|--no-ipaddr-alert) IPADDRALRT='' ;;
@@ -723,20 +765,20 @@ while [ $# -gt 0 ]; do
             if [ "$ARG" = "-V" -o "$ARG" = "--verbosity-level" ]; then V="$1"; [ $# -gt 0 ] && shift
             elif printf "%s" "$ARG" | grep -qEe '-(-verbosity-level|V)=.*' ; then V="${ARG#*=}"
             else V=`printf "%s" "$ARG" | sed -E 's/-(-verbosity-level|V)//'`; fi
-	    xV=$((xV+1))
+            xV=$((xV+1))
             ;;
         -i*|--interface*)
             if [ "$ARG" = "-i" -o "$ARG" = "--interface" ]; then IFC="$1"; [ $# -gt 0 ] && shift
             elif printf "%s" "$ARG" | grep -qEe '-(-interface|i)=.*' ; then IFC="${ARG#*=}"
             else IFC=`printf "%s" "$ARG" | sed -E 's/-(-interface|i)//'`; fi
-	    xIFC=$((xIFC+1))
+            xIFC=$((xIFC+1))
             ;;
         -I*|--force-interface*)
             if [ "$ARG" = "-I" -o "$ARG" = "--force-interface" ]; then IFC="$1"; [ $# -gt 0 ] && shift
             elif printf "%s" "$ARG" | grep -qEe '-(-force-interface|I)=.*' ; then IFC="${ARG#*=}"
             else IFC=`printf "%s" "$ARG" | sed -E 's/-(-force-interface|I)//'`; fi
             STATICIFC=$IFC
-	    xIFC=$((xIFC+1))
+            xIFC=$((xIFC+1))
             ;;
         -l*|--logfile*)
             if [ "$ARG" = "-l" -o "$ARG" = "--logfile" ]; then LOGFILE="$1"; [ $# -gt 0 ] && shift
@@ -766,13 +808,13 @@ while [ $# -gt 0 ]; do
             if [ "$ARG" = "-s" -o "$ARG" = "--sleep" -o "$ARG" = "--interval" ]; then SLEEP="$1"; [ $# -gt 0 ] && shift
             elif printf "%s" "$ARG" | grep -qEe '-(-(sleep|interval)|s)=.*' ; then SLEEP="${ARG#*=}"
             else SLEEP=`printf "%s" "$ARG" | sed -E 's/-(-(sleep|interval)|s)//'`; fi
-	    xSLEEP=$((xSLEEP+1))
+            xSLEEP=$((xSLEEP+1))
             ;;
         -g*|--ifup-grace*)
             if [ "$ARG" = "-g" -o "$ARG" = "--ifup-grace" ]; then GRACE="$1"; [ $# -gt 0 ] && shift
             elif printf "%s" "$ARG" | grep -qEe '-(-ifup-grace|g)=.*' ; then GRACE="${ARG#*=}"
             else GRACE=`printf "%s" "$ARG" | sed -E 's/-(-ifup-grace|g)//'`; fi
-	    xGRACE=$((xGRACE+1))
+            xGRACE=$((xGRACE+1))
             ;;
         -n*|--max-nolink*)
             if [ "$ARG" = "-n" -o "$ARG" = "--max-nolink" ]; then MAXNOLINK="$1"; [ $# -gt 0 ] && shift
@@ -822,23 +864,23 @@ done
     $(($xLISTSYSTEMD+$xREMOVESYSTEMD+$xTARGET+$xV+$xIFC+$xLOGFILE+$xLOGSIZE+$xPIDFILE+$xSLOWUPTIMEOUT+$xSLEEP+$xGRACE+$xMAXNOLINK+$xIFCUPT+$xIFCDOWNT+$xALERTCMDT+$xINSTALLSYSTEMD)) -eq 1 || dieUSAGEpager "--list-systemd and --remove-systemd cannot be combined with any other option!"
     [ -d /etc/systemd/system/. ] || dieUSAGEpager "'/etc/systemd/system/' does not exists, is systemd installed and running?"
     [  $xLISTSYSTEMD -gt 0 ] && {
-	printf "\n\n--- Listing all loaded nw-watchdog systemd units: ---\n"
-	systemctl list-units --all nw-watchdog-\* 2>/dev/null | grep -oE 'nw-watchdog-.*\.service.*'
-	printf "\n--- Listing all installed nw-watchdog systemd units: ---\n"
-	systemctl list-unit-files --all nw-watchdog-\* 2>/dev/null
-	exit 0
+        printf "\n\n--- Listing all loaded nw-watchdog systemd units: ---\n"
+        systemctl list-units --all nw-watchdog-\* 2>/dev/null | grep -oE 'nw-watchdog-.*\.service.*'
+        printf "\n--- Listing all installed nw-watchdog systemd units: ---\n"
+        systemctl list-unit-files --all nw-watchdog-\* 2>/dev/null
+        exit 0
     }
     [ -n "$SYSTEMDSERVICENAME" ] || dieUSAGEpager "You must specify the systemd service name to remove!\n%s" \
-						   "Use --list-systemd to list all nw-watchdog systemd units."
+                                                   "Use --list-systemd to list all nw-watchdog systemd units."
     [ `id -u` -eq 0 ] || dieUSAGEpager "$nwwatchdog --remove-systemd must be run as root"
     systemctl daemon-reload || dieUSAGEpager "Failed to reload systemd. Is systemd installed and running?"
     UNITNAME="$SYSTEMDSERVICENAME"
     systemctl list-unit-files "$UNITNAME" >/dev/null 2>&1 || {
-	UNITNAME="nw-watchdog-$SYSTEMDSERVICENAME.service"
-	systemctl list-unit-files "$UNITNAME" >/dev/null 2>&1 \
-	    || dieUSAGEpager "Neither '%s' or '%s' is a valid systemd service unit name.\n%s" \
-			     "$SYSTEMDSERVICENAME" "$UNITNAME" \
-	                     "Use --list-systemd to list all nw-watchdog systemd units."
+        UNITNAME="nw-watchdog-$SYSTEMDSERVICENAME.service"
+        systemctl list-unit-files "$UNITNAME" >/dev/null 2>&1 \
+            || dieUSAGEpager "Neither '%s' or '%s' is a valid systemd service unit name.\n%s" \
+                             "$SYSTEMDSERVICENAME" "$UNITNAME" \
+                             "Use --list-systemd to list all nw-watchdog systemd units."
     }
     systemctl stop "$UNITNAME" || printf "\nWARNING: failed to stop '$UNITNAME'\n" 1>&2
     systemctl disable "$UNITNAME" || printf "\nWARNING: failed to disable '$UNITNAME'\n" 1>&2
@@ -913,44 +955,44 @@ ERRPTN=''
 
 [ "$V" -ge 0 ] 2>/dev/null || {
         ERRPTN="$ERRPTN\n* %s"
-	set -- "Invalid verbosity level '$V' (must be integer >= 0)" "$@"
+        set -- "Invalid verbosity level '$V' (must be integer >= 0)" "$@"
 }
 
 [ "$SLOWUPTIMEOUT" -ge 1 ] 2>/dev/null || {
         ERRPTN="$ERRPTN\n* %s"
-	set -- "Invalid slow-up-timeout interval '$SLOWUPTIMEOUT' (must be integer >= 1)" "$@"
+        set -- "Invalid slow-up-timeout interval '$SLOWUPTIMEOUT' (must be integer >= 1)" "$@"
 }
 
 [ "$SLEEP" -ge 1 ] 2>/dev/null || {
         ERRPTN="$ERRPTN\n* %s"
-	set -- "Invalid sleep interval '$SLEEP' (must be integer >= 1)" "$@"
+        set -- "Invalid sleep interval '$SLEEP' (must be integer >= 1)" "$@"
 }
 
 [ "$GRACE" -ge 1 ] 2>/dev/null || {
         ERRPTN="$ERRPTN\n* %s"
-	set -- "Invalid ifup-grace '$GRACE' (must be integer >= 1)" "$@"
+        set -- "Invalid ifup-grace '$GRACE' (must be integer >= 1)" "$@"
 }
 
 [ "$MAXNOLINK" -ge 1 ] 2>/dev/null || {
         ERRPTN="$ERRPTN\n* %s"
-	set -- "Invalid max-nolink '$MAXNOLINK' (must be integer >= 1)" "$@"
+        set -- "Invalid max-nolink '$MAXNOLINK' (must be integer >= 1)" "$@"
 }
 
 [ -z "$PINGTARGET" -a -z "$PINGNEXTHOP" ] && {
         ERRPTN="$ERRPTN\n* %s"
-	set -- "You must allow pinging of target and/or nexthop! (Can't use both --no-ping-target and --no-ping-nexthop!)" "$@"
+        set -- "You must allow pinging of target and/or nexthop! (Can't use both --no-ping-target and --no-ping-nexthop!)" "$@"
 }
 
 [ $xINSTALLSYSTEMD -eq 0 -a "$LOGFILE" = '-' ] && { LOGFILE=''; LOGSIZE=0 ; LOGSIZEb=0 ;}
 
 printf "%s" "$LOGSIZE" | grep -iqE '^[0-9]+*[KMG]*$' || {
         ERRPTN="$ERRPTN\n* %s"
-	set -- "Invalid logsize '$LOGSIZE'" "$@"
+        set -- "Invalid logsize '$LOGSIZE'" "$@"
 }
 
 [ -n "$TARGET" ] || {
         ERRPTN="$ERRPTN\n* %s"
-	set -- "%s\n%s" "Target not specified!" "Specify IP address or resolvable hostname." "$@"
+        set -- "%s\n%s" "Target not specified!" "Specify IP address or resolvable hostname." "$@"
 }
 
 ### Die showing the USAGE if found errors in options and arguments above ###
@@ -959,8 +1001,8 @@ printf "%s" "$LOGSIZE" | grep -iqE '^[0-9]+*[KMG]*$' || {
 [ -n "$LOGFILE" ] && {
     touch "$LOGFILE" 2>/dev/null || {
         printf "\nERROR: %s\n%s\n\n" \
-	       "Cannot write to logfile '$LOGFILE'." \
-	       "Fix permissions, run as user with access or specify another --logfile." 1>&2
+               "Cannot write to logfile '$LOGFILE'." \
+               "Fix permissions, run as user with access or specify another --logfile." 1>&2
         exit 1
     }
 }
@@ -1018,13 +1060,13 @@ alert() {
     # Do not log or alert initial or repeated UP/DOWN/REACHABLE/UNREACHABLE/LINKDOWN states
     [ "$ALERTSTATE" = "initial" ] && { [ "$STATE" = "UP" -o "$STATE" = "REACHABLE" -o "$STATE" = "LINKUP" ] && return ;}
     [ "$STATE" = "ERROR" -o "$STATE" = "WARNING" ] || {
-	[ "$STATE" = "$ALERTSTATE" ] && return                                # No change
-	[ "$ALERTSTATE" = "LINKDOWN" -a "$STATE" = "DOWN" ] && return         # LINKDOWN implies DOWN
-	[ "$ALERTSTATE" = "LINKDOWN" -a "$STATE" = "UNREACHABLE" ] && return  # LINKDOWN implies UNREACHABLE
-	[ "$ALERTSTATE" = "UNREACHABLE" -a "$STATE" = "DOWN" ] && return      # UNREACHABLE implies DOWN
-	[ "$ALERTSTATE" = "UP" -a "$STATE" = "REACHABLE" ] && return          # UP implies REACHABLE
-	[ "$ALERTSTATE" = "UP" -a "$STATE" = "LINKUP" ] && return             # UP implies LINKUP
-	[ "$REACHABLE"  = "REACHABLE" -a "$STATE" = "LINKUP" ] && return      # REACHABLE implies LINKUP
+        [ "$STATE" = "$ALERTSTATE" ] && return                                # No change
+        [ "$ALERTSTATE" = "LINKDOWN" -a "$STATE" = "DOWN" ] && return         # LINKDOWN implies DOWN
+        [ "$ALERTSTATE" = "LINKDOWN" -a "$STATE" = "UNREACHABLE" ] && return  # LINKDOWN implies UNREACHABLE
+        [ "$ALERTSTATE" = "UNREACHABLE" -a "$STATE" = "DOWN" ] && return      # UNREACHABLE implies DOWN
+        [ "$ALERTSTATE" = "UP" -a "$STATE" = "REACHABLE" ] && return          # UP implies REACHABLE
+        [ "$ALERTSTATE" = "UP" -a "$STATE" = "LINKUP" ] && return             # UP implies LINKUP
+        [ "$REACHABLE"  = "REACHABLE" -a "$STATE" = "LINKUP" ] && return      # REACHABLE implies LINKUP
     }
     ALERTCMD=`printf "%s" "$ALERTCMDT" | sed -E "s/\%\{STATE\}/$STATE/g" | sed -E "s/\%\{LASTSTATE\}/$ALERTSTATE/g"` 
     if [ -n "$TARGET" ]; then
@@ -1109,7 +1151,7 @@ ifreset() {
     EXITCODE=0
     IFCUD=`sh -c "$IFCUP" 2>&1`|| {
         EXITCODE=$?
-	debug "ifcup: '%s'\n\texited with $EXITCODE and output:\n\t%s" "$IFCUP" "$IFCUD"
+        debug "ifcup: '%s'\n\texited with $EXITCODE and output:\n\t%s" "$IFCUP" "$IFCUD"
         warn "%s\n\t%s" \
              "Could not reset interface '$IFC'." \
              "Check your --if-up and --if-down commands and/or privilegdes of effective user (userid=`id -u`)."
@@ -1132,10 +1174,10 @@ linkcheck() {
                     || warn "%s\n\t%s" \
                             "There is no IPv4 or IPv6 global scope ip address on interface '$IFC'!" \
                             "If that is ok, you can disable these alerts with --no-ipaddr-alert."
-		alert LINKUP "Link up on interface '%s'!" "$IFC"
+                alert LINKUP "Link up on interface '%s'!" "$IFC"
                 return 0
             }
-	}
+        }
         NOLINK=$((NOLINK+1))
         [ $MAXNOLINK -gt 0 -a $NOLINK -gt $MAXNOLINK ] && {
             alert LINKDOWN "Link down on interface '%s' after $MAXNOLINK reset attempts (with $GRACE seconds in between)!" "$IFC"
@@ -1219,12 +1261,12 @@ nexthop() {
     
     [ -d /etc/systemd/system/. ] || die "'/etc/systemd/system/' does not exists, systemd '$SYSTEMDSERVICENAME.service' NOT installed!"
     for DIR in /run/nw-watchdog /var/log/nw-watchdog; do # /var/log/nw-watchdog/$SYSTEMDSERVICENAME.systemd; do
-	[ -d $DIR ] || {
-	    mkdir $DIR || die "Failed to create directory '%s', systemd '%s.service' NOT installed!" $DIR $SYSTEMDSERVICENAME
-	}
-	chmod 0755 $DIR || printf "WARNING: Failed to set permissions on '$DIR'!" 1>&2
+        [ -d $DIR ] || {
+            mkdir $DIR || die "Failed to create directory '%s', systemd '%s.service' NOT installed!" $DIR $SYSTEMDSERVICENAME
+        }
+        chmod 0755 $DIR || printf "WARNING: Failed to set permissions on '$DIR'!" 1>&2
     done
-	
+        
     #cat<<EOF
     cat>/etc/systemd/system/nw-watchdog-$SYSTEMDSERVICENAME.service<<EOF
 [Unit]
@@ -1327,7 +1369,7 @@ isup() {
 
 [ -n "$PIDFILE" ] || PIDFILE=/run/nw-watchdog.pid
 touch "$PIDFILE" 2>/dev/null || die "%s\n%s" "Cannot write to pidfile '$PIDFILE'." \
-					"Specify another --pidfile or check permissions or privileges of effective user (userid=`id -u`)"
+                                        "Specify another --pidfile or check permissions or privileges of effective user (userid=`id -u`)"
 PID=`cat "$PIDFILE"`
 [ "$PID" -qt 0 ] 2>/dev/null && [ -d /proc/$PID ] && die "Process already running with pid $PID"
 
