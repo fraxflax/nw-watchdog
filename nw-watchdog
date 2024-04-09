@@ -1036,11 +1036,15 @@ alert() {
     [ $V -ge 3 ] || return
     STATE="$1"; shift
     
-    # Do not log or alert repeated UP/DOWN/REACHABLE/UNREACHABLE states
-    # unless loglevel is 6 (debug) or higher
-
-    [ "$ALERTSTATE" = "initial" ] && { [ "$STATE" = "UP" -o "$STATE" = "REACHABLE" ] && return ;}
-    [ "$STATE" != "ERROR" -a "$STATE" != "WARNING" -a "$STATE" = "$ALERTSTATE" ] && return
+    # Do not log or alert initial or repeated UP/DOWN/REACHABLE/UNREACHABLE/LINKDOWN states
+    [ "$ALERTSTATE" = "initial" ] && { [ "$STATE" = "UP" -o "$STATE" = "REACHABLE" -o "$STATE" = "LINKUP" ] && return ;}
+    [ "$STATE" != "ERROR" -a "$STATE" != "WARNING" ] && {
+	[ "$STATE" = "$ALERTSTATE" ] && return                                # No change
+	[ "$ALERTSTATE" = "LINKDOWN" -a "$STATE" = "DOWN" ] && return         # LINKDOWN implies DOWN
+	[ "$ALERTSTATE" = "LINKDOWN" -a "$STATE" = "UNREACHABLE" ] && return  # LINKDOWN implies UNREACHABLE
+	[ "$ALERTSTATE" = "UNREACHABLE" -a "$STATE" = "DOWN" ] && return      # UNREACHABLE implies DOWN
+	[ "$ALERTSTATE" = "UP" -a "$STATE" = "REACHABLE" ] && return          # UP implies REACHABLE
+    }
     
     ALERTCMD=`printf "%s" "$ALERTCMDT" | sed -E "s/\%\{STATE\}/$STATE/g" | sed -E "s/\%\{LASTSTATE\}/$ALERTSTATE/g"` 
     if [ -n "$TARGET" ]; then
@@ -1124,13 +1128,13 @@ ifreset() {
     trace "sh -c '%s'" "$IFCDOWN"
     IFCDD=`sh -c "$IFCDOWN" 2>&1`; EXITCODE=$?
 
-    debug "'%s' exited with $EXITCODE and output: '%s'" "$IFCDOWN" "$IFCDD"
+    debug "ifcdown: '%s'\n\texited with $EXITCODE and output:\n\t%s" "$IFCDOWN" "$IFCDD"
     sleep 1
     trace "sh -c '%s'" "$IFCUP"
     EXITCODE=0
     IFCUD=`sh -c "$IFCUP" 2>&1`|| {
         EXITCODE=$?
-        debug "'%s' exited with $EXITCODE and output: '%s'" "$IFCUP" "$IFCUD"
+	debug "ifcup: '%s'\n\texited with $EXITCODE and output:\n\t%s" "$IFCUP" "$IFCUD"
         warn "%s\n\t%s" \
              "Could not reset interface '$IFC'." \
              "Check your --if-up and --if-down commands and/or privilegdes of effective user (userid=`id -u`)."
@@ -1158,9 +1162,7 @@ linkcheck() {
         }
         NOLINK=$((NOLINK+1))
         [ $MAXNOLINK -gt 0 -a $NOLINK -gt $MAXNOLINK ] && {
-            warn "%s\n\t%s" \
-                 "Could not get link up on $MAXNOLINK attempts (with $GRACE seconds between them.)" \
-                 "Adjust these values with --max-nolink and --if-up-grace"
+            alert LINKDOWN "Link down on interface '%s' after $MAXNOLINK reset attempts (with $GRACE seconds in between)!" "$IFC"
             return 1
         }
         info "No link on $IFC... reset attempt $NOLINK out of $MAXNOLINK (0=infinite)"
@@ -1193,6 +1195,12 @@ nexthop() {
             return 0
         elif [ -z "$STATICIFC" ]; then
             info "Detected topology: IFC='%s' -> '%s' ; NEXTHOP='%s' -> '%s'" "$IFC" "$NIFC" "$NEXTHOP" "$NNEXTHOP"
+	    [ "$IFC" != "$NIFC" -a "$ALERTSTATE" = "LINKDOWN" ] \
+		&& alert LINKDOWN-TOPOLOGY \
+			 "Detected topology: IFC='%s' -> '%s' ; NEXTHOP='%s' -> '%s'\n\t%s %s %s" \
+			 "with no link on old source interface" "$IFC" ", it might remain down." \
+			 "$IFC" "$NIFC" "$NEXTHOP" "$NNEXTHOP"
+
             IFC="$NIFC"
             NEXTHOP="$NNEXTHOP"
             IFCUP=`printf "%s" "$IFCUPT" | sed -E "s/\%\{IFC\}/$IFC/g"`
@@ -1205,7 +1213,7 @@ nexthop() {
             NEXTHOP="$NNEXTHOP"
             return 0
         else
-            warn "Conflicting topology detected, route to target '%s' (%s) is on interface '%s', but --force-interface='%s'" \
+            warn "Ignoring conflicting topology: Route to target '%s' (%s) is on interface '%s', but --force-interface='%s'" \
                  "$TARGET" "$TADDR" "$NIFC" "$STATICIFC"
             return 1
         fi
@@ -1455,18 +1463,18 @@ while true; do
                               "$TARGET" "$TADDR" "$IFC" "$NEXTHOP" $GRACE
                         sleep $GRACE
                     else
-                        alert UNREACHABLE "Not getting replies from target '%s' (%s) on interface '%s', and nexthop '%s' is not reachable.\n\t%s\n\t%s\n\tsleep 1\n\t%s" \
+                        alert UNREACHABLE "Not getting replies from target '%s' (%s) on interface '%s', and nexthop '%s' is not reachable.\n\t%s\n\t%s\n\t%s" \
                                           "$TARGET" "$TADDR" "$IFC" "$NEXTHOP" 'Resetting interface:' "$IFCDOWN" "$IFCUP"
                         ifreset && nexthop
                     fi
                 else
-                    alert DOWN "Not getting replies from target '%s' (%s) on interface '%s'.\n\t%s\n\t%s\n\tsleep 1\n\t%s" \
+                    alert DOWN "Not getting replies from target '%s' (%s) on interface '%s'.\n\t%s\n\t%s\n\t%s" \
                                "$TARGET" "$TADDR" "$IFC" 'Resetting interface:' "$IFCDOWN" "$IFCUP"
                     ifreset && nexthop
                 fi
             }
         else
-            alert UNREACHABLE "Not getting replies from target '%s' (%s) and no route to target available, resetting interface (%s):\n\t%s\n\tsleep 1\n\t%s" \
+            alert UNREACHABLE "Not getting replies from target '%s' (%s) and no route to target available, resetting interface (%s):\n\t%s\n\t%s" \
                   "$TARGET" "$TADDR" "$IFC" "$IFCDOWN" "$IFCUP"
             ifreset && nexthop
         fi
