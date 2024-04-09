@@ -260,20 +260,20 @@ These opions takes a single argument each and may be specified in any order. Spe
 	- %{TADDR} - the IP address of the <INS>TARGET</INS>
     - %{NEXTHOP}  - the IP address of the NEXTHOP towards <ins>TARGET</ins>
 	- %{STATE} - the state of the alert:
-	  - UP for restored connectivity to <INS>TARGET</INS> (implies REACHABLE and LINKUP)<br>
+	  - __UP__ for restored connectivity to <INS>TARGET</INS> (implies REACHABLE and LINKUP)<br>
         (will not be fired if already in UP state)
-	  - DOWN for lost conenctivity to <INS>TARGET</INS><br>
+	  - __DOWN__ for lost conenctivity to <INS>TARGET</INS><br>
         (will not be fired if already in DOWN, UNREACHABLE or LINKDOWN state)
-	  - UNREACHABLE for lost conenctivity to NEXTHOP (implies DOWN)<br>
+	  - __UNREACHABLE__ for lost conenctivity to NEXTHOP (implies DOWN)<br>
         (will not be fired if already in UNREACHABLE or LINKDOWN state)
-	  - REACHABLE for restored connectivity to NEXTHOP (implies LINKUP)<br>
+	  - __REACHABLE__ for restored connectivity to NEXTHOP (implies LINKUP)<br>
         (will not be fired if already in UP state)
-      - LINKDOWN no link on source interface after `--max-nolink` reset attempts (implies UNREACHABLE + DOWN)<br>
+      - __LINKDOWN__ no link on source interface after `--max-nolink` reset attempts (implies UNREACHABLE + DOWN)<br>
         (will not be fired if already in LINKDOWN state)
-	  - LINKUP link up on source interface<br>
+	  - __LINKUP__ link up on source interface<br>
         (will not be fired if already in REACHABLE or UP state)
-	  - ERROR for permanent errors
-	  - WARNING for things that might need reconfiguration
+	  - __ERROR__ for permanent errors
+	  - __WARNING__ for things that might need reconfiguration
 
 	The alert command will be launched for every ERROR and WARNING, even repeated ones.<br>
 	For the other states the alert command will be launched only upon state change.
