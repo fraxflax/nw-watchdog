@@ -19,8 +19,8 @@ These changes are currently being worked on in separate branches.
 
 * __--no-pager | --no-less | --no-more | -M__<br>
   option not to use pager for errors and help<br>
+  no longer recommend using PAGER=cat not to use pager<br>
   __--install-systemd__ will enforce __--no-pager__ when installing systemd-services
-  will also update help to reflect the new option and no longer recommend using PAGER=cat not to use pageer with __--help__  .
 
 * Introduced __--remove-systemd=<ins>SERVICENAME</ins>__.
 
