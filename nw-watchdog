@@ -53,7 +53,7 @@ SYSTEMDSERVICENAME=''                  # --install-systemd
 set >/dev/null 2>&1 && export PATH >/dev/null 2>&1 || {
     printf "\nThis script must be run in a POSIX compliant shell!\n\n" 1>&2 \
 	|| echo "This script must be run in a POSIX compliant shell!" 1>&2
-    exit 1;
+    exit 1
 }
 
 # Let's put the "standard" paths first in PATH to ensure we get the standard utilities we need
@@ -694,36 +694,16 @@ SOPTS='[hMNPARTfDvd]' # Short options without arguments
 while [ $# -gt 0 ]; do
     ARG="$1"; shift
     case "$ARG" in
-        -h|--help)
-            xHELP=1
-            ;;
-	--no-pager | --no-less | --no-more | -M)
-	    PAGERUSE=''
-	    ;;
-        -N|--no-ping-nexthop|-G|--no-ping-gateway)
-            PINGNEXTHOP=''
-            ;;
-        -P|--no-ping-target)
-            PINGTARGET=''
-            ;;
-        -A|--no-ipaddr-alert)
-            IPADDRALRT=''
-            ;;
-        -T|--no-continuous-topology-detect)
-            CONTINUOUSTOPOLOGYDETECT=''
-            ;;
-        -R|--no-interface-reset)
-            IFCUPDOWN=''
-            ;;
-        -D|--no-daemonize|-f|--foreground)
-            FORK=''
-            ;;
-        -v|--verbose)
-            [ $xV -eq 0 ] && V=5
-            ;;
-        --list-systemd)
-            xLISTSYSTEMD=1
-            ;;
+        -h|--help) xHELP=1 ;;
+	-M|--no-pager|--no-less|--no-more) PAGERUSE='' ;;
+        -N|--no-ping-nexthop|-G|--no-ping-gateway) PINGNEXTHOP='' ;;
+        -P|--no-ping-target) PINGTARGET='' ;;
+        -A|--no-ipaddr-alert) IPADDRALRT='' ;;
+        -T|--no-continuous-topology-detect) CONTINUOUSTOPOLOGYDETECT='' ;;
+        -R|--no-interface-reset) IFCUPDOWN='' ;;
+        -D|--no-daemonize|-f|--foreground) FORK='' ;;
+        -v|--verbose) [ $xV -eq 0 ] && V=5 ;;
+        --list-systemd) xLISTSYSTEMD=1 ;;
         -d|--debug)
             [ $xV -eq 0 ] && V=6 
             [ $xLOGFILE -eq 0 ] &&  { LOGFILE=''; LOGSIZE=0; }
@@ -762,25 +742,25 @@ while [ $# -gt 0 ]; do
             if [ "$ARG" = "-l" -o "$ARG" = "--logfile" ]; then LOGFILE="$1"; [ $# -gt 0 ] && shift
             elif printf "%s" "$ARG" | grep -qEe '-(-logfile|l)=.*' ; then LOGFILE="${ARG#*=}"
             else LOGFILE=`printf "%s" "$ARG" | sed -E 's/-(-logfile|l)//'`; fi
-            xLOGFILE=$((xLOGFILE+1));
+            xLOGFILE=$((xLOGFILE+1))
             ;;
         -z*|--logsize*)
             if [ "$ARG" = "-z" -o "$ARG" = "--logsize" ]; then LOGSIZE="$1"; [ $# -gt 0 ] && shift
             elif printf "%s" "$ARG" | grep -qEe '-(-logsize|z)=.*' ; then LOGSIZE="${ARG#*=}"
             else LOGSIZE=`printf "%s" "$ARG" | sed -E 's/-(-logsize|z)//'`; fi
-            xLOGSIZE=$((xLOGSIZE+1));
+            xLOGSIZE=$((xLOGSIZE+1))
             ;;
         -p*|--pidfile*)
             if [ "$ARG" = "-p" -o "$ARG" = "--pidfile" ]; then PIDFILE="$1"; [ $# -gt 0 ] && shift
             elif printf "%s" "$ARG" | grep -qEe '-(-pidfile|p)=.*' ; then PIDFILE="${ARG#*=}"
             else PIDFILE=`printf "%s" "$ARG" | sed -E 's/-(-pidfile|p)//'`; fi
-            xPIDFILE=$((xPIDFILE+1));
+            xPIDFILE=$((xPIDFILE+1))
             ;;
         -t*|--slow-up-timeout*)
             if [ "$ARG" = "-t" -o "$ARG" = "--slow-up-timeout" ]; then SLOWUPTIMEOUT="$1"; [ $# -gt 0 ] && shift
             elif printf "%s" "$ARG" | grep -qEe '-(-slow-up-timeout|t)=.*' ; then SLOWUPTIMEOUT="${ARG#*=}"
             else SLOWUPTIMEOUT=`printf "%s" "$ARG" | sed -E 's/-(-slow-up-timeout|t)//'`; fi
-            xSLOWUPTIMEOUT=$((xSLOWUPTIMEOUT+1));
+            xSLOWUPTIMEOUT=$((xSLOWUPTIMEOUT+1))
             ;;
         -s*|--sleep*|--interval*)
             if [ "$ARG" = "-s" -o "$ARG" = "--sleep" -o "$ARG" = "--interval" ]; then SLEEP="$1"; [ $# -gt 0 ] && shift
@@ -798,41 +778,40 @@ while [ $# -gt 0 ]; do
             if [ "$ARG" = "-n" -o "$ARG" = "--max-nolink" ]; then MAXNOLINK="$1"; [ $# -gt 0 ] && shift
             elif printf "%s" "$ARG" | grep -qEe '-(-max-nolink|n)=.*' ; then MAXNOLINK="${ARG#*=}"
             else MAXNOLINK=`printf "%s" "$ARG" | sed -E 's/-(-max-nolink|n)//'`; fi
-            xMAXNOLINK=$((xMAXNOLINK+1));
+            xMAXNOLINK=$((xMAXNOLINK+1))
             ;;
         -u*|--ifcup*)
-            xGRACE=$((xGRACE+1));
             if [ "$ARG" = "-u" -o "$ARG" = "--ifcup" ]; then IFCUPT="$1"; [ $# -gt 0 ] && shift
             elif printf "%s" "$ARG" | grep -qEe '-(-ifcup|u)=.*' ; then IFCUPT="${ARG#*=}"
             else IFCUPT=`printf "%s" "$ARG" | sed -E 's/-(-ifcup|u)//'`; fi
-            xIFCUPT=$((xIFCUPT+1));
+            xIFCUPT=$((xIFCUPT+1))
             ;;
         -U*|--ifcdown*)
             if [ "$ARG" = "-U" -o "$ARG" = "--ifcdown" ]; then IFCDOWNT="$1"; [ $# -gt 0 ] && shift
             elif printf "%s" "$ARG" | grep -qEe '-(-ifcdown|U)=.*' ; then IFCDOWNT="${ARG#*=}"
             else IFCDOWNT=`printf "%s" "$ARG" | sed -E 's/-(-ifcdown|U)//'`; fi
-            xIFCDOWNT=$((xIFCDOWNT+1));
+            xIFCDOWNT=$((xIFCDOWNT+1))
             ;;
         -a*|--alert*)
             if [ "$ARG" = "-a" -o "$ARG" = "--alert" ]; then ALERTCMDT="$1"; [ $# -gt 0 ] && shift
             elif printf "%s" "$ARG" | grep -qEe '-(-alert|a)=.*' ; then ALERTCMDT="${ARG#*=}"
             else ALERTCMDT=`printf "%s" "$ARG" | sed -E 's/-(-alert|a)//'`; fi
-            xALERTCMDT=$((xALERTCMDT+1));
+            xALERTCMDT=$((xALERTCMDT+1))
             ;;
         --install-systemd*)
             if [ "$ARG" = "--install-systemd" ]; then SYSTEMDSERVICENAME="$1"; [ $# -gt 0 ] && shift
             elif printf "%s" "$ARG" | grep -qEe '--install-systemd=.*' ; then SYSTEMDSERVICENAME="${ARG#*=}"
             else SYSTEMDSERVICENAME=`printf "%s" "$ARG" | sed -E 's/--install-systemd//'`; fi
-            xINSTALLSYSTEMD=$((xINSTALLSYSTEMD+1));
+            xINSTALLSYSTEMD=$((xINSTALLSYSTEMD+1))
             ;;
         --remove-systemd*)
             if [ "$ARG" = "--remove-systemd" ]; then SYSTEMDSERVICENAME="$1"; [ $# -gt 0 ] && shift
             elif printf "%s" "$ARG" | grep -qEe '--remove-systemd=.*' ; then SYSTEMDSERVICENAME="${ARG#*=}"
             else SYSTEMDSERVICENAME=`printf "%s" "$ARG" | sed -E 's/--remove-systemd//'`; fi
-            xREMOVESYSTEMD=$((xREMOVESYSTEMD+1));
+            xREMOVESYSTEMD=$((xREMOVESYSTEMD+1))
             ;;
         *)
-            TARGET="$ARG"; xTARGET=$((xTARGET+1));
+            TARGET="$ARG"; xTARGET=$((xTARGET+1)) 
             ;;
     esac
 done
@@ -988,9 +967,9 @@ printf "%s" "$LOGSIZE" | grep -iqE '^[0-9]+*[KMG]*$' || {
 
 LOGSIZEb="$LOGSIZE"
 case "$LOGSIZEb" in
-    *[Kk]) LOGSIZEb=`printf "%s" "$LOGSIZEb" | sed -E 's/[Kk]$//'`;;
-    *[Mm]) LOGSIZEb=`printf "%s" "$LOGSIZEb" | sed -E 's/[Mm]$//'`; LOGSIZEb=$((LOGSIZEb*1024));;
-    *[Gg]) LOGSIZEb=`printf "%s" "$LOGSIZEb" | sed -E 's/[Gg]$//'`; LOGSIZEb=$((LOGSIZEb*1048576));;
+    *[Kk]) LOGSIZEb=`printf "%s" "$LOGSIZEb" | sed -E 's/[Kk]$//'` ;;
+    *[Mm]) LOGSIZEb=`printf "%s" "$LOGSIZEb" | sed -E 's/[Mm]$//'`; LOGSIZEb=$((LOGSIZEb*1024)) ;;
+    *[Gg]) LOGSIZEb=`printf "%s" "$LOGSIZEb" | sed -E 's/[Gg]$//'`; LOGSIZEb=$((LOGSIZEb*1048576)) ;;
 esac
 LOGSIZEb=$((LOGSIZEb*1024))
 
@@ -1035,17 +1014,16 @@ ALERTSTATE='initial'
 alert() {
     [ $V -ge 3 ] || return
     STATE="$1"; shift
-    
+
     # Do not log or alert initial or repeated UP/DOWN/REACHABLE/UNREACHABLE/LINKDOWN states
     [ "$ALERTSTATE" = "initial" ] && { [ "$STATE" = "UP" -o "$STATE" = "REACHABLE" -o "$STATE" = "LINKUP" ] && return ;}
-    [ "$STATE" != "ERROR" -a "$STATE" != "WARNING" ] && {
+    [ "$STATE" = "ERROR" -o "$STATE" = "WARNING" ] || {
 	[ "$STATE" = "$ALERTSTATE" ] && return                                # No change
 	[ "$ALERTSTATE" = "LINKDOWN" -a "$STATE" = "DOWN" ] && return         # LINKDOWN implies DOWN
 	[ "$ALERTSTATE" = "LINKDOWN" -a "$STATE" = "UNREACHABLE" ] && return  # LINKDOWN implies UNREACHABLE
 	[ "$ALERTSTATE" = "UNREACHABLE" -a "$STATE" = "DOWN" ] && return      # UNREACHABLE implies DOWN
 	[ "$ALERTSTATE" = "UP" -a "$STATE" = "REACHABLE" ] && return          # UP implies REACHABLE
     }
-    
     ALERTCMD=`printf "%s" "$ALERTCMDT" | sed -E "s/\%\{STATE\}/$STATE/g" | sed -E "s/\%\{LASTSTATE\}/$ALERTSTATE/g"` 
     if [ -n "$TARGET" ]; then
         ALERTCMD=`printf "%s" "$ALERTCMD" | sed -E "s/\%\{TARGET\}/$TARGET/g"`
@@ -1072,12 +1050,11 @@ alert() {
     fi
 
     alertPATN="$1" ; shift
-
     printf "\n\n$nwwatchdog $STATE ALERT!!!\n$alertPATN\n\n\n" "$@" | sh -c "$ALERTCMD"
 
     case "$STATE" in
-        "ERROR") LSTATE="  ERROR:";;
-        "WARNINIG") LSTATE="WARNING:";;
+        "ERROR") LSTATE="  ERROR:" ;;
+        "WARNING") LSTATE="WARNING:" ;;
         *)
             ALERTSTATE="$STATE"
             LSTATE="  ALERT: $STATE -"
@@ -1087,9 +1064,7 @@ alert() {
 }
 error() {
     [ $V -ge 1 ] || return
-    errorPATN="$1" ; shift
-    log "  ERROR: $errorPATN" "$@"
-    printf "\n\nERROR:\n$nwwatchdog '$TARGET'\n$PATN\n\n\n" "$@" | sh -c "$ALERTCMD"
+    alert ERROR "$@"
 }
 die() {
     diePATN="$1 ... aborting!" ; shift
@@ -1098,9 +1073,7 @@ die() {
 }
 warn() {
     [ $V -ge 2 ] || return
-    warnPATN="$1" ; shift
-    log "WARNING: $warnPATN" "$@"
-    printf "\n\nWARNING:\n$nwwatchdog '$TARGET'\n$PATN\n\n\n" "$@" | sh -c "$ALERTCMD"
+    alert WARNING "$@"
 }
 info() {
     [ $V -ge 4 ] || return
@@ -1195,12 +1168,6 @@ nexthop() {
             return 0
         elif [ -z "$STATICIFC" ]; then
             info "Detected topology: IFC='%s' -> '%s' ; NEXTHOP='%s' -> '%s'" "$IFC" "$NIFC" "$NEXTHOP" "$NNEXTHOP"
-	    [ "$IFC" != "$NIFC" -a "$ALERTSTATE" = "LINKDOWN" ] \
-		&& alert LINKDOWN-TOPOLOGY \
-			 "Detected topology: IFC='%s' -> '%s' ; NEXTHOP='%s' -> '%s'\n\t%s %s %s" \
-			 "with no link on old source interface" "$IFC" ", it might remain down." \
-			 "$IFC" "$NIFC" "$NEXTHOP" "$NNEXTHOP"
-
             IFC="$NIFC"
             NEXTHOP="$NNEXTHOP"
             IFCUP=`printf "%s" "$IFCUPT" | sed -E "s/\%\{IFC\}/$IFC/g"`
@@ -1343,9 +1310,9 @@ isup() {
                 if [ "$isupADDR" = "$isupOADDR" ]; then # it was target that failed, test again with new TADDR
                     isupADDR=$TADDR
                 else # it was nexthop that failed, test again with new NEXTHOP
-                    isupADDR=$NEXTHOP;
+                    isupADDR=$NEXTHOP
                 fi
-                isup "$isupADDR" noresolve && return 0;
+                isup "$isupADDR" noresolve && return 0
             }
         }
     else
