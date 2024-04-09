@@ -18,13 +18,12 @@ These changes are currently being worked on in separate branches.
 * Instead of dying with an error message immediately when an argument/option error is found, parse all options and arguments firstly, then list all errors and show USAGE
 
 * __--no-pager | --no-less | --no-more | -M__<br>
-  option not to use pager for errors and help<br>
   no longer recommend using PAGER=cat not to use pager<br>
   __--install-systemd__ will enforce __--no-pager__ when installing systemd-services
 
 * Introduced __--remove-systemd=<ins>SERVICENAME</ins>__.
 
-* Introduced __--list-systemd=<ins>SERVICENAME</ins>__
+* Introduced __--list-systemd=__
 
 * Changed logfile and pidfile for systemd services:<br>
   `--pidfile=/run/nw-watchdog/SERVICENAME.pid` _(instead of `/run/nw-watchdog-SERVICENAME.pid`)_<br>
