@@ -266,7 +266,7 @@ These opions takes a single argument each and may be specified in any order. Spe
 	  - REACHABLE for restored connectivity to NEXTHOP
       - LINKDOWN no link on source interface after `--max-nolink` reset attempts (implies UNREACHABLE + DOWN)
 	  - LINKDOWN-TOPOLOGY switching source interface due to topology dection whilst old interface has no link 
-	    (no notify that the no longer monitored interface still have no link even if we get UP or REACHABLE alerts)
+	    (no notify that the no longer monitored interface might still have no link even if we get UP or REACHABLE alerts)
 	  - ERROR for permanent errors
 	  - WARNING for things that might need reconfiguration
 

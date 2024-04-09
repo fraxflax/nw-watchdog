@@ -1213,7 +1213,7 @@ nexthop() {
             NEXTHOP="$NNEXTHOP"
             return 0
         else
-            warn "Ignoring conflicting topology: Route to target '%s' (%s) is on interface '%s', but --force-interface='%s'" \
+            info "Ignoring conflicting topology: Route to target '%s' (%s) is on interface '%s', but --force-interface='%s'" \
                  "$TARGET" "$TADDR" "$NIFC" "$STATICIFC"
             return 1
         fi
