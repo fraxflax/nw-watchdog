@@ -1023,6 +1023,8 @@ alert() {
 	[ "$ALERTSTATE" = "LINKDOWN" -a "$STATE" = "UNREACHABLE" ] && return  # LINKDOWN implies UNREACHABLE
 	[ "$ALERTSTATE" = "UNREACHABLE" -a "$STATE" = "DOWN" ] && return      # UNREACHABLE implies DOWN
 	[ "$ALERTSTATE" = "UP" -a "$STATE" = "REACHABLE" ] && return          # UP implies REACHABLE
+	[ "$ALERTSTATE" = "UP" -a "$STATE" = "LINKUP" ] && return             # UP implies LINKUP
+	[ "$REACHABLE"  = "REACHABLE" -a "$STATE" = "LINKUP" ] && return      # REACHABLE implies LINKUP
     }
     ALERTCMD=`printf "%s" "$ALERTCMDT" | sed -E "s/\%\{STATE\}/$STATE/g" | sed -E "s/\%\{LASTSTATE\}/$ALERTSTATE/g"` 
     if [ -n "$TARGET" ]; then
@@ -1130,9 +1132,10 @@ linkcheck() {
                     || warn "%s\n\t%s" \
                             "There is no IPv4 or IPv6 global scope ip address on interface '$IFC'!" \
                             "If that is ok, you can disable these alerts with --no-ipaddr-alert."
+		alert LINKUP "Link up on interface '%s'!" "$IFC"
                 return 0
             }
-        }
+	}
         NOLINK=$((NOLINK+1))
         [ $MAXNOLINK -gt 0 -a $NOLINK -gt $MAXNOLINK ] && {
             alert LINKDOWN "Link down on interface '%s' after $MAXNOLINK reset attempts (with $GRACE seconds in between)!" "$IFC"
