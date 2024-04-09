@@ -31,16 +31,16 @@ Use `--no-continuous-topology-detect` to resolve the <ins>TARGET</ins> only at s
 ## OPTIONS (no arguments)
 These options take no arguments, and may be specified in any order. They can be grouped (e.g. `-vAP`) in their short form, also having one of the OPTIONS that requires an argument last in the group.
 
-* __--help | -h__
+* __--help | -h__<br>
 	Shows this help, using `$PAGER` if set to an executable, otherwise `less` or `more` if available in `/sbin:/bin:/usr/sbin:/usr/bin:$PATH`<br>
 (Use `--no-pager` to avoid using a pager).
 
-* __--no-pager | --no-less | --no-more | -M__
+* __--no-pager | --no-less | --no-more | -M__<br>
 	Do NOT use a pager for help and error messages.
 
 	__--install-systemd__ implies __--no-pager__
 
-* __--no-ping-target | -P__
+* __--no-ping-target | -P__<br>
 	If the <ins>TARGET</ins> is the next hop (on the same subnet), reachability of the <ins>TARGET</ins> is checked by arp cache status and ping.<br>
 If the <ins>TARGET</ins> is not on the same subnet as the source, the reachability of the <ins>TARGET</ins> is checked by pinging it in a certain pattern (see `--slow-up-timeout` for details).
 
