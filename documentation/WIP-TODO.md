@@ -24,11 +24,11 @@ These changes are currently being worked on in separate branches.
 
 * Introduced __--list-systemd=<ins>SERVICENAME</ins>__
 
-* Changed logfile and pidfile when installing systemd service:<br>
-  `--pidfile=/run/nw-watchdog/SERVICENAME.pid` instead of `/run/nw-watchdog-SERVICENAME.pid`<br>
-  and `--logfile=/var/log/nw-watchdog/SERVICENAME.log` instead of `/var/log/nw-watchdog-SERVICENAME.log`
+* Changed logfile and pidfile for systemd services:<br>
+  `--pidfile=/run/nw-watchdog/SERVICENAME.pid` _(instead of `/run/nw-watchdog-SERVICENAME.pid`)_<br>
+  and `--logfile=/var/log/nw-watchdog/SERVICENAME.log` _(instead of `/var/log/nw-watchdog-SERVICENAME.log`)_
 
-## TODO:
+## TODO
 Planned future features / changes.
 
 * MAYBE: Support multiple targets in one instance ????
