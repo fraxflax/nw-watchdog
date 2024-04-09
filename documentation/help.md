@@ -260,19 +260,25 @@ These opions takes a single argument each and may be specified in any order. Spe
 	- %{TADDR} - the IP address of the <INS>TARGET</INS>
     - %{NEXTHOP}  - the IP address of the NEXTHOP towards <ins>TARGET</ins>
 	- %{STATE} - the state of the alert:
-	  - UP for restored connectivity to <INS>TARGET</INS> (implies REACHABLE)
-	  - DOWN for lost conenctivity to <INS>TARGET</INS>
-	  - UNREACHABLE for lost conenctivity to NEXTHOP (implies DOWN)
-	  - REACHABLE for restored connectivity to NEXTHOP
-      - LINKDOWN no link on source interface after `--max-nolink` reset attempts (implies UNREACHABLE + DOWN)
-	  - LINKDOWN-TOPOLOGY switching source interface due to topology dection whilst old interface has no link 
-	    (no notify that the no longer monitored interface might still have no link even if we get UP or REACHABLE alerts)
+	  - UP for restored connectivity to <INS>TARGET</INS> (implies REACHABLE and LINKUP)<br>
+        (will not be fired if already in UP state)
+	  - DOWN for lost conenctivity to <INS>TARGET</INS><br>
+        (will not be fired if already in DOWN, UNREACHABLE or LINKDOWN state)
+	  - UNREACHABLE for lost conenctivity to NEXTHOP (implies DOWN)<br>
+        (will not be fired if already in UNREACHABLE or LINKDOWN state)
+	  - REACHABLE for restored connectivity to NEXTHOP (implies LINKUP)<br>
+        (will not be fired if already in UP state)
+      - LINKDOWN no link on source interface after `--max-nolink` reset attempts (implies UNREACHABLE + DOWN)<br>
+        (will not be fired if already in LINKDOWN state)
+	  - LINKUP link up on source interface<br>
+        (will not be fired if already in REACHABLE or UP state)
 	  - ERROR for permanent errors
 	  - WARNING for things that might need reconfiguration
 
 	The alert command will be launched for every ERROR and WARNING, even repeated ones.<br>
-	For the other states (UP, DOWN, UNREACHABLE, REACHABLE) the alert command will be launched only upon state change.<br>
-	E.g. if the state goes from UP to DOWN the DOWN alert is triggered, but if the next check is also DOWN, no further alert will be sent (until the state changes again).
+	For the other states the alert command will be launched only upon state change.
+	E.g. if the state goes from UP to DOWN the DOWN alert is triggered, but if the next check is also DOWN, 
+	no further alert will be sent (until the state changes again).
 
 	EXAMPLE of how to email the alert messages using mailx (mailutils) with a custom from address:<br>
 	`--alert='mailx -a "From: nw-watchdog@this.hst" -s "nw-watchdog %{STATE} alert for %{TARGET} via %{IFC}" my@email.adr'`
