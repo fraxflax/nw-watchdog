@@ -24,7 +24,7 @@ These changes are currently being worked on in separate branches.
 
 * Introduced __--list-systemd=<ins>SERVICENAME</ins>__
 
-* Changed logfile and pidfile when installing systemd service:<br>
+* Changed logfile and pidfile for systemd services:<br>
   `--pidfile=/run/nw-watchdog/SERVICENAME.pid` _(instead of `/run/nw-watchdog-SERVICENAME.pid`)_<br>
   and `--logfile=/var/log/nw-watchdog/SERVICENAME.log` _(instead of `/var/log/nw-watchdog-SERVICENAME.log`)_
 
