@@ -267,11 +267,11 @@ These opions takes a single argument each and may be specified in any order. Spe
 	  - __UNREACHABLE__ for lost conenctivity to NEXTHOP (implies DOWN)<br>
         (will not be fired if already in UNREACHABLE or LINKDOWN state)
 	  - __REACHABLE__ for restored connectivity to NEXTHOP (implies LINKUP)<br>
-        (will not be fired if already in UP state)
+        (will not be fired if already in REACHABLE or UP state)
       - __LINKDOWN__ no link on source interface after `--max-nolink` reset attempts (implies UNREACHABLE + DOWN)<br>
         (will not be fired if already in LINKDOWN state)
 	  - __LINKUP__ link up on source interface<br>
-        (will not be fired if already in REACHABLE or UP state)
+        (will not be fired if already in LINKUP, REACHABLE or UP state)
 	  - __ERROR__ for permanent errors
 	  - __WARNING__ for things that might need reconfiguration
 
