@@ -10,12 +10,10 @@ Unless plans change, they will be in the next release.
 ## WORK IN PROGRESS 
 These changes are currently being worked on in separate branches.
 
-* New alert states: __LINKDOWN - LINKDOWN-TOPOLOGY__<br>
+* New alert state: __LINKDOWN__<br>
   In version 1.0.0, if there is no link on the interface a WARNING alert is sent, being a WARNING based on the idea of it possibly being a configuration issue with to short `--ifup-grace` or to few tries in `--max-nolink` and it might very well ...<br>
   BUT if the link is lost e.g. due to switch being down, cable damaged or fallen out, etc and we use `--force-interface` with a `--max-nolink` greater than 0, there will be repeated alerts on the same issue sent almost every _max-nolink * ifup-grace_ seconds.<br>
-  With these new alert states thare will be only one alert if the link is down and we can't get it up,
-  and one alert if we due to topology dection (no using `--force-interface`) switch interface whilst the one we switch from still has no link.
-  
+  With this new alert state thare will be only one alert if the link is down and we can't get it up.
 
 * No warning alert for conflicting topology with `--force-interface`
   If conflicting topology is detected whilst using `--force-interface` this will be logged with at `--verbosity-level=4` (=info, which is the default) or higher, but no alert will be sent (to avoid repeated alerts on the same problem).
