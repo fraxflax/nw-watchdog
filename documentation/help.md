@@ -546,7 +546,7 @@ __nw-watchdog__ depends on the below executables being available in `/sbin:/bin:
 
 __nw-watchdog__ will function without the below listed utilities, but will use them to enhance its functionality if available.
 
-- `systemd` (`mkdir`, `chmod`, `rm`)<br>
+- Installed and running `systemd`  with `systemctl` (and `mkdir`, `chmod`, `rm`)
   `systemd` is (obviously) required for the `--install-systemd`, `--list-systemd` and `--remove-systemd` options to be functional. The folder `/etc/systemd/system/` must exist, `systemctl` must be in the PATH and `systemd` must be running.<br>
   Unless all required directories are already existing, `mkdir` and `chmod` are also used by `--install-systemd`.<br>
   `rm` is used by `--remove-systemd` to remove the systemd unit file for the service.
