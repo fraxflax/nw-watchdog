@@ -264,8 +264,9 @@ These opions takes a single argument each and may be specified in any order. Spe
 	  - DOWN for lost conenctivity to <INS>TARGET</INS>
 	  - UNREACHABLE for lost conenctivity to NEXTHOP (implies DOWN)
 	  - REACHABLE for restored connectivity to NEXTHOP
-	  - LINKDOWN for lost link on source interface
-	  - LINKUP for restored link on source interface
+      - LINKDOWN no link on source interface after `--max-nolink` reset attempts (implies UNREACHABLE + DOWN)
+	  - LINKDOWN-TOPOLOGY switching source interface due to topology dection whilst old interface has no link 
+	    (no notify that the no longer monitored interface still have no link even if we get UP or REACHABLE alerts)
 	  - ERROR for permanent errors
 	  - WARNING for things that might need reconfiguration
 
