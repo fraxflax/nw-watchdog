@@ -201,7 +201,7 @@ These opions takes a single argument each and may be specified in any order. Spe
 * __--ifcup | -u__ <ins>STRING</ins> <br>
   Default: `ip link set up %{IFC}`<br>
   <ins>STRING</ins> will be passed to 'sh -c' to bring the interface up.<br>
-  %{IFC} will be dynmaically replaced with the interface name currently in use as source interface.
+  __%{IFC}__ will be dynmaically replaced with the interface name currently in use as source interface.
 
   Examples:
   - ifupdown:<br>
@@ -226,7 +226,7 @@ These opions takes a single argument each and may be specified in any order. Spe
 * __--ifcdown | -U__ <ins>STRING</ins><br>
   Default: `ip link set down %{IFC}`<br>
   <ins>STRING</ins> will be passed to 'sh -c' to bring the interface down.<br>
-  %{IFC} will be dynmaically replaced with the interface name currently in use as source interface.
+  __%{IFC}__ will be dynmaically replaced with the interface name currently in use as source interface.
 
   Examples:
   - ifupdown:<br>
@@ -255,11 +255,11 @@ These opions takes a single argument each and may be specified in any order. Spe
 	sh -c '<ins>STRING</ins>'
 
 	Within <ins>STRING</ins> the following placeholders can be used:		
-	- %{IFC} - the interface name
-	- %{TARGET} - the <ins>TARGET</ins> for which the connection is monitored
-	- %{TADDR} - the IP address of the <INS>TARGET</INS>
-    - %{NEXTHOP}  - the IP address of the NEXTHOP towards <ins>TARGET</ins>
-	- %{STATE} - the state of the alert:
+	- __%{IFC}__ - the interface name
+	- __%{TARGET}__ - the <ins>TARGET</ins> for which the connection is monitored
+	- __%{TADDR}__ - the IP address of the <INS>TARGET</INS>
+    - __%{NEXTHOP}__  - the IP address of the NEXTHOP towards <ins>TARGET</ins>
+	- __%{STATE}__ - the state of the alert:
 	  - __UP__ for restored connectivity to <INS>TARGET</INS> (implies REACHABLE and LINKUP)<br>
         (will not be fired if already in UP state)
 	  - __DOWN__ for lost conenctivity to <INS>TARGET</INS><br>
