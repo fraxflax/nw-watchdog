@@ -28,7 +28,7 @@ These changes are currently being worked on in separate branches.
   `--pidfile=/run/nw-watchdog/SERVICENAME.pid` _(instead of `/run/nw-watchdog-SERVICENAME.pid`)_<br>
   and `--logfile=/var/log/nw-watchdog/SERVICENAME.log` _(instead of `/var/log/nw-watchdog-SERVICENAME.log`)_
 
-## TODO:
+## TODO
 Planned future features / changes.
 
 * MAYBE: Support multiple targets in one instance ????
