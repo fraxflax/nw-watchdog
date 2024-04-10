@@ -13,10 +13,10 @@ Unless plans change, they will be in the next release.
   If the link comes up for other reasons there might be an UP or REACHABLE alert before the link is checked (which both implies LINKUP).
 
 * No warning alert for conflicting topology with `--force-interface`
-  If conflicting topology is detected whilst using `--force-interface` this will be logged with at `--verbosity-level=4` (=info, which is the default) or higher, but no alert will be sent (to avoid repeated alerts on the same problem).
+  If conflicting topology is detected whilst using `--force-interface` this will be logged with at `--verbosity-level=4` (=info, which is the default) or higher but, to avoid repeated alerts on the same problem, no alert will be sent.
 
 * __LIST ALL ERRORS__<br>
-  Instead of dying with an error message immediately when an argument/option error is found, parse all options and arguments firstly, then list all errors and show USAGE
+  Instead of dying with an error message upon first found error, parsing the options, now all options and arguments are parsed and checked firstly, then if there are error(s) list all errors messages and show USAGE.
 
 * New option: __--no-pager | --no-less | --no-more | -M__<br>
   No longer recommending using PAGER=cat not to use pager.<br>
