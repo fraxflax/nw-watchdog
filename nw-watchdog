@@ -19,7 +19,7 @@
 #
 #
 ##############################################################################
-# DEFAULTS (can be overridden by config file, options always have precedence)
+# DEFAULTS                             # Corresponding Command Line Options
 ##############################################################################
 TARGET=''                              # TARGET (destination) 
 
@@ -211,18 +211,6 @@ ${_b_}OPTIONS$__ (with ARGUMENT)
         These opions takes a single argument each and may be specified in any order. Specify with equalsign or space or no space between option and argument. They can only be grouped together with the shortform of the NO-ARGUMENT-OPTIONS above, and must be last in such groupings (e.g. -PAV5).
 
 EOU
-#    $_b_--config | -c$__ ${___}filename$__
-#       If not specified, ${_b_}/etc/nw-watchdog.conf$__ is used if present and readable.
-#       If filename specified but file not found, it will be generated based on current settings (as defined by defaults and current commandline options).
-#
-#       The config file syntax is POSIX shell script syntax for declaring environment variables
-#       and may override any default values.
-#       
-#       No other variables or code is allowed in the file.
-#       Empty lines and comments (as in shell-script) are ignored.
-#
-#       See each option for the corresponding environment variable name.
-#       
 $FMT<<EOU
     $_b_--verbosity-level | -V$__ ${___}level$__
         Default: $V
