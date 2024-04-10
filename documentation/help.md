@@ -27,7 +27,6 @@ Use `--no-continuous-topology-detect` to resolve the <ins>TARGET</ins> only at s
 
 <ins>TARGET</ins> can be placed before, after or between valid OPTIONS.
 
-
 ## OPTIONS (no arguments)
 These options take no arguments, and may be specified in any order. They can be grouped (e.g. `-vAP`) in their short form, also having one of the OPTIONS that requires an argument last in the group.
 
