@@ -12,6 +12,8 @@
 # 
 # 
 # frax - FIXME / TODO:
+#
+# * No such interface error message when using --force-interface
 # 
 # * MAYBE: Support multiple targets in one instance ????
 # 
@@ -1235,7 +1237,7 @@ nexthop() {
     [ -z "$CONTINUOUSTOPOLOGYDETECT" ] && NOPTS="${NOPTS}T"
 
     AOPTS="V$V -t$SLOWUPTIMEOUT -s$SLEEP -g$GRACE -n$MAXNOLINK -u'$IFCUPT' -U'$IFCDOWNT' -a'$ALERTCMDT' -z$LOGSIZE" 
-    [ -z "$STATICIFC" -a -n "$IFC" ] && AOPTS="$AOPTS -i '$IFC'"
+    [ -z "$STATICIFC" -a -n "$IFC" ] && AOPTS="$AOPTS -i'$IFC'"
     [ -n "$STATICIFC" ] && AOPTS="$AOPTS -I'$IFC'"
     debug "NOPTS=%s\nAOPTS=%s\n" "$NOPTS" "$AOPTS" 
 }

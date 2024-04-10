@@ -29,6 +29,8 @@ Unless plans change, they will be in the next release.
 * Changed logfile and pidfile for systemd services:<br>
   `--pidfile=/run/nw-watchdog/SERVICENAME.pid` _(instead of `/run/nw-watchdog-SERVICENAME.pid`)_<br>
   and `--logfile=/var/log/nw-watchdog/SERVICENAME.log` _(instead of `/var/log/nw-watchdog-SERVICENAME.log`)_
+  
+* Check for existance of interface when usinf `--force-interface` if non existing loop and warn until it comes up
 
 ## v. 1.0.0 - First stable Release, 2024-04-03
 https://github.com/fraxflax/nw-watchdog/tree/v1.0.0 <br>
