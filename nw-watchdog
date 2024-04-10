@@ -861,7 +861,7 @@ done
 [ $xHELP -gt 0 ] && { USAGEpager ; exit 0 ; }
 
 [ $xLISTSYSTEMD -gt 0 -o $xREMOVESYSTEMD -gt 0 ] && {
-    $(($xLISTSYSTEMD+$xREMOVESYSTEMD+$xTARGET+$xV+$xIFC+$xLOGFILE+$xLOGSIZE+$xPIDFILE+$xSLOWUPTIMEOUT+$xSLEEP+$xGRACE+$xMAXNOLINK+$xIFCUPT+$xIFCDOWNT+$xALERTCMDT+$xINSTALLSYSTEMD)) -eq 1 || dieUSAGEpager "--list-systemd and --remove-systemd cannot be combined with any other option!"
+    [ $(($xLISTSYSTEMD+$xREMOVESYSTEMD+$xTARGET+$xV+$xIFC+$xLOGFILE+$xLOGSIZE+$xPIDFILE+$xSLOWUPTIMEOUT+$xSLEEP+$xGRACE+$xMAXNOLINK+$xIFCUPT+$xIFCDOWNT+$xALERTCMDT+$xINSTALLSYSTEMD)) -eq 1 ] || dieUSAGEpager "--list-systemd and --remove-systemd cannot be combined with any other option!"   
     [ -d /etc/systemd/system/. ] || dieUSAGEpager "'/etc/systemd/system/' does not exists, is systemd installed and running?"
     [  $xLISTSYSTEMD -gt 0 ] && {
         printf "\n\n--- Listing all loaded nw-watchdog systemd units: ---\n"
