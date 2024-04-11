@@ -2,7 +2,11 @@
 __nw-watchdog__ - Network Watchdog
 
 ## SYNOPSIS
-__nw-watchdog__ <ins>TARGET</ins> [ OPTIONS ] 
+__nw-watchdog__ <ins>TARGET</ins> [ OPTIONS ]
+
+__nw-watchdog__ __--list-systemd__
+
+__nw-watchdog__ __--remove-systemd__ <ins>SERVICENAME</ins> | <ins>UNITNAME<ins>
 
 ## DESCRIPTION
 __nw-watchdog__ is a higly configurable network watchdog written in POSIX shell script for use in Linux, depending only on Linux most standard tools that are normally installed by default in all distributions (also see the __DEPENDENCIES__ section).
@@ -12,25 +16,31 @@ It monitors the network connectivity to a specified <ins>TARGET</ins> and/or the
 __nw-watchdog__ is free software written by Fredrik Ax \<frax@axnet.nu\>.<br>
 Feel free to modify and/or (re)distribute it in any way you like.<br>
 ... it's always nice to be mentioned though ;-)<br>
-It comes with ABSOLUTELY NO WARRANTY.
+
+__nw-watchdog__ comes with ABSOLUTELY NO WARRANTY.
 
 Get the latest version from https://github.com/fraxflax/nw-watchdog
 
 ## <INS>TARGET</INS>
-The mandatory argument <ins>TARGET</ins> is the target (destination) to monitor the connection to. <ins>TARGET</ins> can be an IP address or a resolvable hostname / FQDN. If it's a hostname / FQDN, it will be resolved to an IP address (first one found). The resolved IP address will be used for the monitoring. The name is continuously resolved and if the resolved ip address changes the new IP address will be used for the monitoring from there on.<br>
+The mandatory (unless `--list-systemd` or `--remove-systemd` is specified) argument <ins>TARGET</ins> is the target (destination) for which he connection is monitored. <ins>TARGET</ins> can be an IP address or a resolvable hostname / FQDN. If it's a hostname / FQDN, it will be resolved to an IPv4 address (first one found by getent). The resolved IP address will be used for the monitoring. The name is continuously resolved and if the resolved ip address changes the new IP address will be used for the monitoring from there on.<br>
 Use `--no-continuous-topology-detect` to resolve the <ins>TARGET</ins> only at startup and failed connectivity checks.
+
+<ins>TARGET</ins> can be placed before, after or between valid OPTIONS.
 
 ## OPTIONS (no arguments)
 These options take no arguments, and may be specified in any order. They can be grouped (e.g. `-vAP`) in their short form, also having one of the OPTIONS that requires an argument last in the group.
 
-* __--help | -h__
-
+* __--help | -h__<br>
 	Shows this help, using `$PAGER` if set to an executable, otherwise `less` or `more` if available in `/sbin:/bin:/usr/sbin:/usr/bin:$PATH`<br>
-(Use `PAGER=cat` to avoid using a pager).
+(Use `--no-pager` to avoid using a pager).
 
-* __--no-ping-target | -P__
+* __--no-pager | --no-less | --no-more | -M__<br>
+	Do NOT use a pager for help and error messages.
 
-	If the <ins>TARGET</ins> is the next hop (on the same subnet or a peer-to-peer address), reachability of the <ins>TARGET</ins> is checked by arp cache status and ping.<br>
+	__--install-systemd__ implies __--no-pager__
+
+* __--no-ping-target | -P__<br>
+	If the <ins>TARGET</ins> is the next hop (on the same subnet), reachability of the <ins>TARGET</ins> is checked by arp cache status and ping.<br>
 If the <ins>TARGET</ins> is not on the same subnet as the source, the reachability of the <ins>TARGET</ins> is checked by pinging it in a certain pattern (see `--slow-up-timeout` for details).
 
 	`--no-ping-target` disables the ping-checks for the <ins>TARGET</ins>. Only connectivity to the NEXTHOP for the <ins>TARGET</ins> is checked.<br>
@@ -39,7 +49,7 @@ If the <ins>TARGET</ins> is not on the same subnet as the source, the reachabili
 	`--no-ping-target` cannot be used in combination with `--no-ping-nexthop`.
 
 * __--no-ping-nexthop | -N | --no-ping-gateway | -G__<br>
-	By default, if the connectivity to the <ins>TARGET</ins> cannot be verified, the reachability of the NEXTHOP (usually a gateway) is checked, firstly by checking it's status in the arp cache and then by pinging it, rechecking the arp cache status upon failed ping. 
+	By default, if the connectivity to the <ins>TARGET</ins> cannot be verified, and the next hop (NEXTHOP) is not the <ins>TARGET</ins> itself, the reachability of the NEXTHOP (usually a gateway) is checked, firstly by checking it's status in the arp cache and then by pinging it, rechecking the arp cache status upon failed ping. 
 
 	`--no-ping-nexthop` disbles the reachaility check for the NEXTHOP so only connectivity to <ins>TARGET</ins> itself is checked. Useful if the NEXTHOP is a peer-to-peer address and not setup to reply to ping.
 
@@ -55,16 +65,21 @@ If the <ins>TARGET</ins> is not on the same subnet as the source, the reachabili
 * __--no-continuous-topology-detect | -T__<br>
   Normaly the topology (resolving the ip address of the <ins>TARGET</ins>, detecting which source interface to use and the ip address of the NEXTHOP towards the <ins>TARGET</ins>) is detected at startup and continuously monitored for changes.
 
-	`--no-continuous-topology-detect` disables the topology detection for as long as the <ins>TARGET</ins> replies (or in combination with `--no-ping-target` for as long as the NEXTHOP is reachable). The topology will only be detected at startup and if the <INS>TARGET</INS> does not reply or if the NEXTHOP cannot be reached, meaning that routing changes making the <INS>TARGET</INS> or NEXTHOP unreachable will not be detected as long as the <INS>TARGET</INS> / NEXTHOP can be reached using the old topology.
+	`--no-continuous-topology-detect` disables the topology detection for as long as the <ins>TARGET</ins> replies (or in combination with `--no-ping-target`, for as long as the NEXTHOP is reachable). The topology will only be detected at startup and if the <INS>TARGET</INS> does not reply or if the NEXTHOP cannot be reached, meaning that routing changes making the <INS>TARGET</INS> or NEXTHOP unreachable will not be detected as long as the <INS>TARGET</INS> / NEXTHOP can be reached using the old topology.
 
 	`--force-interface` implies `--no-continuous-topology-detect`.
     				       
 * __--foreground | -f | --no-daemonize | -D__<br>
 	Run in foreground, do not fork / daemonize.
 
+* __--list-systemd__<br>
+    If systemd is installed, a brief status of all installed nw-watchdog systemd-services are listed to stdout.
+
+	Cannot be combined with any other options.
+	
 * __--verbose | -v__<br>
 	Shortcut for `--verbosity-level=5`<br>
-	If used in combination with `--verbosity-level`, the specified verbosity level will take precedence. 
+	If used in combination with `--verbosity-level`, the specified __--verbosity-level__ will take precedence. 
 
 * __--debug | -d__<br>
 	Shortcut for: `--verbosity-level=6  --logfile=- --logsize=0  --pidfile=/dev/null  --slow-up-timeout=1  --sleep=3 --ifup-grace=5 --alert='cat' --foreground` 
@@ -186,7 +201,7 @@ These opions takes a single argument each and may be specified in any order. Spe
 * __--ifcup | -u__ <ins>STRING</ins> <br>
   Default: `ip link set up %{IFC}`<br>
   <ins>STRING</ins> will be passed to 'sh -c' to bring the interface up.<br>
-  %{IFC} will be dynmaically replaced with the interface name currently in use as source interface.
+  __%{IFC}__ will be dynmaically replaced with the interface name currently in use as source interface.
 
   Examples:
   - ifupdown:<br>
@@ -211,7 +226,7 @@ These opions takes a single argument each and may be specified in any order. Spe
 * __--ifcdown | -U__ <ins>STRING</ins><br>
   Default: `ip link set down %{IFC}`<br>
   <ins>STRING</ins> will be passed to 'sh -c' to bring the interface down.<br>
-  %{IFC} will be dynmaically replaced with the interface name currently in use as source interface.
+  __%{IFC}__ will be dynmaically replaced with the interface name currently in use as source interface.
 
   Examples:
   - ifupdown:<br>
@@ -240,21 +255,31 @@ These opions takes a single argument each and may be specified in any order. Spe
 	sh -c '<ins>STRING</ins>'
 
 	Within <ins>STRING</ins> the following placeholders can be used:		
-	- %{IFC} - the interface name
-	- %{TARGET} - the <ins>TARGET</ins> for which the connection is monitored
-	- %{TADDR} - the IP address of the <INS>TARGET</INS>
-    - %{NEXTHOP}  - the IP address of the NEXTHOP towards <ins>TARGET</ins>
-	- %{STATE} - the state of the alert:
-	  - UP for restored connectivity to <INS>TARGET</INS> (implies REACHABLE)
-	  - DOWN for lost conenctivity to <INS>TARGET</INS>
-	  - UNREACHABLE for lost conenctivity to NEXTHOP (implies DOWN)
-	  - REACHABLE for restored connectivity to NEXTHOP
-	  - ERROR for permanent errors
-	  - WARNING for things that might need reconfiguration
+	- __%{IFC}__ - the interface name
+	- __%{TARGET}__ - the <ins>TARGET</ins> for which the connection is monitored
+	- __%{TADDR}__ - the IP address of the <INS>TARGET</INS>
+    - __%{NEXTHOP}__  - the IP address of the NEXTHOP towards <ins>TARGET</ins>
+	- __%{STATE}__ - the state of the alert:
+	  - __ERROR__ for permanent errors
+	  - __WARNING__ for things that might need reconfiguration
+      - __INITIAL__ for intital problems that needs to be resolved before proceeding
+	  - __DOWN__ for lost conenctivity to <INS>TARGET</INS><br>
+        (will not be fired if already in DOWN, UNREACHABLE or LINKDOWN state)
+	  - __UNREACHABLE__ for lost conenctivity to NEXTHOP (implies DOWN)<br>
+        (will not be fired if already in UNREACHABLE or LINKDOWN state)
+      - __LINKDOWN__ no link on source interface after `--max-nolink` reset attempts (implies UNREACHABLE + DOWN)<br>
+        (will not be fired if already in LINKDOWN state)
+	  - __LINKUP__ link up on source interface<br>
+        (will not be fired if already in LINKUP, REACHABLE or UP state)
+	  - __REACHABLE__ for restored connectivity to NEXTHOP (implies LINKUP)<br>
+        (will not be fired if already in REACHABLE or UP state)
+	  - __UP__ for restored connectivity to <INS>TARGET</INS> (implies REACHABLE and LINKUP)<br>
+        (will not be fired if already in UP state)
 
 	The alert command will be launched for every ERROR and WARNING, even repeated ones.<br>
-	For the other states (UP, DOWN, UNREACHABLE, REACHABLE) the alert command will be launched only upon state change.<br>
-	E.g. if the state goes from UP to DOWN the DOWN alert is triggered, but if the next check is also DOWN, no further alert will be sent (until the state changes again).
+	For the other states the alert command will be launched only upon state change.
+	E.g. if the state goes from UP to DOWN the DOWN alert is triggered, but if the next check is also DOWN, 
+	no further alert will be sent (until the state changes again).
 
 	EXAMPLE of how to email the alert messages using mailx (mailutils) with a custom from address:<br>
 	`--alert='mailx -a "From: nw-watchdog@this.hst" -s "nw-watchdog %{STATE} alert for %{TARGET} via %{IFC}" my@email.adr'`
@@ -262,9 +287,9 @@ These opions takes a single argument each and may be specified in any order. Spe
 * __--install-systemd__ <ins>SERVICENAME</ins><br>
   Default: none
 	
-  Will write a systemd service file `/etc/systemd/system/nw-watchdog-SERVICENAME.service` launching __nw-watchdog__ as a daemon with<br>
-  `--pidfile=/run/nw-watchdog-SERVICENAME.pid`<br>
-  `--logfile=/var/log/nw-watchdog-SERVICENAME.log`<br>
+	If systemd is installed, a systemd service file is written to `/etc/systemd/system/nw-watchdog-SERVICENAME.service` launching __nw-watchdog__ as a daemon with<br>
+  `--pidfile=/run/nw-watchdog/SERVICENAME.pid`<br>
+  `--logfile=/var/log/nw-watchdog/SERVICENAME.log`<br>
 	and otherwise with the exact same options as run (apart from the `--install-systemd` option itself of course).
 
 	If `/etc/systemd/system/nw-watchdog-SERVICENAME.service` already exists, the service will be stopped and the file overwritten.
@@ -275,12 +300,25 @@ These opions takes a single argument each and may be specified in any order. Spe
 
     This option requires root privileges.
 
+* __--remove-systemd__ <ins>SERVICENAME</ins> | <ins>UNITNAME</ins><br>
+    Default: none<br>
+	Specify either the short <ins>SERVICENAME</ins> or the full <ins>UNITNAME</ins> (as shown by `--list-systemd`) to stop and completely remove the `nw-watchdog-SERVICENAME.service` from the system.
+
+	This option requires root privileges and cannot be combined with any other options.
+
+	To manually (instead of using `--remove-systemd`) remove the `nw-watchdog-SERVICENAME.service` systemd service completely do:
+	```shell
+	sudo systemctl stop nw-watchdog-SERVICENAME.service
+	sudo systemctl disable nw-watchdog-SERVICENAME.service
+	sudo rm /etc/systemd/system/nw-watchdog-SERVICENAME.service
+	sudo systemctl daemon-reload
+	```
+
 	Note:<br>
-	To completely remove the service do (as root):
-    ```shell
-	systemctl stop nw-watchdog-SERVICENAME.service
-	systemctl disable nw-watchdog-SERVICENAME.service
-	rm /etc/systemd/system/nw-watchdog-SERVICENAME.service
+	The logfile, `/var/log/nw-watchdog/SERVICENAME.log` will NOT be removed by `--remove-systemd`.<br>
+	To manually remove the logfile do:
+	```shell
+	sudo rm /var/log/nw-watchdog/SERVICENAME.log
 	```
 
 ## EXAMPLES
@@ -508,6 +546,11 @@ __nw-watchdog__ depends on the below executables being available in `/sbin:/bin:
 
 __nw-watchdog__ will function without the below listed utilities, but will use them to enhance its functionality if available.
 
+- Installed and running `systemd`  with `systemctl` (and `mkdir`, `chmod`, `rm`)
+  `systemd` is (obviously) required for the `--install-systemd`, `--list-systemd` and `--remove-systemd` options to be functional. The folder `/etc/systemd/system/` must exist, `systemctl` must be in the PATH and `systemd` must be running.<br>
+  Unless all required directories are already existing, `mkdir` and `chmod` are also used by `--install-systemd`.<br>
+  `rm` is used by `--remove-systemd` to remove the systemd unit file for the service.
+  
 - `flock`<br>
   If available the logfile will be locked before truncated or written to.<br>
   If not available, there is a slight risk of log entries being lost if two or more instances of __nw-watchdog__ are concurently running using the same logfile and at least one of them have `--logsize` set to a value larger than 0.
