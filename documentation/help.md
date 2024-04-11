@@ -1,6 +1,9 @@
 ## NAME
 __nw-watchdog__ - Network Watchdog
 
+## VERSION
+1.1.0-beta (main branch)
+
 ## SYNOPSIS
 __nw-watchdog__ <ins>TARGET</ins> [ OPTIONS ]
 
