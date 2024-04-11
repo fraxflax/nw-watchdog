@@ -262,6 +262,7 @@ These opions takes a single argument each and may be specified in any order. Spe
 	- __%{STATE}__ - the state of the alert:
 	  - __ERROR__ for permanent errors
 	  - __WARNING__ for things that might need reconfiguration
+      - __INITIAL__ for intital problems that needs to be resolved before proceeding
 	  - __DOWN__ for lost conenctivity to <INS>TARGET</INS><br>
         (will not be fired if already in DOWN, UNREACHABLE or LINKDOWN state)
 	  - __UNREACHABLE__ for lost conenctivity to NEXTHOP (implies DOWN)<br>

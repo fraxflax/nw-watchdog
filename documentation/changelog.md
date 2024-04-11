@@ -5,7 +5,7 @@ Also see __[WIP-TODO.md](https://github.com/fraxflax/nw-watchdog/blob/main/docum
 These changes are already merged into the main branch and available in https://github.com/fraxflax/nw-watchdog <br>
 Unless plans change, they will be in the next release.
 
-* New alert states: __LINKDOWN - LINKUP__<br>
+* New alert states: __LINKDOWN__ and __LINKUP__<br>
   In version 1.0.0, if there is no link on the interface a WARNING alert is sent, being a WARNING based on the idea of it possibly being a configuration issue with to short `--ifup-grace` or to few tries in `--max-nolink` and it might very well ...<br>
   BUT if the link is lost e.g. due to switch being down, cable damaged or fallen out, etc and we use `--force-interface` with a `--max-nolink` greater than 0, there will be repeated alerts on the same issue sent almost every _max-nolink * ifup-grace_ seconds.<br>
   With these new alert states thare will be only one alert if the link is down and we can't get it up.<br>
@@ -30,7 +30,12 @@ Unless plans change, they will be in the next release.
   `--pidfile=/run/nw-watchdog/SERVICENAME.pid` _(instead of `/run/nw-watchdog-SERVICENAME.pid`)_<br>
   and `--logfile=/var/log/nw-watchdog/SERVICENAME.log` _(instead of `/var/log/nw-watchdog-SERVICENAME.log`)_
   
-* Check for existance of interface when usinf `--force-interface` if non existing loop and warn until it comes up
+* New alert state: __INITIAL__<br>
+  For alerting of initial problems that needs to be resolved before proceeding.
+  
+* __Initial device check__<br>
+  If an interface is specified with `--interface` or `--force-interface` an initial check for existance of the device is made.
+  Attempts to bring it up is performed unless `--no-interface-reset` is specified. Using `--force-interface` will require the interface to come up before proceeding. This addresses the bug of when a non existing interface was specified as `--force-interface` TARGET could be considered UP if reachable via other paths.
 
 ## v. 1.0.0 - First stable Release, 2024-04-03
 https://github.com/fraxflax/nw-watchdog/tree/v1.0.0 <br>
