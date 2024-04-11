@@ -2,7 +2,7 @@
 (and future plans)
 
 ## IN MAIN / Unreleased Latest version
-For changes that already made it to the latest testing version (main branch) and are most likely to be in the next release please see:
+For changes that already made it to the latest testing version (main branch) and most likely will be in the next release, please see:
 [changelog.md](https://github.com/fraxflax/nw-watchdog/blob/main/documentation/changelog.md)
 
 ## WORK IN PROGRESS 
