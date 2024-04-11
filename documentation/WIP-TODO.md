@@ -10,7 +10,7 @@ Unless plans change, they will be in the next release.
 ## WORK IN PROGRESS 
 These changes are currently being worked on in separate branches.
 
-* New alert states: __LINKDOWN - LINKUP__<br>
+* New alert states: __LINKDOWN__ and __LINKUP__<br>
   In version 1.0.0, if there is no link on the interface a WARNING alert is sent, being a WARNING based on the idea of it possibly being a configuration issue with to short `--ifup-grace` or to few tries in `--max-nolink` and it might very well ...<br>
   BUT if the link is lost e.g. due to switch being down, cable damaged or fallen out, etc and we use `--force-interface` with a `--max-nolink` greater than 0, there will be repeated alerts on the same issue sent almost every _max-nolink * ifup-grace_ seconds.<br>
   With these new alert states thare will be only one alert if the link is down and we can't get it up.<br>
@@ -18,10 +18,10 @@ These changes are currently being worked on in separate branches.
   If the link comes up for other reasons there might be an UP or REACHABLE alert before the link is checked (which both implies LINKUP).
 
 * No warning alert for conflicting topology with `--force-interface`
-  If conflicting topology is detected whilst using `--force-interface` this will be logged with at `--verbosity-level=4` (=info, which is the default) or higher, but no alert will be sent (to avoid repeated alerts on the same problem).
+  If conflicting topology is detected whilst using `--force-interface` this will be logged with at `--verbosity-level=4` (=info, which is the default) or higher but, to avoid repeated alerts on the same problem, no alert will be sent.
 
 * __LIST ALL ERRORS__<br>
-  Instead of dying with an error message immediately when an argument/option error is found, parse all options and arguments firstly, then list all errors and show USAGE
+  Instead of dying with an error message upon first found error, parsing the options, now all options and arguments are parsed and checked firstly, then if there are error(s) list all errors messages and show USAGE.
 
 * New option: __--no-pager | --no-less | --no-more | -M__<br>
   No longer recommending using PAGER=cat not to use pager.<br>
@@ -34,6 +34,13 @@ These changes are currently being worked on in separate branches.
 * Changed logfile and pidfile for systemd services:<br>
   `--pidfile=/run/nw-watchdog/SERVICENAME.pid` _(instead of `/run/nw-watchdog-SERVICENAME.pid`)_<br>
   and `--logfile=/var/log/nw-watchdog/SERVICENAME.log` _(instead of `/var/log/nw-watchdog-SERVICENAME.log`)_
+  
+* New alert state: __INITIAL__<br>
+  For alerting of initial problems that needs to be resolved before proceeding.
+  
+* __Initial device check__<br>
+  If an interface is specified with `--interface` or `--force-interface` an initial check for existance of the device is made.
+  Attempts to bring it up is performed unless `--no-interface-reset` is specified. Using `--force-interface` will require the interface to come up before proceeding. This addresses the bug of when a non existing interface was specified as `--force-interface` TARGET could be considered UP if reachable via other paths.
 
 ## TODO
 Planned future features / changes.
