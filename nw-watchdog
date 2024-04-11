@@ -25,6 +25,7 @@
 ##############################################################################
 TARGET=''                              # TARGET (destination) 
 
+VERSION="1.1.0-beta"                   # --version | --help | -h
 PAGERUSE=y                             # --no-pager | --no-less | --no-more | -M
 PINGNEXTHOP=y                          # --no-ping-nexthop | -N | --no-ping-gateway | -G
 PINGTARGET=y                           # --no-ping-target | -P
@@ -118,6 +119,9 @@ USAGE() {
 $__
 ${_b_}NAME $__
     $_b_$nwwatchdog$__ - Network Watchdog
+
+${_b_}VERSION $__
+    $VERSION
 
 ${_b_}SYNOPSIS $__
 
@@ -727,6 +731,7 @@ SOPTS='[hMNPARTfDvd]' # Short options without arguments
 while [ $# -gt 0 ]; do
     ARG="$1"; shift
     case "$ARG" in
+	--version) printf "%s\n" "$VERSION"; exit 0 ;;
         -h|--help) xHELP=1 ;;
         -M|--no-pager|--no-less|--no-more) PAGERUSE='' ;;
         -N|--no-ping-nexthop|-G|--no-ping-gateway) PINGNEXTHOP='' ;;
