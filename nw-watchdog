@@ -1,4 +1,5 @@
 #!/bin/sh
+VERSION="1.1.0-beta"                   # shown by --version | --help | -h
 #
 #       nw-watchdog is a higly configurable network watchdog written
 #       in POSIX shell script for use in Linux.
@@ -25,7 +26,6 @@
 ##############################################################################
 TARGET=''                              # TARGET (destination) 
 
-VERSION="1.1.0-beta"                   # --version | --help | -h
 PAGERUSE=y                             # --no-pager | --no-less | --no-more | -M
 PINGNEXTHOP=y                          # --no-ping-nexthop | -N | --no-ping-gateway | -G
 PINGTARGET=y                           # --no-ping-target | -P
