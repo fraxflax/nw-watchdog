@@ -35,7 +35,7 @@ These options take no arguments, and may be specified in any order. They can be 
 
 * __--help | -h__<br>
 	Shows this help, using `$PAGER` if set to an executable, otherwise `less` or `more` if available in `/sbin:/bin:/usr/sbin:/usr/bin:$PATH`<br>
-(Use `--no-pager` to avoid using a pager).
+All other options are ignored, apart from `--no-pager` which van be used to avoid using a pager.
 
 * __--no-pager | --no-less | --no-more | -M__<br>
 	Do NOT use a pager for help and error messages.
