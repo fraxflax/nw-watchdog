@@ -54,8 +54,8 @@ SYSTEMDSERVICENAME=''                  # --install-systemd
 
 # Ensure we have a POSIX (enough) shell
 set >/dev/null 2>&1 && export PATH >/dev/null 2>&1 || {
-    printf "\nThis script must be run in a POSIX compliant shell!\n\n" 1>&2 \
-        || echo "This script must be run in a POSIX compliant shell!" 1>&2
+    printf '\nThis script must be run in a POSIX compliant shell!\n\n' 1>&2 \
+        || echo 'This script must be run in a POSIX compliant shell!' 1>&2
     exit 1
 }
 
@@ -156,7 +156,7 @@ ${_b_}OPTIONS $__(no arguments)
     $_b_--help | -h $__
         Shows this help, using \$PAGER if set to an executable, otherwise 'less' or 'more' if available in "/sbin:/bin:/usr/sbin:/usr/bin:\$PATH"
 
-        (Use $_b_--no-pager$__ to avoid using a pager).
+        All other options are ignored, apart from --no-pager which can be used to avoid using a pager.
 
     $_b_--no-pager | --no-less | --no-more | -M__
         Do NOT use a pager for help and error messages.
@@ -212,6 +212,8 @@ ${_b_}OPTIONS $__(no arguments)
 
         This option cannot be combined with $_b_--install-systemd$__ (but it would be wise to test the configuration with $_b_--debug$__ before installing as a systemd service).
 
+$_b_--version$__
+	Prints the version of nw-watchdog to stdout and immediately exits. All other options are ignored.
 
 ${_b_}OPTIONS$__ (with ARGUMENT)
         These opions takes a single argument each and may be specified in any order. Specify with equalsign or space or no space between option and argument. They can only be grouped together with the shortform of the NO-ARGUMENT-OPTIONS above, and must be last in such groupings (e.g. -PAV5).
@@ -679,11 +681,6 @@ EOU
 
     $_b_$nwwatchdog$__ will function without the below listed utilities, but will use them to enhance its functionality if available.
 
-    - Installed and running ${_b_}systemd$__  with ${_b_}systemctl$__ (and ${_b_}mkdir$__, ${_b_}chmod$__, ${_b_}rm$__)
-        ${_b_}systemd$__ is (obviously) required for the ${_b_}--install-systemd$__, ${_b_}--list-systemd$__ and ${_b_}--remove-systemd$__ options to be functional. The folder ${_b_}/etc/systemd/system/$__ must exist, ${_b_}systemctl$__ must be in the PATH and ${_b_}systemd$__ must be running.
-        Unless all required directories are already existing, ${_b_}mkdir$__ and ${_b_}chmod$__ are also used by ${_b_}--install-systemd$__.
-        ${_b_}rm$__ is used by ${_b_}--remove-systemd$__ to remove the systemd unit file for the service.
-
     - ${_b_}flock$__
         If available the logfile will be locked before truncated or written to.
         If not available, there is a slight risk of log entries being lost if two or more instances of $_b_$nwwatchdog$__ are concurently running using the same logfile and at least one of them have $_b_--logsize$__ set to a value larger than 0.
@@ -699,6 +696,13 @@ EOU
 
     - ${_b_}wall$__
         If available it will be used as default $_b_--alert$__ command. Otherwise, alerting will be done to stderr by default.
+
+    - Installed and running ${_b_}systemd$__  with ${_b_}systemctl$__ (and ${_b_}mkdir$__, ${_b_}chmod$__, ${_b_}rm$__)
+        ${_b_}systemd$__ is (obviously) required for the ${_b_}--install-systemd$__, ${_b_}--list-systemd$__ and ${_b_}--remove-systemd$__ options to be functional.
+	The folder ${_b_}/etc/systemd/system/$__ must exist, ${_b_}systemctl$__ must be in the PATH and ${_b_}systemd$__ must be running.
+        ${_b_}chmod$__ is used by ${_b_}--install-systemd$__ (but will function without it).
+	Unless all required directories are already existing, ${_b_}mkdir$__ is used by ${_b_}--install-systemd$__.
+        ${_b_}rm$__ is used by ${_b_}--remove-systemd$__ to remove the systemd unit file for the service.
 
 EOU
     [ -n "$1" ] && printf "$@"
@@ -986,10 +990,19 @@ printf "%s" "$LOGSIZE" | grep -iqE '^[0-9]+*[KMG]*$' || {
         set -- "Invalid logsize '$LOGSIZE'" "$@"
 }
 
-[ -n "$TARGET" ] || {
+if [ -n "$TARGET" ]; then
+    # Is target an IP address or valid hostname?
+    printf "%s" "$TARGET" \
+     | grep -qE '^((0*[0-9]?[0-9]|1[0-9][0-9]|2([0-4][0-9]|5[0-5]))\.){3}(0*[0-9]?[0-9]|1[0-9][0-9]|2([0-4][0-9]|5[0-5]))$' \
+    || printf "%s" "$TARGET" \
+     | grep -qE '^[a-zA-Z0-9_][a-zA-Z0-9_.-]*$' || {
         ERRPTN="$ERRPTN\n* %s"
-        set -- "%s\n%s" "Target not specified!" "Specify IP address or resolvable hostname." "$@"
-}
+	set -- "Invalid TARGET '$TARGET'. Must be an IP address or valid hostname." "$@"
+    }
+else
+    ERRPTN="$ERRPTN\n* %s"
+    set -- "%s\n%s" "Target not specified!" "Specify IP address or valid hostname." "$@"
+fi
 
 ### Die showing the USAGE if found errors in options and arguments above ###
 [ -n "$ERRPTN" ] && dieUSAGEpager "$ERRPTN" "$@"
@@ -1267,7 +1280,7 @@ nexthop() {
         [ -d $DIR ] || {
             mkdir $DIR || die "Failed to create directory '%s', systemd '%s.service' NOT installed!" $DIR $SYSTEMDSERVICENAME
         }
-        chmod 0755 $DIR || printf "WARNING: Failed to set permissions on '$DIR'!" 1>&2
+        chmod 0755 $DIR || printf "WARNING: Failed to set permissions on '%s'\n" "$DIR" 1>&2
     done
         
     #cat<<EOF
@@ -1285,6 +1298,7 @@ ExecStart=/bin/sh '`readlink -e "$0"`' '$TARGET' -$NOPTS$AOPTS -p/var/run/nw-wat
 [Install]
 WantedBy=sysinit.target
 EOF
+    chmod 0644 $DIR || printf "WARNING: Failed to set permissions on '/etc/systemd/system/nw-watchdog-%s.service'\n" "$SYSTEMDSERVICENAME" 1>&2
     systemctl daemon-reload || die "failed to reload systemd"
     systemctl enable nw-watchdog-$SYSTEMDSERVICENAME.service || die "failed to enable the $SYSTEMDSERVICENAME.service"
     systemctl restart nw-watchdog-$SYSTEMDSERVICENAME.service || die "failed to start the $SYSTEMDSERVICENAME.service"

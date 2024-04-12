@@ -35,7 +35,7 @@ These options take no arguments, and may be specified in any order. They can be 
 
 * __--help | -h__<br>
 	Shows this help, using `$PAGER` if set to an executable, otherwise `less` or `more` if available in `/sbin:/bin:/usr/sbin:/usr/bin:$PATH`<br>
-All other options are ignored, apart from `--no-pager` which van be used to avoid using a pager.
+All other options are ignored, apart from `--no-pager` which can be used to avoid using a pager.
 
 * __--no-pager | --no-less | --no-more | -M__<br>
 	Do NOT use a pager for help and error messages.
@@ -569,7 +569,9 @@ __nw-watchdog__ will function without the below listed utilities, but will use t
   If available it will be used as default `--alert` command. Otherwise, alerting will be done to stderr by default.
 
 - Installed and running `systemd`  with `systemctl` (and `mkdir`, `chmod`, `rm`)<br>
-  `systemd` is (obviously) required for the `--install-systemd`, `--list-systemd` and `--remove-systemd` options to be functional. The folder `/etc/systemd/system/` must exist, `systemctl` must be in the PATH and `systemd` must be running.<br>
-  Unless all required directories are already existing, `mkdir` and `chmod` are also used by `--install-systemd`.<br>
+  `systemd` is (obviously) required for the `--install-systemd`, `--list-systemd` and `--remove-systemd` options to be functional.<br>
+  The folder `/etc/systemd/system/` must exist, `systemctl` must be in the PATH and `systemd` must be running.<br>
+  `chmod` is used by `--install-systemd` (but will function without it).<br>
+  Unless all required directories are already existing, `mkdir` is used by `--install-systemd`.<br>
   `rm` is used by `--remove-systemd` to remove the systemd unit file for the service.
   
