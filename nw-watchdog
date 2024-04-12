@@ -724,11 +724,12 @@ USAGEpager() {
     fi
 }
 dieUSAGEpager() {
-    dieUPATN="\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nERROR: $1 ... aborting!\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+    dieUPATN="\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nERROR: $1 \n... aborting!\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
     shift
     USAGEpager "$dieUPATN" "$@"
     exit 1
 }
+
 # Parse arguments
 xHELP=0; xTARGET=0;xV=0;xIFC=0;xLOGFILE=0;xLOGSIZE=0;xPIDFILE=0;xSLOWUPTIMEOUT=0;xSLEEP=0;xGRACE=0;xMAXNOLINK=0;xIFCUPT=0;xIFCDOWNT=0;xALERTCMDT=0;xLISTSYSTEMD=0;xREMOVESYSTEMD=0;xINSTALLSYSTEMD=0;xINSTALLSYSTEMD=0
 SOPTS='[hMNPARTfDvd]' # Short options without arguments
@@ -747,7 +748,7 @@ while [ $# -gt 0 ]; do
         -v|--verbose) [ $xV -eq 0 ] && V=5 ;;
         --list-systemd) xLISTSYSTEMD=1 ;;
         -d|--debug)
-            [ $xV -eq 0 ] && V=6 
+            [ $xV -eq 0 ] && V=6
             [ $xLOGFILE -eq 0 ] &&  { LOGFILE=''; LOGSIZE=0; }
             [ $xPIDFILE -eq 0 ] && PIDFILE='/dev/null'
             [ $xSLOWUPTIMEOUT -eq 0 ] && SLOWUPTIMEOUT=1
@@ -853,7 +854,7 @@ while [ $# -gt 0 ]; do
             xREMOVESYSTEMD=$((xREMOVESYSTEMD+1))
             ;;
         *)
-            TARGET="$ARG"; xTARGET=$((xTARGET+1)) 
+            TARGET="$ARG"; xTARGET=$((xTARGET+1))
             ;;
     esac
 done
@@ -861,7 +862,7 @@ done
 [ $xHELP -gt 0 ] && { USAGEpager ; exit 0 ; }
 
 [ $xLISTSYSTEMD -gt 0 -o $xREMOVESYSTEMD -gt 0 ] && {
-    [ $(($xLISTSYSTEMD+$xREMOVESYSTEMD+$xTARGET+$xV+$xIFC+$xLOGFILE+$xLOGSIZE+$xPIDFILE+$xSLOWUPTIMEOUT+$xSLEEP+$xGRACE+$xMAXNOLINK+$xIFCUPT+$xIFCDOWNT+$xALERTCMDT+$xINSTALLSYSTEMD)) -eq 1 ] || dieUSAGEpager "--list-systemd and --remove-systemd cannot be combined with any other option!"   
+    [ $(($xLISTSYSTEMD+$xREMOVESYSTEMD+$xTARGET+$xV+$xIFC+$xLOGFILE+$xLOGSIZE+$xPIDFILE+$xSLOWUPTIMEOUT+$xSLEEP+$xGRACE+$xMAXNOLINK+$xIFCUPT+$xIFCDOWNT+$xALERTCMDT+$xINSTALLSYSTEMD)) -eq 1 ] || dieUSAGEpager "--list-systemd and --remove-systemd cannot be combined with any other option"
     [ -d /etc/systemd/system/. ] || dieUSAGEpager "'/etc/systemd/system/' does not exists, is systemd installed and running?"
     [  $xLISTSYSTEMD -gt 0 ] && {
         printf "\n\n--- Listing all loaded nw-watchdog systemd units: ---\n"
@@ -891,7 +892,7 @@ done
 
 shift $#
 ERRPTN=''
-# Check if there are conflicting oprions
+# Check if there are conflicting options
 [ $xIFCUPT -gt 1 ] && {
     ERRPTN="$ERRPTN\n* %s"
     set -- "ifcup specified multiple ($xIFCUPT) times (exclusively use '-u', or '--ifcup' only once)" "$@"
@@ -935,7 +936,7 @@ ERRPTN=''
 [ $xPIDFILE -gt 1 ] && {
     ERRPTN="$ERRPTN\n* %s"
     set -- "pidfile specified multiple ($xPIDFILE) times (exclusively use '-p', or '--pidfile' only once)" "$@"
-}
+7}
 [ $xSLOWUPTIMEOUT -gt 1 ] && {
     ERRPTN="$ERRPTN\n* %s"
     set -- "slow-up-timeout specified multiple ($xSLOWUPTIMEOUT) times (exclusively use '-t' or '--slow-up-timeout' only once)" "$@"
@@ -983,7 +984,9 @@ ERRPTN=''
         set -- "You must allow pinging of target and/or nexthop! (Can't use both --no-ping-target and --no-ping-nexthop!)" "$@"
 }
 
-[ $xINSTALLSYSTEMD -eq 0 -a "$LOGFILE" = '-' ] && { LOGFILE=''; LOGSIZE=0 ; LOGSIZEb=0 ;}
+[ $xINSTALLSYSTEMD -eq 0 -a "$LOGFILE" = '-' ] && { LOGSIZE=0 ; LOGSIZEb=0 ;}
+[ "$LOGFILE" = '-' ] && LOGFILE=''
+[ "$PIDFILE" = '-' ] && PIDFILE='/dev/null'
 
 printf "%s" "$LOGSIZE" | grep -iqE '^[0-9]+*[KMG]*$' || {
         ERRPTN="$ERRPTN\n* %s"
@@ -1001,8 +1004,9 @@ if [ -n "$TARGET" ]; then
     }
 else
     ERRPTN="$ERRPTN\n* %s"
-    set -- "%s\n%s" "Target not specified!" "Specify IP address or valid hostname." "$@"
+    set -- "Target not specified! Specify IP address or valid hostname." "$@"
 fi
+
 
 ### Die showing the USAGE if found errors in options and arguments above ###
 [ -n "$ERRPTN" ] && dieUSAGEpager "$ERRPTN" "$@"
@@ -1026,7 +1030,7 @@ LOGSIZEb=$((LOGSIZEb*1024))
 
 test -n "$STATICIFC" && CONTINUOUSTOPOLOGYDETECT=''
 
-log() {   
+log() {
     logPATN="%s  $1"; shift
     logentry=$(printf "$logPATN" "`date '+%Y-%m-%d %H:%M:%S %z'`" "$@")
     if [ -n "$LOGFILE" ]; then
@@ -1070,7 +1074,7 @@ alert() {
 	[ "$ALERTSTATE" = "INITIAL" ] && {                                    	# Do not alert if we are up after INITIAL
 	    [ "$STATE" = "UP" -o "$STATE" = "REACHABLE" -o "$STATE" = "LINKUP" ] && return
 	}
-        [ "$STATE" = "$ALERTSTATE" ] && return                                # Same state 
+        [ "$STATE" = "$ALERTSTATE" ] && return                                # Same state
         [ "$ALERTSTATE" = "LINKDOWN" -a "$STATE" = "DOWN" ] && return         # LINKDOWN implies DOWN
         [ "$ALERTSTATE" = "LINKDOWN" -a "$STATE" = "UNREACHABLE" ] && return  # LINKDOWN implies UNREACHABLE
         [ "$ALERTSTATE" = "UNREACHABLE" -a "$STATE" = "DOWN" ] && return      # UNREACHABLE implies DOWN
@@ -1078,7 +1082,7 @@ alert() {
         [ "$ALERTSTATE" = "UP" -a "$STATE" = "LINKUP" ] && return             # UP implies LINKUP
         [ "$REACHABLE"  = "REACHABLE" -a "$STATE" = "LINKUP" ] && return      # REACHABLE implies LINKUP
     }
-    ALERTCMD=`printf "%s" "$ALERTCMDT" | sed -E "s/\%\{STATE\}/$STATE/g" | sed -E "s/\%\{LASTSTATE\}/$ALERTSTATE/g"` 
+    ALERTCMD=`printf "%s" "$ALERTCMDT" | sed -E "s/\%\{STATE\}/$STATE/g" | sed -E "s/\%\{LASTSTATE\}/$ALERTSTATE/g"`
     if [ -n "$TARGET" ]; then
         ALERTCMD=`printf "%s" "$ALERTCMD" | sed -E "s/\%\{TARGET\}/$TARGET/g"`
     else
@@ -1166,7 +1170,7 @@ ifreset() {
              "Could not reset interface '$IFC'." \
              "Check your --if-up and --if-down commands and/or privilegdes of effective user (userid=`id -u`)."
         [ -n "$1" ] && return 1
-    }   
+    }
     debug "'%s' exited with $EXITCODE and output: '%s'" "$IFCUP" "$IFCUD"
     trace "Sleeping for $GRACE seconds."
     sleep $GRACE
@@ -1198,7 +1202,7 @@ linkcheck() {
             return 1
         }
         info "No link on $IFC... reset attempt $NOLINK out of $MAXNOLINK (0=infinite)"
-        ifreset "$1" 
+        ifreset "$1"
     done
 }
 
@@ -1250,7 +1254,7 @@ nexthop() {
     fi
 }
 
-[ -n "$FORK" -o -n "$SYSTEMDSERVICENAME" ] && { 
+[ -n "$FORK" -o -n "$SYSTEMDSERVICENAME" ] && {
     debug "MAINPID=$$ BASENAME=$nwwatchdog COMM=`cat /proc/$$/comm`"
 
     NOPTS='M' # don't use a pager for output from background / systemd processes
@@ -1260,10 +1264,10 @@ nexthop() {
     [ -z "$IFCUPDOWN" ] && NOPTS="${NOPTS}R"
     [ -z "$CONTINUOUSTOPOLOGYDETECT" ] && NOPTS="${NOPTS}T"
 
-    AOPTS="V$V -t$SLOWUPTIMEOUT -s$SLEEP -g$GRACE -n$MAXNOLINK -u'$IFCUPT' -U'$IFCDOWNT' -a'$ALERTCMDT' -z$LOGSIZE" 
+    AOPTS="V$V -t$SLOWUPTIMEOUT -s$SLEEP -g$GRACE -n$MAXNOLINK -u'$IFCUPT' -U'$IFCDOWNT' -a'$ALERTCMDT' -z$LOGSIZE"
     [ -z "$STATICIFC" -a -n "$IFC" ] && AOPTS="$AOPTS -i'$IFC'"
     [ -n "$STATICIFC" ] && AOPTS="$AOPTS -I'$IFC'"
-    debug "NOPTS=%s\nAOPTS=%s\n" "$NOPTS" "$AOPTS" 
+    debug "NOPTS=%s\nAOPTS=%s\n" "$NOPTS" "$AOPTS"
 }
 ### Systemd service creation
 [ -n "$SYSTEMDSERVICENAME" ] && {
@@ -1272,9 +1276,9 @@ nexthop() {
         dieUSAGEpager "Invalid systemd service name '%s'\n%s" "$SYSTEMDSERVICENAME" \
                       "The SYSTEMDSERVICENAME must contain only alphanumeric characters, hyphens and underscores and be no longer than 236 characters."
     [ `printf "%s" "$SYSTEMDSERVICENAME" | wc -c` -gt 236 ] && dieUSAGEpager "Systemd service name '%s' is too long (max 236 characters)" "$SYSTEMDSERVICENAME"
-    
+
     [ `id -u` -eq 0 ] || die "$nwwatchdog --install-systemd must be run as root"
-    
+
     [ -d /etc/systemd/system/. ] || die "'/etc/systemd/system/' does not exists, systemd '$SYSTEMDSERVICENAME.service' NOT installed!"
     for DIR in /run/nw-watchdog /var/log/nw-watchdog; do # /var/log/nw-watchdog/$SYSTEMDSERVICENAME.systemd; do
         [ -d $DIR ] || {
@@ -1282,7 +1286,7 @@ nexthop() {
         }
         chmod 0755 $DIR || printf "WARNING: Failed to set permissions on '%s'\n" "$DIR" 1>&2
     done
-        
+
     #cat<<EOF
     cat>/etc/systemd/system/nw-watchdog-$SYSTEMDSERVICENAME.service<<EOF
 [Unit]
@@ -1327,19 +1331,19 @@ isup() {
     isupADDR="$1"
 
     [ "$isupADDR" = "$NEXTHOP" ] && {
-        # addr is on local subnet (incl. host-local addrs) or peer-to-peer address 
+        # addr is on local subnet (incl. host-local addrs) or peer-to-peer address
         ip neigh get dev $IFC $isupADDR 2>&1 | grep -q 'REACHABLE' && { debug "$isupADDR is arp1-up on $IFC" ; return 0 ;}
         ping -q -w2 -c1 -I$IFC $isupADDR >/dev/null 2>&1 && { debug "$isupADDR is arp-ping-up on $IFC" ; return 0 ;} # also refreshes arp-cache
         ip neigh get dev $IFC $isupADDR 2>&1 | grep -q 'REACHABLE' && { debug "$isupADDR is arp2-up on $IFC" ; return 0 ;}
     }
-    
+
     # quick check if line is already up
     ping -q -w1 -c1 -I$IFC $isupADDR >/dev/null 2>&1 && {
         debug "$isupADDR is quick-up via $IFC"
         return 0
     }
     trace 'quick-up failed ... trying slow-up ...'
-    
+
     ping -qA -w$SUDEADLINE -W$SLOWUPTIMEOUT -c$SUCOUNT -I$IFC $isupADDR >/dev/null 2>&1 && {
         trace "$isupADDR is slow-up via $IFC"
         return 0
@@ -1396,7 +1400,7 @@ PID=`cat "$PIDFILE"`
     else AOPTS="$AOPTS -l-"; fi
     AOPTS="$AOPTS -p'$PIDFILE'"
     if [ -x "$0" ]; then
-        trace "forking: %s" "'$0' '$TARGET' -D$NOPTS$AOPTS" 
+        trace "forking: %s" "'$0' '$TARGET' -D$NOPTS$AOPTS"
         { sleep 0.25 ; eval "exec '$0' '$TARGET' -D$NOPTS$AOPTS" ;} &
     else
         trace "forking: %s" "sh '$0' '$TARGET' -D$NOPTS$AOPTS"
@@ -1527,7 +1531,7 @@ else
             EXITCODE=$?
     done
 fi
-            
+
 while true; do
     if [ -n "$PINGTARGET" ]; then
         trace "Continuously checking if target is up..."
@@ -1541,7 +1545,7 @@ while true; do
         trace "No reply from target '%s' (%s), checking link and topology." "$TARGET" "$TADDR"
         if nexthop || { linkcheck && nexthop ;}; then
             isup "$TADDR" || {
-                if [ -n "$PINGNEXTHOP" ]; then 
+                if [ -n "$PINGNEXTHOP" ]; then
                     if isup "$NEXTHOP" noresolve; then
                         alert DOWN "Not getting replies from target '%s' (%s) on interface '%s', but nexthop '%s' is reachable... sleeping for %d seconds." \
                               "$TARGET" "$TADDR" "$IFC" "$NEXTHOP" $GRACE
@@ -1562,13 +1566,13 @@ while true; do
                   "$TARGET" "$TADDR" "$IFC" "$IFCDOWN" "$IFCUP"
             ifreset && nexthop
         fi
-            
+
     else
         trace "Continuously checking if nexthop is reachable..."
         [ -n "$CONTINUOUSTOPOLOGYDETECT" ] && trace "... and for changes in topology"
         while isup $NEXTHOP; do
-            alert REACHABLE "Nexthop '%s' for target '%s' (%s) is reachable." "$NEXTHOP" "$TARGET" "$TADDR" 
-            debug "Nexthop '%s' for target '%s' (%s) is reachable. Sleeping for $SLEEP seconds." "$NEXTHOP" "$TARGET" "$TADDR" 
+            alert REACHABLE "Nexthop '%s' for target '%s' (%s) is reachable." "$NEXTHOP" "$TARGET" "$TADDR"
+            debug "Nexthop '%s' for target '%s' (%s) is reachable. Sleeping for $SLEEP seconds." "$NEXTHOP" "$TARGET" "$TADDR"
             sleep $SLEEP
             [ -n "$CONTINUOUSTOPOLOGYDETECT" ] && { resolve_target; nexthop ;}
         done
