@@ -91,6 +91,9 @@ If the <ins>TARGET</ins> is not on the same subnet as the source, the reachabili
 
 	This option cannot be combined with `--install-systemd` (but it would be wise to test the configuration with `--debug` before installing as a systemd service).
 
+* __--version__<br>
+    Prints the version of __nw-watchdog_ to stdout and immediately exits. All other options are ignored.
+
 ## OPTIONS (with ARGUMENT)
 These opions takes a single argument each and may be specified in any order. Specify with equalsign or space or no space between option and argument. They can only be grouped together with the shortform of the NO-ARGUMENT-OPTIONS above, and must be last in such groupings (e.g. `-PAV5`).
 
