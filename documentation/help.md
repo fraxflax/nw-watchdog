@@ -549,11 +549,6 @@ __nw-watchdog__ depends on the below executables being available in `/sbin:/bin:
 
 __nw-watchdog__ will function without the below listed utilities, but will use them to enhance its functionality if available.
 
-- Installed and running `systemd`  with `systemctl` (and `mkdir`, `chmod`, `rm`)<br>
-  `systemd` is (obviously) required for the `--install-systemd`, `--list-systemd` and `--remove-systemd` options to be functional. The folder `/etc/systemd/system/` must exist, `systemctl` must be in the PATH and `systemd` must be running.<br>
-  Unless all required directories are already existing, `mkdir` and `chmod` are also used by `--install-systemd`.<br>
-  `rm` is used by `--remove-systemd` to remove the systemd unit file for the service.
-  
 - `flock`<br>
   If available the logfile will be locked before truncated or written to.<br>
   If not available, there is a slight risk of log entries being lost if two or more instances of __nw-watchdog__ are concurently running using the same logfile and at least one of them have `--logsize` set to a value larger than 0.
@@ -570,3 +565,8 @@ __nw-watchdog__ will function without the below listed utilities, but will use t
 - `wall`<br>
   If available it will be used as default `--alert` command. Otherwise, alerting will be done to stderr by default.
 
+- Installed and running `systemd`  with `systemctl` (and `mkdir`, `chmod`, `rm`)<br>
+  `systemd` is (obviously) required for the `--install-systemd`, `--list-systemd` and `--remove-systemd` options to be functional. The folder `/etc/systemd/system/` must exist, `systemctl` must be in the PATH and `systemd` must be running.<br>
+  Unless all required directories are already existing, `mkdir` and `chmod` are also used by `--install-systemd`.<br>
+  `rm` is used by `--remove-systemd` to remove the systemd unit file for the service.
+  
