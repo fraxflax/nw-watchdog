@@ -14,8 +14,6 @@ VERSION="1.1.0-beta"                   # shown by --version | --help | -h
 # 
 # frax - FIXME / TODO:
 #
-# * No such interface error message when using --force-interface
-# 
 # * MAYBE: Support multiple targets in one instance ????
 # 
 # * The big one: IPv6 support
@@ -26,31 +24,40 @@ VERSION="1.1.0-beta"                   # shown by --version | --help | -h
 ##############################################################################
 TARGET=''                              # TARGET (destination) 
 
-PAGERUSE=y                             # --no-pager | --no-less | --no-more | -M
-PINGNEXTHOP=y                          # --no-ping-nexthop | -N | --no-ping-gateway | -G
-PINGTARGET=y                           # --no-ping-target | -P
-IPADDRALRT=y                           # --no-ipaddr-alert | -A
-IFCUPDOWN=y                            # --no-interface-reset | -R
-CONTINUOUSTOPOLOGYDETECT=y             # --no-continuous-topology-detect | -T
-FORK=y                                 # --foreground | -f | --no-daemonize | -D
+HELP='';                                        HELPRE='(-h|--help)';                                 HELPV=y
+PAGERUSE=y;                                 PAGERUSERE='(-M|--no-pager|--no-less|--no-more)';         PAGEUSEV=''
+PINGNEXTHOP=y;                           PINGNEXTHOPRE='(-N|-G|--no-ping-nexthop|--no-ping-gateway)'; PINGNEXTHOPV=''
+PINGTARGET=y;                             PINGTARGETRE='(-P|--no-ping-target)';			      PINGTARGETV=''
+IPADDRALRT=y;                             IPADDRALRTRE='(-A|--no-ipaddr-alert)';		      IPADDRALRTV=''
+IFCUPDOWN=y;                               IFCUPDOWNRE='(-R|--no-interface-reset)';		      IFCUPDOWNV=''
+CONTINUOUSTOPOLOGYDETECT=y; CONTINUOUSTOPOLOGYDETECTRE='(-T|--no-continuous-topology-detect)';	      CONTINUOUSTOPOLOGYDETECTV=''
+FORK=y;                                         FORKRE='(-f|-D|--foreground|--no-daemonize)';	      FORKV=''
+LISTSYSTEMD='';				 LISTSYSTEMDRE='--list-systemd';		              LISTSYSTEMDV=y
+VERBOSE=''                                   VERBOSERE='(-v|--verbose)';			      VERBOSEV=y
+DEBUG=''                                       DEBUGRE='(-d|--debug)';				      DEBUGV=y
+VERSHOW='';                                  VERSHOWRE='--version';				      VERSHOWV=y
 
-V=4                                    # --verbosity-level | -V
-IFC=''                                 # --interface | -i
-STATICIFC=''                           # --force-interface | -I
-LOGFILE='/var/log/nw-watchdog.log'     # --logfile | -l
-LOGSIZE=0                              # --logsize | -z
-PIDFILE=/run/nw-watchdog.pid           # --pidfile | -p
-SLOWUPTIMEOUT=3                        # --slow-up-timeout | -t
-SLEEP=10                               # --interval | --sleep | -s
-GRACE=20                               # --ifup-grace | -g
-MAXNOLINK=1                            # --max-nolink | -n
-IFCUPT='ip link set up %{IFC}'         # --ifcup | -u
-IFCDOWNT='ip link set down %{IFC}'     # --ifcdown | -U
-ALERTCMDT='if which wall >/dev/null; then exec wall; else cat 1>&2; fi'
-                                       # --alert | -a
-SYSTEMDSERVICENAME=''                  # --install-systemd
+V=4;                                            VRE='(--verbosity-level|-V)';   VARE='[0-9]+'                  # integer greater than or equal to 0
+IFC='';                                       IFCRE='(--interface|-i)';         IFCARE='[^[:space:]/]+'        # non-empty string without whitespaces or slashes
+STATICIFC='';                           STATICIFCRE='(--force-interface|-I)';   STATICIFCARE="$IFCARE"
+LOGFILE='/var/log/nw-watchdog.log';       LOGFILERE='(--logfile|-l)';           LOGFILEARE='.+'                # non-emty string
+LOGSIZE=0;                                LOGSIZERE='(--logsize|-z)';           LOGSIZEARE='[0-9]+[kKmMgM]?'   # integer greater than or equal to 0
+PIDFILE=/run/nw-watchdog.pid;             PIDFILERE='(--pidfile|-p)';           PIDFILEARE='.+'                # non-emty string
+SLOWUPTIMEOUT=3;                    SLOWUPTIMEOUTRE='(--slow-up-timeout|-t)';	SLOWUPTIMEOUTARE='[1-9][0-9]*' # integer greater than or equal to 1
+SLEEP=10;                                   SLEEPRE='(--interval|--sleep|-s)';	SLEEPARE='[1-9][0-9]*'         # integer greater than or equal to 1
+GRACE=20;                                   GRACERE='(--ifup-grace|-g)';	GRACEARE='[1-9][0-9]*'         # integer greater than or equal to 1
+MAXNOLINK=1;                            MAXNOLINKRE='(--max-nolink|-n)';        MAXNOLINKARE='[0-9]+'          # integer greater than or equal to 0
+IFCUPT='ip link set up %{IFC}';            IFCUPTRE='(--ifcup|-u)';             IFCUPTARE='.+'                 # non-emty string
+IFCDOWNT='ip link set down %{IFC}';      IFCDOWNTRE='(--ifcdown|-U)';           IFCDOWNTARE='.+'               # non-emty string
+ALERTCMDT='if which wall >/dev/null; then exec wall; else cat 1>&2; fi';
+                                        ALERTCMDTRE='(--alert|-a)';		ALERTCMDTARE='.+'              # non-emty string
+SYSTEMDSERVICENAME='';         SYSTEMDSERVICENAMERE='--install-systemd';        SYSTEMDSERVICENAMEARE='.+'     # non-emty string
+RMSYSTEMDSERVICE='';             RMSYSTEMDSERVICERE='--remove-systemd';         RMSYSTEMDSERVICEARE='.+'       # non-emty string
+
 ##############################################################################
-
+SOPTIONS='HELP PAGERUSE PINGNEXTHOP PINGTARGET IPADDRALRT IFCUPDOWN CONTINUOUSTOPOLOGYDETECT FORK LISTSYSTEMD VERBOSE DEBUG VERSHOW'
+SOPTSRE='[hMNGPARTfDvd]' # Short options without arguments
+AOPTIONS='V IFC STATICIFC LOGFILE LOGSIZE PIDFILE SLOWUPTIMEOUT SLEEP GRACE MAXNOLINK IFCUPT IFCDOWNT ALERTCMDT SYSTEMDSERVICENAME RMSYSTEMDSERVICE'
 
 # Ensure we have a POSIX (enough) shell
 set >/dev/null 2>&1 && export PATH >/dev/null 2>&1 || {
@@ -114,8 +121,12 @@ USAGE() {
         }                                                      #  ( '\033[Om' instead of '\033[m^O' )
     [ $TPUTOK -eq 0 ] || { COLS=72; _b_=''; ___=''; __=''; }
     FMT=cat; which fmt>/dev/null && FMT="fmt -s -w $COLS"
-    [ -n "$1" ] && printf "$@"
-    $FMT<<EOU
+    [ -n "$1" ] && {
+	printf "$1"
+	printf "$2\n" | while read l; do [ -n "$l" ] && printf "\n* $l"; done
+	printf "$3\n"
+    }
+$FMT<<EOU
 $__
 ${_b_}NAME $__
     $_b_$nwwatchdog$__ - Network Watchdog
@@ -705,7 +716,11 @@ EOU
         ${_b_}rm$__ is used by ${_b_}--remove-systemd$__ to remove the systemd unit file for the service.
 
 EOU
-    [ -n "$1" ] && printf "$@"
+    [ -n "$1" ] && {
+	printf "$1"
+	printf "$2\n" | while read l; do [ -n "$l" ] && printf "\n* $l"; done
+	printf "$3\n"
+    }
 }
 USAGEpager() {
     [ -n "$PAGERUSE" ] || {
@@ -724,163 +739,116 @@ USAGEpager() {
     fi
 }
 dieUSAGEpager() {
-    dieUPATN="\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nERROR: $1 \n... aborting!\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
-    shift
-    USAGEpager "$dieUPATN" "$@"
+    USAGEpager "\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nERROR: $1" \
+	       "$ERRMSG" \
+	       "\n... aborting!\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"	       
     exit 1
 }
+SOPTRE=''
+for o in $SOPTIONS; do
+    [ -n "$SOPTRE" ] && SOPTRE="$SOPTRE|"
+    eval "r='\${${o}RE'}"; eval "SOPTRE=\"$SOPTRE$r\""
+done
+SOPTRE="($SOPTRE)"
+AOPTRE=''
+for o in $AOPTIONS; do
+    [ -n "$AOPTRE" ] && AOPTRE="$AOPTRE|"
+    eval "r='\${${o}RE'}"; eval "AOPTRE=\"$AOPTRE$r\""
+done
+AOPTRE="($AOPTRE)"
+NDOPTRE=`printf "%s|%s" "$SOPTRE" "$AOPTRE" | sed -E 's/\(-*|\)//g' | sed -E 's/\|-*/\|/g'`
 
-# Parse arguments
-xHELP=0; xTARGET=0;xV=0;xIFC=0;xLOGFILE=0;xLOGSIZE=0;xPIDFILE=0;xSLOWUPTIMEOUT=0;xSLEEP=0;xGRACE=0;xMAXNOLINK=0;xIFCUPT=0;xIFCDOWNT=0;xALERTCMDT=0;xLISTSYSTEMD=0;xREMOVESYSTEMD=0;xINSTALLSYSTEMD=0;xINSTALLSYSTEMD=0
-SOPTS='[hMNPARTfDvd]' # Short options without arguments
+xOPTIONS=':'
 while [ $# -gt 0 ]; do
     ARG="$1"; shift
-    case "$ARG" in
-	--version) printf "%s\n" "$VERSION"; exit 0 ;;
-        -h|--help) xHELP=1 ;;
-        -M|--no-pager|--no-less|--no-more) PAGERUSE='' ;;
-        -N|--no-ping-nexthop|-G|--no-ping-gateway) PINGNEXTHOP='' ;;
-        -P|--no-ping-target) PINGTARGET='' ;;
-        -A|--no-ipaddr-alert) IPADDRALRT='' ;;
-        -T|--no-continuous-topology-detect) CONTINUOUSTOPOLOGYDETECT='' ;;
-        -R|--no-interface-reset) IFCUPDOWN='' ;;
-        -D|--no-daemonize|-f|--foreground) FORK='' ;;
-        -v|--verbose) [ $xV -eq 0 ] && V=5 ;;
-        --list-systemd) xLISTSYSTEMD=1 ;;
-        -d|--debug)
-            [ $xV -eq 0 ] && V=6
-            [ $xLOGFILE -eq 0 ] &&  { LOGFILE=''; LOGSIZE=0; }
-            [ $xPIDFILE -eq 0 ] && PIDFILE='/dev/null'
-            [ $xSLOWUPTIMEOUT -eq 0 ] && SLOWUPTIMEOUT=1
-            [ $xSLEEP -eq 0 ] && SLEEP=3
-            [ $xGRACE -eq 0 ] && GRACE=5
-            [ $xALERTCMDT -eq 0 ] && ALERTCMDT='cat'
-            FORK=''
-            ;;
-        -${SOPTS}*) # single out ("ungroup") short options without arguments
-            A=`printf "%s" "$ARG" | grep -oE '^..'`
-            B=-`printf "%s" "$ARG" | cut -c3-`
-            set -- "$A" "$B" "$@"
-            ;;
-        -V*|--verbosity-level*)
-            if [ "$ARG" = "-V" -o "$ARG" = "--verbosity-level" ]; then V="$1"; [ $# -gt 0 ] && shift
-            elif printf "%s" "$ARG" | grep -qEe '-(-verbosity-level|V)=.*' ; then V="${ARG#*=}"
-            else V=`printf "%s" "$ARG" | sed -E 's/-(-verbosity-level|V)//'`; fi
-            xV=$((xV+1))
-            ;;
-        -i*|--interface*)
-            if [ "$ARG" = "-i" -o "$ARG" = "--interface" ]; then IFC="$1"; [ $# -gt 0 ] && shift
-            elif printf "%s" "$ARG" | grep -qEe '-(-interface|i)=.*' ; then IFC="${ARG#*=}"
-            else IFC=`printf "%s" "$ARG" | sed -E 's/-(-interface|i)//'`; fi
-            xIFC=$((xIFC+1))
-            ;;
-        -I*|--force-interface*)
-            if [ "$ARG" = "-I" -o "$ARG" = "--force-interface" ]; then IFC="$1"; [ $# -gt 0 ] && shift
-            elif printf "%s" "$ARG" | grep -qEe '-(-force-interface|I)=.*' ; then IFC="${ARG#*=}"
-            else IFC=`printf "%s" "$ARG" | sed -E 's/-(-force-interface|I)//'`; fi
-            STATICIFC=$IFC
-            xIFC=$((xIFC+1))
-            ;;
-        -l*|--logfile*)
-            if [ "$ARG" = "-l" -o "$ARG" = "--logfile" ]; then LOGFILE="$1"; [ $# -gt 0 ] && shift
-            elif printf "%s" "$ARG" | grep -qEe '-(-logfile|l)=.*' ; then LOGFILE="${ARG#*=}"
-            else LOGFILE=`printf "%s" "$ARG" | sed -E 's/-(-logfile|l)//'`; fi
-            xLOGFILE=$((xLOGFILE+1))
-            ;;
-        -z*|--logsize*)
-            if [ "$ARG" = "-z" -o "$ARG" = "--logsize" ]; then LOGSIZE="$1"; [ $# -gt 0 ] && shift
-            elif printf "%s" "$ARG" | grep -qEe '-(-logsize|z)=.*' ; then LOGSIZE="${ARG#*=}"
-            else LOGSIZE=`printf "%s" "$ARG" | sed -E 's/-(-logsize|z)//'`; fi
-            xLOGSIZE=$((xLOGSIZE+1))
-            ;;
-        -p*|--pidfile*)
-            if [ "$ARG" = "-p" -o "$ARG" = "--pidfile" ]; then PIDFILE="$1"; [ $# -gt 0 ] && shift
-            elif printf "%s" "$ARG" | grep -qEe '-(-pidfile|p)=.*' ; then PIDFILE="${ARG#*=}"
-            else PIDFILE=`printf "%s" "$ARG" | sed -E 's/-(-pidfile|p)//'`; fi
-            xPIDFILE=$((xPIDFILE+1))
-            ;;
-        -t*|--slow-up-timeout*)
-            if [ "$ARG" = "-t" -o "$ARG" = "--slow-up-timeout" ]; then SLOWUPTIMEOUT="$1"; [ $# -gt 0 ] && shift
-            elif printf "%s" "$ARG" | grep -qEe '-(-slow-up-timeout|t)=.*' ; then SLOWUPTIMEOUT="${ARG#*=}"
-            else SLOWUPTIMEOUT=`printf "%s" "$ARG" | sed -E 's/-(-slow-up-timeout|t)//'`; fi
-            xSLOWUPTIMEOUT=$((xSLOWUPTIMEOUT+1))
-            ;;
-        -s*|--sleep*|--interval*)
-            if [ "$ARG" = "-s" -o "$ARG" = "--sleep" -o "$ARG" = "--interval" ]; then SLEEP="$1"; [ $# -gt 0 ] && shift
-            elif printf "%s" "$ARG" | grep -qEe '-(-(sleep|interval)|s)=.*' ; then SLEEP="${ARG#*=}"
-            else SLEEP=`printf "%s" "$ARG" | sed -E 's/-(-(sleep|interval)|s)//'`; fi
-            xSLEEP=$((xSLEEP+1))
-            ;;
-        -g*|--ifup-grace*)
-            if [ "$ARG" = "-g" -o "$ARG" = "--ifup-grace" ]; then GRACE="$1"; [ $# -gt 0 ] && shift
-            elif printf "%s" "$ARG" | grep -qEe '-(-ifup-grace|g)=.*' ; then GRACE="${ARG#*=}"
-            else GRACE=`printf "%s" "$ARG" | sed -E 's/-(-ifup-grace|g)//'`; fi
-            xGRACE=$((xGRACE+1))
-            ;;
-        -n*|--max-nolink*)
-            if [ "$ARG" = "-n" -o "$ARG" = "--max-nolink" ]; then MAXNOLINK="$1"; [ $# -gt 0 ] && shift
-            elif printf "%s" "$ARG" | grep -qEe '-(-max-nolink|n)=.*' ; then MAXNOLINK="${ARG#*=}"
-            else MAXNOLINK=`printf "%s" "$ARG" | sed -E 's/-(-max-nolink|n)//'`; fi
-            xMAXNOLINK=$((xMAXNOLINK+1))
-            ;;
-        -u*|--ifcup*)
-            if [ "$ARG" = "-u" -o "$ARG" = "--ifcup" ]; then IFCUPT="$1"; [ $# -gt 0 ] && shift
-            elif printf "%s" "$ARG" | grep -qEe '-(-ifcup|u)=.*' ; then IFCUPT="${ARG#*=}"
-            else IFCUPT=`printf "%s" "$ARG" | sed -E 's/-(-ifcup|u)//'`; fi
-            xIFCUPT=$((xIFCUPT+1))
-            ;;
-        -U*|--ifcdown*)
-            if [ "$ARG" = "-U" -o "$ARG" = "--ifcdown" ]; then IFCDOWNT="$1"; [ $# -gt 0 ] && shift
-            elif printf "%s" "$ARG" | grep -qEe '-(-ifcdown|U)=.*' ; then IFCDOWNT="${ARG#*=}"
-            else IFCDOWNT=`printf "%s" "$ARG" | sed -E 's/-(-ifcdown|U)//'`; fi
-            xIFCDOWNT=$((xIFCDOWNT+1))
-            ;;
-        -a*|--alert*)
-            if [ "$ARG" = "-a" -o "$ARG" = "--alert" ]; then ALERTCMDT="$1"; [ $# -gt 0 ] && shift
-            elif printf "%s" "$ARG" | grep -qEe '-(-alert|a)=.*' ; then ALERTCMDT="${ARG#*=}"
-            else ALERTCMDT=`printf "%s" "$ARG" | sed -E 's/-(-alert|a)//'`; fi
-            xALERTCMDT=$((xALERTCMDT+1))
-            ;;
-        --install-systemd*)
-            if [ "$ARG" = "--install-systemd" ]; then SYSTEMDSERVICENAME="$1"; [ $# -gt 0 ] && shift
-            elif printf "%s" "$ARG" | grep -qEe '--install-systemd=.*' ; then SYSTEMDSERVICENAME="${ARG#*=}"
-            else SYSTEMDSERVICENAME=`printf "%s" "$ARG" | sed -E 's/--install-systemd//'`; fi
-            xINSTALLSYSTEMD=$((xINSTALLSYSTEMD+1))
-            ;;
-        --remove-systemd*)
-            if [ "$ARG" = "--remove-systemd" ]; then SYSTEMDSERVICENAME="$1"; [ $# -gt 0 ] && shift
-            elif printf "%s" "$ARG" | grep -qEe '--remove-systemd=.*' ; then SYSTEMDSERVICENAME="${ARG#*=}"
-            else SYSTEMDSERVICENAME=`printf "%s" "$ARG" | sed -E 's/--remove-systemd//'`; fi
-            xREMOVESYSTEMD=$((xREMOVESYSTEMD+1))
-            ;;
-        *)
-            TARGET="$ARG"; xTARGET=$((xTARGET+1))
-            ;;
-    esac
+    if printf %s "$ARG" | grep -qE "^${SOPTRE}$"; then     # No Argument Option 
+ 	for o in $SOPTIONS; do
+	    eval "R=\"\${${o}RE}\""
+	    if printf %s "$ARG" | grep -qE "^$R$"; then
+		eval "$o=\"\${${o}V}\""
+		xOPTIONS="${xOPTIONS}${o}:"
+		break
+	    fi
+	done
+    elif printf %s "$ARG" | grep -qE "^-${SOPTSRE}(${NDOPTRE})"; then # Grouped Options
+	A=`printf "%s" "$ARG" | grep -oE '^..'`
+        B=`printf "%s" "$ARG" | cut -c3-`
+        set -- "$A" "-$B" "$@"
+    elif printf %s "$ARG" | grep -qE "^${AOPTRE}"; then    # Option with Argument
+	if printf %s "$ARG" | grep -qE "^${AOPTRE}$"; then
+	    OPT=$ARG
+            ARG="$1"
+	    [ $# -gt 0 ] && shift
+        elif printf "%s" "$ARG" | grep -qE  "^${AOPTRE}=[^[:space:]]"; then
+	    OPT="${ARG%%=*}"
+	    ARG="${ARG#*=}"
+        else
+	    OPT=`printf %s "$ARG" | grep -oE "${AOPTRE}"`
+	    ARG=`printf "%s" "$ARG" | sed -E "s/${AOPTRE}//"`
+	    [ "$ARG" = '=' ] && {
+		ARG=''
+		ERRMSG="$ERRMSG\n'$OPT=' seem to lack an arugment. If the argument really should be '=', use the syntax '$OPT=='."
+		break
+	    }
+	fi
+	[ -z "$ARG" ] && {
+	    ERRMSG="$ERRMSG\nOption '$OPT' requires an argument."
+	    break
+	}
+        for o in $AOPTIONS; do
+	    eval "R=\"\${${o}RE}\""
+	    if printf %s "$OPT" | grep -qE "^$R$"; then
+		printf %s "$xOPTIONS" | grep -qE ":$o:" && {
+		    ERRMSG="$ERRMSG\nOption '$OPT' $R specified multiple times."
+		    break
+		}
+		xOPTIONS="${xOPTIONS}${o}:"
+		eval "AR=\"\${${o}ARE}\""
+		printf %s "$ARG" | grep -qE "^$AR$" || {
+		    ERRMSG="$ERRMSG\nInvalid argument '$ARG' for option '$OPT' $R."
+		    break
+		}
+		eval "$o=\"$ARG\""
+		break
+	    fi
+	done
+
+    else                                                   # TARGET
+	if printf "%s" "$ARG" | grep -qE '^-'; then
+	    ERRMSG="$ERRMSG\nInvalid OPTION: '$ARG'"
+	else
+	    [ -z "$TARGET" ] || ERRMSG="$ERRMSG\nMultiple TARGETs specified ('$TARGET' + '$ARG')."
+	    TARGET="$ARG"
+	    printf "%s" "$TARGET" \
+		| grep -qE '^((0*[0-9]?[0-9]|1[0-9][0-9]|2([0-4][0-9]|5[0-5]))\.){3}(0*[0-9]?[0-9]|1[0-9][0-9]|2([0-4][0-9]|5[0-5]))$' \
+		|| printf "%s" "$TARGET" \
+		    | grep -qE '^[a-zA-Z0-9_][a-zA-Z0-9_.-]*$' || {
+		    ERRMSG="$ERRMSG\nInvalid TARGET '$TARGET'. Must be an IP address or a valid hostname."
+		}
+	fi
+    fi    
 done
 
-[ $xHELP -gt 0 ] && { USAGEpager ; exit 0 ; }
+[ -n "$HELP" ] && { USAGEpager ; exit 0 ; }
 
-[ $xLISTSYSTEMD -gt 0 -o $xREMOVESYSTEMD -gt 0 ] && {
-    [ $(($xLISTSYSTEMD+$xREMOVESYSTEMD+$xTARGET+$xV+$xIFC+$xLOGFILE+$xLOGSIZE+$xPIDFILE+$xSLOWUPTIMEOUT+$xSLEEP+$xGRACE+$xMAXNOLINK+$xIFCUPT+$xIFCDOWNT+$xALERTCMDT+$xINSTALLSYSTEMD)) -eq 1 ] || dieUSAGEpager "--list-systemd and --remove-systemd cannot be combined with any other option"
+[ -n "$LISTSYSTEMD" -o -n "$RMSYSTEMDSERVICE" ] && {
+    printf %s "$xOPTIONS" | grep -qE ':.*:.*:' && dieUSAGEpager "--list-systemd and --remove-systemd cannot be combined with any other option"
     [ -d /etc/systemd/system/. ] || dieUSAGEpager "'/etc/systemd/system/' does not exists, is systemd installed and running?"
-    [  $xLISTSYSTEMD -gt 0 ] && {
+    [  -n "$LISTSYSTEMD" ] && {
         printf "\n\n--- Listing all loaded nw-watchdog systemd units: ---\n"
         systemctl list-units --all nw-watchdog-\* 2>/dev/null | grep -oE 'nw-watchdog-.*\.service.*'
         printf "\n--- Listing all installed nw-watchdog systemd units: ---\n"
         systemctl list-unit-files --all nw-watchdog-\* 2>/dev/null
         exit 0
     }
-    [ -n "$SYSTEMDSERVICENAME" ] || dieUSAGEpager "You must specify the systemd service name to remove!\n%s" \
-                                                   "Use --list-systemd to list all nw-watchdog systemd units."
     [ `id -u` -eq 0 ] || dieUSAGEpager "$nwwatchdog --remove-systemd must be run as root"
     systemctl daemon-reload || dieUSAGEpager "Failed to reload systemd. Is systemd installed and running?"
-    UNITNAME="$SYSTEMDSERVICENAME"
+    UNITNAME="$RMSYSTEMDSERVICE"
     systemctl list-unit-files "$UNITNAME" >/dev/null 2>&1 || {
-        UNITNAME="nw-watchdog-$SYSTEMDSERVICENAME.service"
+        UNITNAME="nw-watchdog-$RMSYSTEMDSERVICE.service"
         systemctl list-unit-files "$UNITNAME" >/dev/null 2>&1 \
             || dieUSAGEpager "Neither '%s' or '%s' is a valid systemd service unit name.\n%s" \
-                             "$SYSTEMDSERVICENAME" "$UNITNAME" \
+                             "$RMSYSTEMDSERVICE" "$UNITNAME" \
                              "Use --list-systemd to list all nw-watchdog systemd units."
     }
     systemctl stop "$UNITNAME" || printf "\nWARNING: failed to stop '$UNITNAME'\n" 1>&2
@@ -890,101 +858,10 @@ done
     exit 0
 }
 
-shift $#
-ERRPTN=''
-# Check if there are conflicting options
-[ $xIFCUPT -gt 1 ] && {
-    ERRPTN="$ERRPTN\n* %s"
-    set -- "ifcup specified multiple ($xIFCUPT) times (exclusively use '-u', or '--ifcup' only once)" "$@"
-}
-[ $xIFCDOWNT -gt 1 ] && {
-    ERRPTN="$ERRPTN\n* %s"
-    set --  "ifcdown specified multiple ($xIFCDOWNT) times (exclusively use '-U', or '--ifcdown' only once)" "$@"
-}
-[ $xALERTCMDT -gt 1 ] && {
-    ERRPTN="$ERRPTN\n* %s"
-    set -- "alert specified multiple ($xALERTCMDT) times (exclusively use '-a', or '--alert' only once)" "$@"
-}
-[ $xINSTALLSYSTEMD -gt 1 ] && {
-    ERRPTN="$ERRPTN\n* %s"
-    set -- "install-systemd specified multiple ($xINSTALLSYSTEMD) times (exclusively use '--install-systemd' only once)" "$@"
-}
-[ $xREMOVESYSTEMD -gt 1 ] && {
-    ERRPTN="$ERRPTN\n* %s"
-    set -- "remove-systemd specified multiple ($xREMOVESYSTEMD) times (exclusively use '--remove-systemd' only once)" "$@"
-}
-[ $xTARGET -gt 1 ] && {
-    ERRPTN="$ERRPTN\n* %s"
-    set -- "More than one ($xTARGET) TARGET specified!" "$@"
-}
-[ $xV -gt 1 ] && {
-    ERRPTN="$ERRPTN\n* %s"
-    set -- "verbosity-level specified multiple ($xV) times (exclusively use '-V' or '--verbosity-level' only once)" "$@"
-}
-[ $xIFC -gt 1 ] && {
-    ERRPTN="$ERRPTN\n* %s"
-    set -- "interface specified multiple ($xIFC) times (exclusively use '-i', '--interface', '-I' or '--force-interface' only once)" "$@"
-}
-[ $xLOGFILE -gt 1 ] && {
-    ERRPTN="$ERRPTN\n* %s"
-    set -- "logfile specified multiple ($xLOGFILE) times (exclusively use '-l', or '--logfile' only once)" "$@"
-}
-[ $xLOGSIZE -gt 1 ] && {
-    ERRPTN="$ERRPTN\n* %s"
-    set -- "logsize specified multiple ($xLOGSIZE) times (exclusively use '-z' or '--logsize' only once)" "$@"
-}
-[ $xPIDFILE -gt 1 ] && {
-    ERRPTN="$ERRPTN\n* %s"
-    set -- "pidfile specified multiple ($xPIDFILE) times (exclusively use '-p', or '--pidfile' only once)" "$@"
-7}
-[ $xSLOWUPTIMEOUT -gt 1 ] && {
-    ERRPTN="$ERRPTN\n* %s"
-    set -- "slow-up-timeout specified multiple ($xSLOWUPTIMEOUT) times (exclusively use '-t' or '--slow-up-timeout' only once)" "$@"
-}
-[ $xSLEEP -gt 1 ] && {
-    ERRPTN="$ERRPTN\n* %s"
-    set -- "interval specified multiple ($xSLEEP) times (exclusively use '-s', '--sleep' or '--interval' only once)" "$@"
-}
-[ $xGRACE -gt 1 ] && {
-    ERRPTN="$ERRPTN\n* %s"
-    set -- "ifup-grace specified multiple ($xGRACE) times (exclusively use '-g' or '--ifup-grace' only once)" "$@"
-}
-[ $xMAXNOLINK -gt 1 ] &&  {
-    ERRPTN="$ERRPTN\n* %s"
-    set -- "max-nolink specified multiple ($xMAXNOLINK) times (exclusively use '-n' or '--max-nolink' only once)" "$@"
-}
+[ -z "$PINGTARGET" -a -z "$PINGNEXTHOP" ] && \
+    ERRMSG="$ERRMSG\nYou must allow pinging of target and/or nexthop! (Can't combine --no-ping-target and --no-ping-nexthop!)"
 
-[ "$V" -ge 0 ] 2>/dev/null || {
-        ERRPTN="$ERRPTN\n* %s"
-        set -- "Invalid verbosity level '$V' (must be integer >= 0)" "$@"
-}
-
-[ "$SLOWUPTIMEOUT" -ge 1 ] 2>/dev/null || {
-        ERRPTN="$ERRPTN\n* %s"
-        set -- "Invalid slow-up-timeout interval '$SLOWUPTIMEOUT' (must be integer >= 1)" "$@"
-}
-
-[ "$SLEEP" -ge 1 ] 2>/dev/null || {
-        ERRPTN="$ERRPTN\n* %s"
-        set -- "Invalid sleep interval '$SLEEP' (must be integer >= 1)" "$@"
-}
-
-[ "$GRACE" -ge 1 ] 2>/dev/null || {
-        ERRPTN="$ERRPTN\n* %s"
-        set -- "Invalid ifup-grace '$GRACE' (must be integer >= 1)" "$@"
-}
-
-[ "$MAXNOLINK" -ge 1 ] 2>/dev/null || {
-        ERRPTN="$ERRPTN\n* %s"
-        set -- "Invalid max-nolink '$MAXNOLINK' (must be integer >= 1)" "$@"
-}
-
-[ -z "$PINGTARGET" -a -z "$PINGNEXTHOP" ] && {
-        ERRPTN="$ERRPTN\n* %s"
-        set -- "You must allow pinging of target and/or nexthop! (Can't use both --no-ping-target and --no-ping-nexthop!)" "$@"
-}
-
-[ $xINSTALLSYSTEMD -eq 0 -a "$LOGFILE" = '-' ] && { LOGSIZE=0 ; LOGSIZEb=0 ;}
+[ -n "$INSTALLSYSTEMD" -a "$LOGFILE" = '-' ] && { LOGSIZE=0 ; LOGSIZEb=0 ;}
 [ "$LOGFILE" = '-' ] && LOGFILE=''
 [ "$PIDFILE" = '-' ] && PIDFILE='/dev/null'
 
@@ -993,23 +870,10 @@ printf "%s" "$LOGSIZE" | grep -iqE '^[0-9]+*[KMG]*$' || {
         set -- "Invalid logsize '$LOGSIZE'" "$@"
 }
 
-if [ -n "$TARGET" ]; then
-    # Is target an IP address or valid hostname?
-    printf "%s" "$TARGET" \
-     | grep -qE '^((0*[0-9]?[0-9]|1[0-9][0-9]|2([0-4][0-9]|5[0-5]))\.){3}(0*[0-9]?[0-9]|1[0-9][0-9]|2([0-4][0-9]|5[0-5]))$' \
-    || printf "%s" "$TARGET" \
-     | grep -qE '^[a-zA-Z0-9_][a-zA-Z0-9_.-]*$' || {
-        ERRPTN="$ERRPTN\n* %s"
-	set -- "Invalid TARGET '$TARGET'. Must be an IP address or valid hostname." "$@"
-    }
-else
-    ERRPTN="$ERRPTN\n* %s"
-    set -- "Target not specified! Specify IP address or valid hostname." "$@"
-fi
-
+[ -n "$TARGET" ] || ERRMSG="$ERRMSG\nTARGET not specified! Specify IP address or valid hostname."
 
 ### Die showing the USAGE if found errors in options and arguments above ###
-[ -n "$ERRPTN" ] && dieUSAGEpager "$ERRPTN" "$@"
+[ -n "$ERRMSG" ] && dieUSAGEpager 'Option Errors'
 
 [ -n "$LOGFILE" ] && {
     touch "$LOGFILE" 2>/dev/null || {
