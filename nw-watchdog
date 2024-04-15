@@ -1256,7 +1256,7 @@ isup() {
 touch "$PIDFILE" 2>/dev/null || die "%s\n%s" "Cannot write to pidfile '$PIDFILE'." \
                                         "Specify another --pidfile or check permissions or privileges of effective user (userid=`id -u`)"
 PID=`cat "$PIDFILE"`
-[ "$PID" -qt 0 ] 2>/dev/null && [ -d /proc/$PID ] && die "Process already running with pid $PID"
+[ "$PID" -gt 0 ] 2>/dev/null && [ -d /proc/$PID ] && die "Process already running with pid $PID"
 
 ### Forking
 [ -n "$FORK" ] && {
