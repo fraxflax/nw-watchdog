@@ -1,58 +1,59 @@
 #!/bin/sh
-VERSION="1.1.0-beta"                   # shown by --version | --help | -h
+VERSION="1.1.0-beta" # shown by --version | --help | -h
 #
 #       nw-watchdog is a higly configurable network watchdog written
 #       in POSIX shell script for use in Linux.
-# 
+#
 #       Get the latest version from https://github.com/fraxflax/nw-watchdog
 #
 #       nw-watchdog is free software written by Fredrik Ax <frax@axnet.nu>.
 #       Feel free to modify and/or (re)distribute it in any way you like.
 #       (It's always nice to be mentioned though ;-) )
 #       It comes with ABSOLUTELY NO WARRANTY.
-# 
-# 
+#
+#
 # frax - FIXME / TODO:
 #
 # * MAYBE: Support multiple targets in one instance ????
-# 
+#
 # * The big one: IPv6 support
 #
 #
-##############################################################################
-# DEFAULTS                             # Corresponding Command Line Options
-##############################################################################
-TARGET=''                              # TARGET (destination) 
+###########################################################################################
+# DEFAULTS                                    # Corresponding Command Line Options
+###########################################################################################
+TARGET=''                                     # TARGET (destination)
 
-HELP='';                                        HELPRE='(-h|--help)';                                 HELPV=y
-PAGERUSE=y;                                 PAGERUSERE='(-M|--no-pager|--no-less|--no-more)';         PAGEUSEV=''
-PINGNEXTHOP=y;                           PINGNEXTHOPRE='(-N|-G|--no-ping-nexthop|--no-ping-gateway)'; PINGNEXTHOPV=''
-PINGTARGET=y;                             PINGTARGETRE='(-P|--no-ping-target)';			      PINGTARGETV=''
-IPADDRALRT=y;                             IPADDRALRTRE='(-A|--no-ipaddr-alert)';		      IPADDRALRTV=''
-IFCUPDOWN=y;                               IFCUPDOWNRE='(-R|--no-interface-reset)';		      IFCUPDOWNV=''
-CONTINUOUSTOPOLOGYDETECT=y; CONTINUOUSTOPOLOGYDETECTRE='(-T|--no-continuous-topology-detect)';	      CONTINUOUSTOPOLOGYDETECTV=''
-FORK=y;                                         FORKRE='(-f|-D|--foreground|--no-daemonize)';	      FORKV=''
-LISTSYSTEMD='';				 LISTSYSTEMDRE='--list-systemd';		              LISTSYSTEMDV=y
-VERBOSE=''                                   VERBOSERE='(-v|--verbose)';			      VERBOSEV=y
-DEBUG=''                                       DEBUGRE='(-d|--debug)';				      DEBUGV=y
-VERSHOW='';                                  VERSHOWRE='--version';				      VERSHOWV=y
+HELP='';                               HELPRE='(-h|--help)';                                 HELPV=y
+PAGERUSE=y;                        PAGERUSERE='(-M|--no-pager|--no-less|--no-more)';         PAGEUSEV=''
+PINGNEXTHOP=y;                  PINGNEXTHOPRE='(-N|-G|--no-ping-nexthop|--no-ping-gateway)'; PINGNEXTHOPV=''
+PINGTARGET=y;                    PINGTARGETRE='(-P|--no-ping-target)';                       PINGTARGETV=''
+IPADDRALRT=y;                    IPADDRALRTRE='(-A|--no-ipaddr-alert)';                      IPADDRALRTV=''
+IFCUPDOWN=y;                      IFCUPDOWNRE='(-R|--no-interface-reset)';                   IFCUPDOWNV=''
+CONTINUOUSTOPOLOGYDETECT=y;
+CONTINUOUSTOPOLOGYDETECTRE='(-T|--no-continuous-topology-detect)';                           CONTINUOUSTOPOLOGYDETECTV=''
+FORK=y;                                FORKRE='(-f|-D|--foreground|--no-daemonize)';         FORKV=''
+LISTSYSTEMD='';                 LISTSYSTEMDRE='--list-systemd';                              LISTSYSTEMDV=y
+VERBOSE=''                          VERBOSERE='(-v|--verbose)';                              VERBOSEV=y
+DEBUG=''                              DEBUGRE='(-d|--debug)';                                DEBUGV=y
+VERSHOW='';                         VERSHOWRE='--version';                                   VERSHOWV=y
 
-V=4;                                            VRE='(--verbosity-level|-V)';   VARE='[0-9]+'                  # integer greater than or equal to 0
-IFC='';                                       IFCRE='(--interface|-i)';         IFCARE='[^[:space:]/]+'        # non-empty string without whitespaces or slashes
-STATICIFC='';                           STATICIFCRE='(--force-interface|-I)';   STATICIFCARE="$IFCARE"
-LOGFILE='/var/log/nw-watchdog.log';       LOGFILERE='(--logfile|-l)';           LOGFILEARE='.+'                # non-emty string
-LOGSIZE=0;                                LOGSIZERE='(--logsize|-z)';           LOGSIZEARE='[0-9]+[kKmMgM]?'   # integer greater than or equal to 0
-PIDFILE=/run/nw-watchdog.pid;             PIDFILERE='(--pidfile|-p)';           PIDFILEARE='.+'                # non-emty string
-SLOWUPTIMEOUT=3;                    SLOWUPTIMEOUTRE='(--slow-up-timeout|-t)';	SLOWUPTIMEOUTARE='[1-9][0-9]*' # integer greater than or equal to 1
-SLEEP=10;                                   SLEEPRE='(--interval|--sleep|-s)';	SLEEPARE='[1-9][0-9]*'         # integer greater than or equal to 1
-GRACE=20;                                   GRACERE='(--ifup-grace|-g)';	GRACEARE='[1-9][0-9]*'         # integer greater than or equal to 1
-MAXNOLINK=1;                            MAXNOLINKRE='(--max-nolink|-n)';        MAXNOLINKARE='[0-9]+'          # integer greater than or equal to 0
-IFCUPT='ip link set up %{IFC}';            IFCUPTRE='(--ifcup|-u)';             IFCUPTARE='.+'                 # non-emty string
-IFCDOWNT='ip link set down %{IFC}';      IFCDOWNTRE='(--ifcdown|-U)';           IFCDOWNTARE='.+'               # non-emty string
+V=4;                                      VRE='(--verbosity-level|-V)';  VARE='[0-9]+'                  # integer greater than or equal to 0
+IFC='';                                 IFCRE='(--interface|-i)';        IFCARE='[^[:space:]/]+'        # non-empty string without whitespaces or slashes
+STATICIFC='';                     STATICIFCRE='(--force-interface|-I)';  STATICIFCARE="$IFCARE"
+LOGFILE='/var/log/nw-watchdog.log'; LOGFILERE='(--logfile|-l)';          LOGFILEARE='.+'                # non-emty string
+LOGSIZE=0;                          LOGSIZERE='(--logsize|-z)';          LOGSIZEARE='[0-9]+[kKmMgM]?'   # integer greater than or equal to 0
+PIDFILE=/run/nw-watchdog.pid;       PIDFILERE='(--pidfile|-p)';          PIDFILEARE='.+'                # non-emty string
+SLOWUPTIMEOUT=3;              SLOWUPTIMEOUTRE='(--slow-up-timeout|-t)';  SLOWUPTIMEOUTARE='[1-9][0-9]*' # integer greater than or equal to 1
+SLEEP=10;                             SLEEPRE='(--interval|--sleep|-s)'; SLEEPARE='[1-9][0-9]*'         # integer greater than or equal to 1
+GRACE=20;                             GRACERE='(--ifup-grace|-g)';       GRACEARE='[1-9][0-9]*'         # integer greater than or equal to 1
+MAXNOLINK=1;                       AXNOLINKRE='(--max-nolink|-n)';       MAXNOLINKARE='[0-9]+'          # integer greater than or equal to 0
+IFCUPT='ip link set up %{IFC}';      IFCUPTRE='(--ifcup|-u)';            IFCUPTARE='.+'                 # non-emty string
+IFCDOWNT='ip link set down %{IFC}'; IFCDOWNTRE='(--ifcdown|-U)';         IFCDOWNTARE='.+'               # non-emty string
 ALERTCMDT='if which wall >/dev/null; then exec wall; else cat 1>&2; fi';
-                                        ALERTCMDTRE='(--alert|-a)';		ALERTCMDTARE='.+'              # non-emty string
-SYSTEMDSERVICENAME='';         SYSTEMDSERVICENAMERE='--install-systemd';        SYSTEMDSERVICENAMEARE='.+'     # non-emty string
-RMSYSTEMDSERVICE='';             RMSYSTEMDSERVICERE='--remove-systemd';         RMSYSTEMDSERVICEARE='.+'       # non-emty string
+                                   ALERTCMDTRE='(--alert|-a)';           ALERTCMDTARE='.+'              # non-emty string
+SYSTEMDSERVICENAME='';    SYSTEMDSERVICENAMERE='--install-systemd';      SYSTEMDSERVICENAMEARE='.+'     # non-emty string
+RMSYSTEMDSERVICE='';        RMSYSTEMDSERVICERE='--remove-systemd';       RMSYSTEMDSERVICEARE='.+'       # non-emty string
 
 ##############################################################################
 SOPTIONS='HELP PAGERUSE PINGNEXTHOP PINGTARGET IPADDRALRT IFCUPDOWN CONTINUOUSTOPOLOGYDETECT FORK LISTSYSTEMD VERBOSE DEBUG VERSHOW'
@@ -81,16 +82,16 @@ IFS="$OIFS"
 PATH="$NEWPATH"
 export PATH
 
-DEPENDENCIES="basename cat cut date getent grep head id ip ping readlink sed sleep stat tail touch wc" 
+DEPENDENCIES="basename cat cut date getent grep head id ip ping readlink sed sleep stat tail touch wc"
 lacking=''
-if printf '' 2>/dev/null; then 
+if printf '' 2>/dev/null; then
     deperr() {
         printf '\n(PATH=%s)\n\n~~~~~~~~~~~~~~~~\nDEPENDENCY ERROR\n~~~~~~~~~~~~~~~~\nThe following executable(s) are lacking in your PATH:\n   %s\n... aborting!\n\n' "$PATH" "$@" 1>&2
         exit 1
     }
 else
     lacking='printf'
-    deperr() { 
+    deperr() {
         echo ' ' 1>&2
         echo "(PATH=$PATH)" 1>&2
         echo ' ' 1>&2
@@ -117,14 +118,14 @@ USAGE() {
             _b_=`tput bold`  2>/dev/null || TPUTOK=$((TPUTOK+1))
             ___=`tput smul`  2>/dev/null || TPUTOK=$((TPUTOK+1))
             #__=`tput sgr0`  2>/dev/null || TPUTOK=$((TPUTOK+1)) 'tput sgr0' in combination with 'less -R' does not work on all terminal
-            __=`printf '\033[0m'`                              #  types, so always use the universal ANSI reset escape sequence instead 
+            __=`printf '\033[0m'`                              #  types, so always use the universal ANSI reset escape sequence instead
         }                                                      #  ( '\033[Om' instead of '\033[m^O' )
     [ $TPUTOK -eq 0 ] || { COLS=72; _b_=''; ___=''; __=''; }
     FMT=cat; which fmt>/dev/null && FMT="fmt -s -w $COLS"
     [ -n "$1" ] && {
-	printf "$1"
-	printf "$2\n" | while read l; do [ -n "$l" ] && printf "\n* $l"; done
-	printf "$3\n"
+        printf "$1"
+        printf "$2\n" | while read l; do [ -n "$l" ] && printf "\n* $l"; done
+        printf "$3\n"
     }
 $FMT<<EOU
 $__
@@ -136,7 +137,7 @@ ${_b_}VERSION $__
 
 ${_b_}SYNOPSIS $__
 
-    $_b_$nwwatchdog$__ ${___}TARGET$__ [ OPTIONS ] 
+    $_b_$nwwatchdog$__ ${___}TARGET$__ [ OPTIONS ]
 
     $_b_$nwwatchdog --list-systemd$__
 
@@ -203,28 +204,28 @@ ${_b_}OPTIONS $__(no arguments)
         $_b_--no-continuous-topology-detect$__ disables the topology detection for as long as the ${___}TARGET${__} replies (or in combination with $_b_--no-ping-target$__, for as long as the NEXTHOP is reachable). The topology will only be detected at startup and if the ${___}TARGET${__} does not reply or if the NEXTHOP cannot be reached, meaning that routing changes making the ${___}TARGET${__} or NEXTHOP unreachable will not be detected as long as the ${___}TARGET${__} / NEXTHOP can be reached using the old topology.
 
         $_b_--force-interface$__ implies $_b_--no-continuous-topology-detect$__.
-                                       
+
     $_b_--foreground | -f | --no-daemonize | -D $__
         Run in foreground, do not fork / daemonize.
 
-    $_b_--list-systemd$__ 
+    $_b_--list-systemd$__
         If systemd is installed, a brief status of all installed nw-watchdog systemd-services are listed to stdout.
 
         Cannot be combined with any other options.
-       
+
     $_b_--verbose | -v $__
         Shortcut for $_b_--verbosity-level=5$__
-        If used in combination with $_b_--verbosity-level$__, the specified $_b_--verbosity-level$__ level will take precedence. 
+        If used in combination with $_b_--verbosity-level$__, the specified $_b_--verbosity-level$__ level will take precedence.
 
     $_b_--debug | -d $__
-        Shortcut for: $_b_--verbosity-level=6 $_b_--logfile=- $_b_--logsize=0 $_b_--pidfile=/dev/null $_b_--slow-up-timeout=1 $_b_--sleep=3 $_b_--ifup-grace=5 $_b_--alert='cat' $_b_--foreground$__ 
+        Shortcut for: $_b_--verbosity-level=6 $_b_--logfile=- $_b_--logsize=0 $_b_--pidfile=/dev/null $_b_--slow-up-timeout=1 $_b_--sleep=3 $_b_--ifup-grace=5 $_b_--alert='cat' $_b_--foreground$__
 
         If it's combined with any of the options it provides shortcuts for, the specified option will take precedence over the $_b_--debug$__ shortcut.
 
         This option cannot be combined with $_b_--install-systemd$__ (but it would be wise to test the configuration with $_b_--debug$__ before installing as a systemd service).
 
 $_b_--version$__
-	Prints the version of nw-watchdog to stdout and immediately exits. All other options are ignored.
+        Prints the version of nw-watchdog to stdout and immediately exits. All other options are ignored.
 
 ${_b_}OPTIONS$__ (with ARGUMENT)
         These opions takes a single argument each and may be specified in any order. Specify with equalsign or space or no space between option and argument. They can only be grouped together with the shortform of the NO-ARGUMENT-OPTIONS above, and must be last in such groupings (e.g. -PAV5).
@@ -289,7 +290,7 @@ $FMT<<EOU
         If the logfile grows beyond this size, the oldest entries will be removed.
 
         You can use suffixes K, M, G for kilo / mega / giga bytes. (No suffix is same as K).
-        Set to 0 for unlimited logfile size (which you would want if you do log rotation). 
+        Set to 0 for unlimited logfile size (which you would want if you do log rotation).
 
         If the logfile is set to '-' (stdout) this option is ignored.
 
@@ -310,7 +311,7 @@ $FMT<<EOU
         5 packets are always sent in the slow-up test.
         The packets are sent adaptively, meaning that as soon as a reply is received the next packet is sent without delay, giving slow-up a total time of 5 * RTT to the ${___}TARGET${__} if the connection is up.
         The DEADLINE = TIMEOUT * 5 is the maximum time the slow-up test will take if the ${___}TARGET${__} is down.
-        
+
         $_b_--slow-up-timeout=7$__ is useful for monitoring VPN connections via interfaces that need a long wake-up time if idle (due to regotiation of encryption, exchanging keys, reauthentication, etc).
 
         $_b_--slow-up-timeout=3$__ is useful for monitoring connections to ${___}TARGET${__}s with low to medium latency via interfaces that does not need a long wake-up time (e.g. ethernet interfaces).
@@ -321,7 +322,7 @@ $FMT<<EOU
         Default: $SLEEP
         ${___}seconds$__ must be an integer greater than zero.
 
-        How many seconds to sleep after sucessful ping check. 
+        How many seconds to sleep after sucessful ping check.
 
     $_b_--ifup-grace | -g$__ ${___}seconds$__
         Default: $GRACE
@@ -338,7 +339,7 @@ $FMT<<EOU
         A word of warning: If set to 0 and interface is not up / goes down, infinite retries to bring the interface up will be made before checking topology. Only set it to 0 if you are sure that the specified interface should always be used and you want to make sure it's up before starting to monitor the connection.
         Typically, you would want to also use $_b_--force-interface$__ when using $_b_--max-nolink=0$__.
 
-    $_b_--ifcup | -u $__ ${___}STRING$__ 
+    $_b_--ifcup | -u $__ ${___}STRING$__
         Default: '$IFCUPT'
         ${___}STRING$__ will be passed to 'sh -c' to bring the interface up.
         $_b_%{IFC}$__ will be dynmaically replaced with the interface name currently in use as source interface.
@@ -359,12 +360,12 @@ $FMT<<EOU
             iproute2 + isc-dhcp-client:
               --ifcup='ip link set %{IFC} up && dhclient -pf /run/dhclient-%{IFC}.pid %{IFC}'
 
-            strongSwan IPSec (setup for IPSec policy routing): 
+            strongSwan IPSec (setup for IPSec policy routing):
               --ifcup='ipsec up connection-name'
               (see ${_b_}EXAMPLES$__  below for a more extensive IPSec example using vti tunnel interface)
 
     $_b_--ifcdown | -U $__ ${___}STRING$__
-        Default: '$IFCDOWNT' 
+        Default: '$IFCDOWNT'
         ${___}STRING$__ will be passed to 'sh -c' to bring the interface down.
         $_b_%{IFC}$__ will be dynmaically replaced with the interface name currently in use as source interface.
 
@@ -384,7 +385,7 @@ $FMT<<EOU
             iproute2 + isc-dhcp-client:
               --ifcdown='kill \`cat /run/dhclient-%{IFC}.pid\` ; ip link set down %{IFC}'
 
-            strongSwan IPSec (setup for IPSec policy routing): 
+            strongSwan IPSec (setup for IPSec policy routing):
               --ifcup='ipsec down connection-name'
               (see ${_b_}EXAMPLES$__  below for a more extensive IPSec example using vti tunnel interface)
 
@@ -392,7 +393,7 @@ $FMT<<EOU
         Default: '$ALERTCMDT'
 
         Errors, warnings and alerts regarding change of state will be piped to: sh -c '${___}STRING$__'
-        Within ${___}STRING$__ the following placeholders can be used:          
+        Within ${___}STRING$__ the following placeholders can be used:
 
         $_b_%{IFC}$__ - the interface name
 
@@ -405,7 +406,7 @@ $FMT<<EOU
         $_b_%{STATE}$__ - the state of the alert:
         - ${_b_}ERROR$__ for permanent errors
         - ${_b_}WARNING$__ for things that might need reconfiguration
-	- ${_b_}INITIAL$__ for intital problems that needs to be resolved before proceeding
+        - ${_b_}INITIAL$__ for intital problems that needs to be resolved before proceeding
         - ${_b_}DOWN$__ for lost conenctivity to ${___}TARGET${__}
             (will not be fired if already in DOWN, UNREACHABLE or LINKDOWN state)
         - ${_b_}UNREACHABLE$__ for lost conenctivity to NEXTHOP (implies DOWN)
@@ -601,7 +602,7 @@ printf "        %s\n" "$_b_--ifcup=$__'ip link add wg0 type wireguard ; ip link 
 $FMT<<EOU
 
     We use $_b_--no-ping-nexthop$__ as the NEXTHOP is the same as the ${___}TARGET${__} peer-to-peer address we monitor the connection for (in reality we don't need to specify it as it is the default behaviour if the ${___}TARGET${__} address is the same as the NEXTHOP address).
-    
+
 
     ${___}Several VPN paths with one preferred interface:$__
 
@@ -614,7 +615,7 @@ $FMT<<EOU
     If vpnL is up we route just to the peer local network 10.0.10.0/24 via it.
     If vpnP is up we route to all private addresses via it, including 10.0.0.0/8
     If vpnF is up we use it as a full tunnel, routing all traffic (apart from the VPN-connection itself) via it.
-    
+
     Our preferred interface is vpnL and if we can't get any traffic through the vpn-server, vpnL is the interface we want to reset.
     BUT as long as we can get traffic through using any of the three interfaces, we don't want to get alerted and have any interface reset, so we can't use $_b_--force-interface$__. The soloution will be to allow continuous topology detection but hardcode the preferred interface in $_b_--ifcup$__ and --ifcdown$_b_.
 
@@ -683,7 +684,7 @@ $FMT <<EOU
 
 ${_b_}DEPENDENCIES$__
     $_b_$nwwatchdog$__ depends on the below executables being available in "/sbin:/bin:/usr/sbin:/usr/bin:\$PATH" or being shell-builtin. A check is done at startup and if any of these tools are missing, $_b_$nwwatchdog$__ will exit with an error telling which are lacking.
-        
+
 EOU
     for dep in sh printf which $DEPENDENCIES; do
                 printf "    - ${_b_}%s$__\n" "$dep"
@@ -710,16 +711,16 @@ EOU
 
     - Installed and running ${_b_}systemd$__  with ${_b_}systemctl$__ (and ${_b_}mkdir$__, ${_b_}chmod$__, ${_b_}rm$__)
         ${_b_}systemd$__ is (obviously) required for the ${_b_}--install-systemd$__, ${_b_}--list-systemd$__ and ${_b_}--remove-systemd$__ options to be functional.
-	The folder ${_b_}/etc/systemd/system/$__ must exist, ${_b_}systemctl$__ must be in the PATH and ${_b_}systemd$__ must be running.
+        The folder ${_b_}/etc/systemd/system/$__ must exist, ${_b_}systemctl$__ must be in the PATH and ${_b_}systemd$__ must be running.
         ${_b_}chmod$__ is used by ${_b_}--install-systemd$__ (but will function without it).
-	Unless all required directories are already existing, ${_b_}mkdir$__ is used by ${_b_}--install-systemd$__.
+        Unless all required directories are already existing, ${_b_}mkdir$__ is used by ${_b_}--install-systemd$__.
         ${_b_}rm$__ is used by ${_b_}--remove-systemd$__ to remove the systemd unit file for the service.
 
 EOU
     [ -n "$1" ] && {
-	printf "$1"
-	printf "$2\n" | while read l; do [ -n "$l" ] && printf "\n* $l"; done
-	printf "$3\n"
+        printf "$1"
+        printf "$2\n" | while read l; do [ -n "$l" ] && printf "\n* $l"; done
+        printf "$3\n"
     }
 }
 USAGEpager() {
@@ -740,8 +741,8 @@ USAGEpager() {
 }
 dieUSAGEpager() {
     USAGEpager "\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nERROR: $1" \
-	       "$ERRMSG" \
-	       "\n... aborting!\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"	       
+               "$ERRMSG" \
+               "\n... aborting!\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
     exit 1
 }
 SOPTRE=''
@@ -761,72 +762,72 @@ NDOPTRE=`printf "%s|%s" "$SOPTRE" "$AOPTRE" | sed -E 's/\(-*|\)//g' | sed -E 's/
 xOPTIONS=':'
 while [ $# -gt 0 ]; do
     ARG="$1"; shift
-    if printf %s "$ARG" | grep -qE "^${SOPTRE}$"; then     # No Argument Option 
- 	for o in $SOPTIONS; do
-	    eval "R=\"\${${o}RE}\""
-	    if printf %s "$ARG" | grep -qE "^$R$"; then
-		eval "$o=\"\${${o}V}\""
-		xOPTIONS="${xOPTIONS}${o}:"
-		break
-	    fi
-	done
+    if printf %s "$ARG" | grep -qE "^${SOPTRE}$"; then     # No Argument Option
+        for o in $SOPTIONS; do
+            eval "R=\"\${${o}RE}\""
+            if printf %s "$ARG" | grep -qE "^$R$"; then
+                eval "$o=\"\${${o}V}\""
+                xOPTIONS="${xOPTIONS}${o}:"
+                break
+            fi
+        done
     elif printf %s "$ARG" | grep -qE "^-${SOPTSRE}(${NDOPTRE})"; then # Grouped Options
-	A=`printf "%s" "$ARG" | grep -oE '^..'`
+        A=`printf "%s" "$ARG" | grep -oE '^..'`
         B=`printf "%s" "$ARG" | cut -c3-`
         set -- "$A" "-$B" "$@"
     elif printf %s "$ARG" | grep -qE "^${AOPTRE}"; then    # Option with Argument
-	if printf %s "$ARG" | grep -qE "^${AOPTRE}$"; then
-	    OPT=$ARG
+        if printf %s "$ARG" | grep -qE "^${AOPTRE}$"; then
+            OPT=$ARG
             ARG="$1"
-	    [ $# -gt 0 ] && shift
+            [ $# -gt 0 ] && shift
         elif printf "%s" "$ARG" | grep -qE  "^${AOPTRE}=[^[:space:]]"; then
-	    OPT="${ARG%%=*}"
-	    ARG="${ARG#*=}"
+            OPT="${ARG%%=*}"
+            ARG="${ARG#*=}"
         else
-	    OPT=`printf %s "$ARG" | grep -oE "${AOPTRE}"`
-	    ARG=`printf "%s" "$ARG" | sed -E "s/${AOPTRE}//"`
-	    [ "$ARG" = '=' ] && {
-		ARG=''
-		ERRMSG="$ERRMSG\n'$OPT=' seem to lack an arugment. If the argument really should be '=', use the syntax '$OPT=='."
-		break
-	    }
-	fi
-	[ -z "$ARG" ] && {
-	    ERRMSG="$ERRMSG\nOption '$OPT' requires an argument."
-	    break
-	}
+            OPT=`printf %s "$ARG" | grep -oE "${AOPTRE}"`
+            ARG=`printf "%s" "$ARG" | sed -E "s/${AOPTRE}//"`
+            [ "$ARG" = '=' ] && {
+                ARG=''
+                ERRMSG="$ERRMSG\n'$OPT=' seem to lack an arugment. If the argument really should be '=', use the syntax '$OPT=='."
+                break
+            }
+        fi
+        [ -z "$ARG" ] && {
+            ERRMSG="$ERRMSG\nOption '$OPT' requires an argument."
+            break
+        }
         for o in $AOPTIONS; do
-	    eval "R=\"\${${o}RE}\""
-	    if printf %s "$OPT" | grep -qE "^$R$"; then
-		printf %s "$xOPTIONS" | grep -qE ":$o:" && {
-		    ERRMSG="$ERRMSG\nOption '$OPT' $R specified multiple times."
-		    break
-		}
-		xOPTIONS="${xOPTIONS}${o}:"
-		eval "AR=\"\${${o}ARE}\""
-		printf %s "$ARG" | grep -qE "^$AR$" || {
-		    ERRMSG="$ERRMSG\nInvalid argument '$ARG' for option '$OPT' $R."
-		    break
-		}
-		eval "$o=\"$ARG\""
-		break
-	    fi
-	done
+            eval "R=\"\${${o}RE}\""
+            if printf %s "$OPT" | grep -qE "^$R$"; then
+                printf %s "$xOPTIONS" | grep -qE ":$o:" && {
+                    ERRMSG="$ERRMSG\nOption '$OPT' $R specified multiple times."
+                    break
+                }
+                xOPTIONS="${xOPTIONS}${o}:"
+                eval "AR=\"\${${o}ARE}\""
+                printf %s "$ARG" | grep -qE "^$AR$" || {
+                    ERRMSG="$ERRMSG\nInvalid argument '$ARG' for option '$OPT' $R."
+                    break
+                }
+                eval "$o=\"$ARG\""
+                break
+            fi
+        done
 
     else                                                   # TARGET
-	if printf "%s" "$ARG" | grep -qE '^-'; then
-	    ERRMSG="$ERRMSG\nInvalid OPTION: '$ARG'"
-	else
-	    [ -z "$TARGET" ] || ERRMSG="$ERRMSG\nMultiple TARGETs specified ('$TARGET' + '$ARG')."
-	    TARGET="$ARG"
-	    printf "%s" "$TARGET" \
-		| grep -qE '^((0*[0-9]?[0-9]|1[0-9][0-9]|2([0-4][0-9]|5[0-5]))\.){3}(0*[0-9]?[0-9]|1[0-9][0-9]|2([0-4][0-9]|5[0-5]))$' \
-		|| printf "%s" "$TARGET" \
-		    | grep -qE '^[a-zA-Z0-9_][a-zA-Z0-9_.-]*$' || {
-		    ERRMSG="$ERRMSG\nInvalid TARGET '$TARGET'. Must be an IP address or a valid hostname."
-		}
-	fi
-    fi    
+        if printf "%s" "$ARG" | grep -qE '^-'; then
+            ERRMSG="$ERRMSG\nInvalid OPTION: '$ARG'"
+        else
+            [ -z "$TARGET" ] || ERRMSG="$ERRMSG\nMultiple TARGETs specified ('$TARGET' + '$ARG')."
+            TARGET="$ARG"
+            printf "%s" "$TARGET" \
+                | grep -qE '^((0*[0-9]?[0-9]|1[0-9][0-9]|2([0-4][0-9]|5[0-5]))\.){3}(0*[0-9]?[0-9]|1[0-9][0-9]|2([0-4][0-9]|5[0-5]))$' \
+                || printf "%s" "$TARGET" \
+                    | grep -qE '^[a-zA-Z0-9_][a-zA-Z0-9_.-]*$' || {
+                    ERRMSG="$ERRMSG\nInvalid TARGET '$TARGET'. Must be an IP address or a valid hostname."
+                }
+        fi
+    fi
 done
 
 [ -n "$HELP" ] && { USAGEpager ; exit 0 ; }
@@ -935,9 +936,9 @@ alert() {
     STATE="$1"; shift
 
     [ "$STATE" = "ERROR" -o "$STATE" = "WARNING" -o "$STATE" = "INITIAL" ] || { # always alert on ERROR, WARNING and INITIAL
-	[ "$ALERTSTATE" = "INITIAL" ] && {                                    	# Do not alert if we are up after INITIAL
-	    [ "$STATE" = "UP" -o "$STATE" = "REACHABLE" -o "$STATE" = "LINKUP" ] && return
-	}
+        [ "$ALERTSTATE" = "INITIAL" ] && {                                      # Do not alert if we are up after INITIAL
+            [ "$STATE" = "UP" -o "$STATE" = "REACHABLE" -o "$STATE" = "LINKUP" ] && return
+        }
         [ "$STATE" = "$ALERTSTATE" ] && return                                # Same state
         [ "$ALERTSTATE" = "LINKDOWN" -a "$STATE" = "DOWN" ] && return         # LINKDOWN implies DOWN
         [ "$ALERTSTATE" = "LINKDOWN" -a "$STATE" = "UNREACHABLE" ] && return  # LINKDOWN implies UNREACHABLE
@@ -1059,10 +1060,10 @@ linkcheck() {
         NOLINK=$((NOLINK+1))
         [ $MAXNOLINK -gt 0 -a $NOLINK -gt $MAXNOLINK ] && {
             ip link show $IFC>/dev/null 2>&1 || {
-		alert LINKDOWN "Interface '%s' ... device does not exist after $MAXNOLINK attempts to bring it up!" "$IFC"
-		return 2
-	    }
-	    alert LINKDOWN "Link down on interface '%s' after $MAXNOLINK reset attempts (with $GRACE seconds in between)!" "$IFC"
+                alert LINKDOWN "Interface '%s' ... device does not exist after $MAXNOLINK attempts to bring it up!" "$IFC"
+                return 2
+            }
+            alert LINKDOWN "Link down on interface '%s' after $MAXNOLINK reset attempts (with $GRACE seconds in between)!" "$IFC"
             return 1
         }
         info "No link on $IFC... reset attempt $NOLINK out of $MAXNOLINK (0=infinite)"
@@ -1305,63 +1306,63 @@ TADDR=''
     IFCDOWN=`printf "%s" "$IFCDOWNT" | sed -E "s/\%\{IFC\}/$IFC/g"`
 
     ip link show $IFC>/dev/null 2>&1 || { # device does not exist
-	if [ -n "$IFCUPDOWN" ]; then
-	    info "Interface '%s' is not available (no such device), trying to bring it up." "$IFC"
-	    sh -c "$IFCUP" >/dev/null 2>&1
-	    trace "Sleeping for $GRACE seconds."
-	    sleep $GRACE
-	    if [ -n "$STATICIFC" ]; then
-		ip link show $IFC >/dev/null 2>&1
-		while [ $? -ne 0 ]; do
-		    warn "--force-interface '%s' not available (no such device), will keep trying to bring it up.\n\t%s" "$IFC" \
-			 "... or you might want to check your options and restart this instance with correct ones if wrong."
-		    sh -c "$IFCUP" >/dev/null 2>&1
-		    trace "Sleeping for $GRACE seconds."
-		    sleep $GRACE
-		    ip link show $IFC >/dev/null 2>&1
-		done
-	    elif ip link show $IFC >/dev/null 2>&1; then
-		if ip link show $IFC | grep -oq 'state DOWN'; then
-		    alert INITIAL "Initial interface '%s' brought up, but has no link, will continue detecting topology ..." "$IFC"
-		else
-		    info "Interface '%s' brought up successfully." "$IFC"
-		fi
-	    else
-		alert INITIAL "Initial interface '%s' could not be brought up (no such device), will continue detecting topology without it ..." "$IFC"
-		while [ -z "$TADDR" ]; do
-		    resolve_target || {
-			warn "Target '%s' does not resolve to an IPv4 address. Make sure name resoloution funtions on the system\n\t%s\n\t%s" \
-			     "$TARGET" \
-			     '... or stop this instance and start it again using a valid hostname / FQDN or IP address' \
-			     "... sleeping for $GRACE seconds."
-			sleep $GRACE
-		    }
-		done
-		while [ ! nexthop ]; do
-		    warn "--force-interface '%s' could not be brought up (no such device)\n\tand no route to target '%s' (%s) available,\n\t%s\n\t%s\n\t%s" \
-			 "$IFC" "$TARGET" "$TADDR" \
-			 'will keep trying until an interface via which we have a next hop to target is brought up,' \
-			 '... or you might want to check your options and restart this instance with correct ones if wrong.' \
-			 "... sleeping for $GRACE seconds."
-		    ip link show $IFC >/dev/null 2>&1 || sh -c "$IFCUP" >/dev/null 2>&1
-		    trace "Sleeping for $GRACE seconds."
-		    sleep $GRACE
-		done
-	    fi
-	elif [ -n "$STATICIFC" ]; then
-	    while ! ip link show $IFC >/dev/null 2>&1; do
-		warn "--force-interface '%s' is not available (no such device),\n\t%s\n\t%s\n\t%s\n\t%s" "$IFC" \
-		     'and ---no-interface-reset prevents bringing it up,' \
-		     'make sure the interface comes up,' \
-		     '... or you might want to check your options and restart this instance with correct ones if wrong.' \
-		     "... sleeping for $GRACE seconds."
-		sleep $GRACE
-	    done
-	else
-    	    alert INITIAL "Initial interface '%s' is not available (no such device),\n\t%s\n\t%s" "$IFC" \
-		  'and ---no-interface-reset prevents bringing it up!' \
-		  'Detecting topology without initial interface.'
-	fi
+        if [ -n "$IFCUPDOWN" ]; then
+            info "Interface '%s' is not available (no such device), trying to bring it up." "$IFC"
+            sh -c "$IFCUP" >/dev/null 2>&1
+            trace "Sleeping for $GRACE seconds."
+            sleep $GRACE
+            if [ -n "$STATICIFC" ]; then
+                ip link show $IFC >/dev/null 2>&1
+                while [ $? -ne 0 ]; do
+                    warn "--force-interface '%s' not available (no such device), will keep trying to bring it up.\n\t%s" "$IFC" \
+                         "... or you might want to check your options and restart this instance with correct ones if wrong."
+                    sh -c "$IFCUP" >/dev/null 2>&1
+                    trace "Sleeping for $GRACE seconds."
+                    sleep $GRACE
+                    ip link show $IFC >/dev/null 2>&1
+                done
+            elif ip link show $IFC >/dev/null 2>&1; then
+                if ip link show $IFC | grep -oq 'state DOWN'; then
+                    alert INITIAL "Initial interface '%s' brought up, but has no link, will continue detecting topology ..." "$IFC"
+                else
+                    info "Interface '%s' brought up successfully." "$IFC"
+                fi
+            else
+                alert INITIAL "Initial interface '%s' could not be brought up (no such device), will continue detecting topology without it ..." "$IFC"
+                while [ -z "$TADDR" ]; do
+                    resolve_target || {
+                        warn "Target '%s' does not resolve to an IPv4 address. Make sure name resoloution funtions on the system\n\t%s\n\t%s" \
+                             "$TARGET" \
+                             '... or stop this instance and start it again using a valid hostname / FQDN or IP address' \
+                             "... sleeping for $GRACE seconds."
+                        sleep $GRACE
+                    }
+                done
+                while [ ! nexthop ]; do
+                    warn "--force-interface '%s' could not be brought up (no such device)\n\tand no route to target '%s' (%s) available,\n\t%s\n\t%s\n\t%s" \
+                         "$IFC" "$TARGET" "$TADDR" \
+                         'will keep trying until an interface via which we have a next hop to target is brought up,' \
+                         '... or you might want to check your options and restart this instance with correct ones if wrong.' \
+                         "... sleeping for $GRACE seconds."
+                    ip link show $IFC >/dev/null 2>&1 || sh -c "$IFCUP" >/dev/null 2>&1
+                    trace "Sleeping for $GRACE seconds."
+                    sleep $GRACE
+                done
+            fi
+        elif [ -n "$STATICIFC" ]; then
+            while ! ip link show $IFC >/dev/null 2>&1; do
+                warn "--force-interface '%s' is not available (no such device),\n\t%s\n\t%s\n\t%s\n\t%s" "$IFC" \
+                     'and ---no-interface-reset prevents bringing it up,' \
+                     'make sure the interface comes up,' \
+                     '... or you might want to check your options and restart this instance with correct ones if wrong.' \
+                     "... sleeping for $GRACE seconds."
+                sleep $GRACE
+            done
+        else
+            alert INITIAL "Initial interface '%s' is not available (no such device),\n\t%s\n\t%s" "$IFC" \
+                  'and ---no-interface-reset prevents bringing it up!' \
+                  'Detecting topology without initial interface.'
+        fi
     }
 }
 
