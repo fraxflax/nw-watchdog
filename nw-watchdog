@@ -917,7 +917,7 @@ case "$LOGSIZEb" in
 esac
 LOGSIZEb=$((LOGSIZEb*1024))
 
-test -n "$STATICIFC" && CONTINUOUSTOPOLOGYDETECT=''
+test -n "$STATICIFC" && { CONTINUOUSTOPOLOGYDETECT='' ; IFC=$STATICIFC ;}
 
 log() {
     logPATN="%s  $1"; shift
