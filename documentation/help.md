@@ -2,7 +2,7 @@
 __nw-watchdog__ - Network Watchdog
 
 ## VERSION
-1.1.0-beta (main branch)
+1.1.0-beta2 (main branch)
 
 ## SYNOPSIS
 __nw-watchdog__ <ins>TARGET</ins> [ OPTIONS ]
