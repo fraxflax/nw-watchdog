@@ -63,7 +63,7 @@ If the <ins>TARGET</ins> is not on the same subnet as the source, the reachabili
 
 * __--no-interface-reset | -R__<br>
   Do not try to bring down and up interface after failed connectivity checks.<br>
-  (Do not try to "repair" the connection", just monitor it.)
+  (Do not try to "repair" the connection, just monitor it.)
 
 * __--no-continuous-topology-detect | -T__<br>
   Normaly the topology (resolving the ip address of the <ins>TARGET</ins>, detecting which source interface to use and the ip address of the NEXTHOP towards the <ins>TARGET</ins>) is detected at startup and continuously monitored for changes.
@@ -116,7 +116,7 @@ These opions takes a single argument each and may be specified in any order. Spe
 	Also see the `--alert` option.
 
 	__4__ - info (default)<br>
-	Same as level 3, but also logs some useful information on what's going on, such as topology changes, some test failures forcing more testing,  interface resets, etc
+	Same as level 3, but also logs some useful information on what's going on, such as topology changes, some test failures forcing more testing, interface resets, etc
 
 	__5__ - trace<br>
 	Logs even more info about which action is currently performed, including, all secondary tests that are run, when sleeping longer than usual, etc.
@@ -130,7 +130,7 @@ These opions takes a single argument each and may be specified in any order. Spe
 
 	The interface may dynamically change due to topology detection. If you want to force the use of a specific interface, use `--force-interface` instead.
 
-	If neither of `--interface` or `--force-interface` is specified the source interface it will be determined from the FIB by looking at the route to the <ins>TARGET</ins>. The reason to specify it even so, would be to have __nw-watchdog__ bring it up if it's down when starting.
+	If neither `--interface` nor `force-interface` is specified the source interface will be determined from the FIB by looking at the route to the <ins>TARGET</ins>. The reason to specify it even so, would be to have __$nwwatchdog__ bring it up if it's down when starting.
 
 	`--interface` cannot be combined with `--force-interface`.
 
@@ -296,11 +296,11 @@ These opions takes a single argument each and may be specified in any order. Spe
 	If systemd is installed, a systemd service file is written to `/etc/systemd/system/nw-watchdog-SERVICENAME.service` launching __nw-watchdog__ as a daemon with<br>
   `--pidfile=/run/nw-watchdog/SERVICENAME.pid`<br>
   `--logfile=/var/log/nw-watchdog/SERVICENAME.log`<br>
-	and otherwise with the exact same options as run (apart from the `--install-systemd` option itself of course).
+	and otherwise the exact same options as run (apart from the `--install-systemd` option itself of course).
 
 	If `/etc/systemd/system/nw-watchdog-SERVICENAME.service` already exists, the service will be stopped and the file overwritten.
 
-	It will then enable, start it and show status of the newly created nw-watchdog-<ins>SERVICENAME</ins>.service.
+	It will then enable, start and show status of the newly created nw-watchdog-<ins>SERVICENAME</ins>.service.
 
 	The <ins>SERVICENAME</ins> must consist of at least 1 valid character ( 'a-z', 'A-Z', '0-9', '-' and '_' ) and be no longer than 236 characters.
 
@@ -454,7 +454,7 @@ We use `--no-ping-nexthop` as the NEXTHOP is the same as the <ins>TARGET</ins> p
 This is a (real life) cornor case but worth explaining to get an understanding of the capabilities of __nw-watchdog__.
 
 We have setup ifupdown to handle three different vpn-interfaces: `vpnL` `vpnP` and `vpnF`<br>
-They all use the same VPN server but have different routes via the server.<br>
+They all use the same VPN server but have different routes via the server depending on which interface is up.<br>
 Only one of the interfaces can be up at any given time.
 
 If `vpnL` is up we route just to the peer local network `10.0.10.0/24` via it.<br>
@@ -507,7 +507,6 @@ __nw-watchdog__ detetcs that the connectivity via the VPN-server is lost and bri
 00:00:37  ALERT: DOWN - Not getting replies from target 'vpn.inside.dom' (10.0.10.1) on interface 'eth0'.
                  Resetting interface:
                  ifdown vpnL ; ifdown vpnP ; ifdown vpnF
-                 sleep 1
                  ifup vpnL
 00:00:37   INFO: Resetting interface (eth0).
 ```

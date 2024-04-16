@@ -62,10 +62,10 @@ AOPTIONS='V IFC STATICIFC LOGFILE LOGSIZE PIDFILE SLOWUPTIMEOUT SLEEP GRACE MAXN
 
 # Ensure we have a POSIX (enough) shell
 set >/dev/null 2>&1 && export PATH >/dev/null 2>&1 || {
-    printf '\nThis script must be run in a POSIX compliant shell!\n\n' 1>&2 \
-        || echo 'This script must be run in a POSIX compliant shell!' 1>&2
-    exit 1
-}
+        printf '\nThis script must be run in a POSIX compliant shell!\n\n' 1>&2 \
+            || echo 'This script must be run in a POSIX compliant shell!' 1>&2
+        exit 1
+    }
 
 # Let's put the "standard" paths first in PATH to ensure we get the standard utilities we need
 # and remove duplicates in PATH before exporting it
@@ -117,14 +117,14 @@ _show_errmsg() {
     while [ $i -lt $COLS ]; do div="~$div"; i=$((i+1)); done
     printf '\n%s\n%s: %s' "$_b_$div" "${_b_}ERROR$__"
     [ -n "$1" ] && {
-	PTN="$1"; shift
-	printf "$PTN\n" "$@"
+        PTN="$1"; shift
+        printf "$PTN\n" "$@"
     }
     LINES=`printf '%s' "$ERRMSG" | sed -E 's/\n/\t/g;s/\\[nt]/\t/g;s/%/%%/g'`
     printf "$LINES" | while read l; do
-	[ -n "$l" ] || break
-	l=`printf '%s' "$l" | sed -E 's/\t/\n   /g'`
-	printf '%s %s\n' "$_b_*$__" "$l"
+        [ -n "$l" ] || break
+        l=`printf '%s' "$l" | sed -E 's/\t/\n   /g'`
+        printf '%s %s\n' "$_b_*$__" "$l"
     done
     printf '%s\n\n' "$_b_$div"
 }
@@ -185,7 +185,7 @@ ${_b_}OPTIONS $__(no arguments)
 
         All other options are ignored, apart from --no-pager which can be used to avoid using a pager.
 
-    $_b_--no-pager | --no-less | --no-more | -M__
+    $_b_--no-pager | --no-less | --no-more | -M$__
         Do NOT use a pager for help and error messages.
 
         $_b_--install-systemd$__ implies $_b_--no-pager$__
@@ -211,7 +211,7 @@ ${_b_}OPTIONS $__(no arguments)
 
     $_b_--no-interface-reset | -R $__
         Do not try to bring down and up interface after failed connectivity checks.
-        (Do not try to "repair" the connection", just monitor it.)
+        (Do not try to "repair" the connection, just monitor it.)
 
     $_b_--no-continuous-topology-detect | -T $__
         Normaly the topology (resolving the ip address of the ${___}TARGET${__}, detecting which source interface to use and the ip address of the NEXTHOP towards the ${___}TARGET${__}) is detected at startup and continuously monitored for changes.
@@ -266,7 +266,7 @@ $FMT<<EOU
         Also see the $_b_--alert$__ option.
 
         ${_b_}4$__ - info (default)
-        Same as level 3, but also logs some useful information on what's going on, such as topology changes, some test failures forcing more testing,  interface resets, etc
+        Same as level 3, but also logs some useful information on what's going on, such as topology changes, some test failures forcing more testing, interface resets, etc
 
         ${_b_}5$__ - trace
         Logs even more info about which action is currently performed, including, all secondary tests that are run, when sleeping longer than usual, etc.
@@ -280,7 +280,7 @@ $FMT<<EOU
 
         The interface may dynamically change due to topology detection. If you want to force the use of a specific interface, use $_b_--force-interface$__ instead.
 
-        If neither of ${_b_}--interface$__ or $_b_--force-interface$__ is specified the source interface it will be determined from the FIB by looking at the route to the ${___}TARGET${__}. The reason to specify it even so, would be to have $_b_$nwwatchdog$__ bring it up if it's down when starting.
+        If neither ${_b_}--interface$__ nor $_b_--force-interface$__ is specified the source interface will be determined from the FIB by looking at the route to the ${___}TARGET${__}. The reason to specify it even so, would be to have $_b_$nwwatchdog$__ bring it up if it's down when starting.
 
         $_b_--interface$__ cannot be combined with $_b_--force-interface$__.
 
@@ -445,17 +445,14 @@ $FMT<<EOU
     $_b_--install-systemd$__ ${___}SERVICENAME$__
         Default: none
 
-        Will write a systemd service file /etc/systemd/system/nw-watchdog-${___}SERVICENAME$__.service launching $_b_$nwwatchdog$__ as a daemon with
-        and otherwise with the exact same options as run (apart from the $_b_--install-systemd$__ option itself of course).
-
         If systemd is installed, a systemd service file is written to /etc/systemd/system/nw-watchdog-${___}SERVICENAME$__.service launching $_b_$nwwatchdog$__ as a daemon with
         $_b_--pidfile$__=/run/nw-watchdog/${___}SERVICENAME$__.pid$__
         $_b_--logfile$__=/var/log/nw-watchdog/${___}SERVICENAME$__.log$__
-        and otherwise with the exact same options as run (apart from the $_b_--install-systemd$__ option itself of course).
+        and otherwise the exact same options as run (apart from the $_b_--install-systemd$__ option itself of course).
 
         If /etc/systemd/system/nw-watchdog-${___}SERVICENAME$__.service already exists, the service will be stopped and the file overwritten.
 
-        It will then enable, start it and show status of the newly created nw-watchdog-${___}SERVICENAME$__.service.
+        It will then enable, start and show status of the newly created nw-watchdog-${___}SERVICENAME$__.service.
 
         The ${___}SERVICENAME$__ must consist of at least 1 valid character ( 'a-z', 'A-Z', '0-9', '-' and '_' ) and be no longer than 236 characters.
 
@@ -556,7 +553,7 @@ printf "        %s\n" "$_b_--ifcup=$__'ipsec up connection-name ; ip tunnel add 
 $FMT<<EOU
 
     We use $_b_--ifup-grace=25$__ to allow enough time for IPSec to establish the connection upon start and interface reset.
-    $_b_--slow-up-timeout=5$__ (making the deadline 25 seconds for the slow-up ping test) should be enough for an idle IPSec conmnection to wakeup and start forwarding packets when monitored.
+    $_b_--slow-up-timeout=5$__ (making the deadline 25 seconds for the slow-up ping test) should be enough for an idle IPSec connection to wakeup and start forwarding packets when monitored.
 
     In the above example we monitor the connectivity to the peer address inside the VTI tunnel, which is also the NEXTHOP.
     If we are interested in the connectivity to something in the remote network routed via the tunnel we could use that as a ${___}TARGET${__} instead of the peer address:
@@ -624,7 +621,7 @@ $FMT<<EOU
     This is a (real life) cornor case but worth explaining to get an understanding of the capabilities of $_b_$nwwatchdog$__.
 
     We have setup ifupdown to handle three different vpn-interfaces: vpnL vpnP and vpnF
-    They all use the same VPN server but have different routes via the server.
+    They all use the same VPN server but have different routes via the server depending on which interface is up.
     Only one of the interfaces can be up at any given time.
 
     If vpnL is up we route just to the peer local network 10.0.10.0/24 via it.
@@ -632,7 +629,7 @@ $FMT<<EOU
     If vpnF is up we use it as a full tunnel, routing all traffic (apart from the VPN-connection itself) via it.
 
     Our preferred interface is vpnL and if we can't get any traffic through the vpn-server, vpnL is the interface we want to reset.
-    BUT as long as we can get traffic through using any of the three interfaces, we don't want to get alerted and have any interface reset, so we can't use $_b_--force-interface$__. The soloution will be to allow continuous topology detection but hardcode the preferred interface in $_b_--ifcup$__ and --ifcdown$_b_.
+    BUT as long as we can get traffic through using any of the three interfaces, we don't want to get alerted and have any interface reset, so we can't use $_b_--force-interface$__. The soloution will be to allow continuous topology detection but hardcode the preferred interface in $_b_--ifcup$__ and $_b_--ifcdown$_b_.
 
         $_b_$nwwatchdog$__ vpn.inside.dom \\
           $_b_--interface=${__}vpnL \\
@@ -678,7 +675,6 @@ $_b_    Here the $nwwatchdog gives up and concludes that the ${___}TARGET${__}$_
     00:00:37  ALERT: DOWN - Not getting replies from target 'vpn.inside.dom' (10.0.10.1) on interface 'eth0'.
                      Resetting interface:
                      ifdown vpnL ; ifdown vpnP ; ifdown vpnF
-                     sleep 1
                      ifup vpnL
     00:00:37   INFO: Resetting interface (eth0).
 $_b_    ^^^^^^^^^^^^^^^^                      ^^^^ $__
@@ -737,8 +733,8 @@ EOU
 USAGE() {
     [ -z "$PAGERUSE" ] && {
         _USAGE "$@"
-	[ -n "$ERRMSG" -o -n "$1" ] && exit 1
-	exit 0
+        [ -n "$ERRMSG" -o -n "$1" ] && exit 1
+        exit 0
     }
     if which "$PAGER" >/dev/null 2>&1; then
         LESS="$LESS -R"; export LESS # make sure less, if used, passes ANSI color escape sequences to terminal
@@ -775,7 +771,7 @@ while [ $# -gt 0 ]; do
             eval "R=\"\${${o}RE}\"" # should be \" or R will contain variabel names instead of content
             if printf %s "$ARG" | grep -qE "^$R$"; then
                 eval "$o=\"\${${o}V}\"" # should be \" or o will contain variabel names instead of content
-		xOPTIONS="${xOPTIONS}${o}:"
+                xOPTIONS="${xOPTIONS}${o}:"
                 break
             fi
         done
@@ -794,26 +790,26 @@ while [ $# -gt 0 ]; do
         else                                                                # Option [no-space] Argument
             OPT=`printf %s "$ARG" | grep -oE "^${AOPTRE}"`
             ARG=`printf "%s" "$ARG" | sed -E "s/^${AOPTRE}//"`
-	    [ "$ARG" = '=' ] && {
-		ERRMSG="'$OPT=' seem to lack an arugment.\tIf the argument really should be '=', use the syntax '$OPT=='.\n$ERRMSG"
-		ARG=''
-	    }
+            [ "$ARG" = '=' ] && {
+                ERRMSG="'$OPT=' seem to lack an arugment.\tIf the argument really should be '=', use the syntax '$OPT=='.\n$ERRMSG"
+                ARG=''
+            }
         fi
-	[ -z "$ARG" ] && ERRMSG="Option '$OPT' requires an argument.\n$ERRMSG"
+        [ -z "$ARG" ] && ERRMSG="Option '$OPT' requires an argument.\n$ERRMSG"
         for o in $AOPTIONS; do
             eval "R=\"\${${o}RE}\"" # should be \" or AR will contain variabel names instead of content
             if printf %s "$OPT" | grep -qE "^$R$"; then
                 if printf %s "$xOPTIONS" | grep -qE ":$o:"; then
-		    eval "oARG=\"\$${o}\""
-		    [ "$oARG" = "$ARG" ] || {
-			ERRMSG="Option '$OPT' $R specified multiple times with different values.\n$ERRMSG"
-			break
+                    eval "oARG=\"\$${o}\""
+                    [ "$oARG" = "$ARG" ] || {
+                        ERRMSG="Option '$OPT' $R specified multiple times with different values.\n$ERRMSG"
+                        break
                     }
-		else
+                else
                     xOPTIONS="${xOPTIONS}${o}:"
-		fi
-		eval "AR=\"\${${o}ARE}\"" # should be \" or AR will contain variabel names instead of content
-		printf %s "$ARG" | grep -qE "^$AR$" || {
+                fi
+                eval "AR=\"\${${o}ARE}\"" # should be \" or AR will contain variabel names instead of content
+                printf %s "$ARG" | grep -qE "^$AR$" || {
                     ERRMSG="Invalid argument '$ARG' for option '$OPT' $R.\n$ERRMSG"
                     break
                 }
@@ -841,33 +837,33 @@ done
 [ -n "$HELP" ] && ERRMSG='' USAGE 
 
 [ -n "$LISTSYSTEMD" ] || printf %s "$xOPTIONS" | grep -qE ':RMSYSTEMDSERVICE:' && {
-    printf %s "$xOPTIONS" | grep -qE ':.*:.*:' || [ -n "$TARGET" ] && \
-	ERRMSG='' USAGE %s "--list-systemd and --remove-systemd cannot be combined with any other option"
-    [ -d /etc/systemd/system/. ] || USAGE "'/etc/systemd/system/' does not exists, is systemd installed and running?"
-    [  -n "$LISTSYSTEMD" ] && {
-        printf "\n\n--- Listing all loaded nw-watchdog systemd units: ---\n"
-        systemctl list-units --all nw-watchdog-\* 2>/dev/null | grep -oE 'nw-watchdog-.*\.service.*'       
-        printf "\n--- Listing all installed nw-watchdog systemd units: ---\n"
-        systemctl list-unit-files --all nw-watchdog-\* 2>/dev/null
+        printf %s "$xOPTIONS" | grep -qE ':.*:.*:' || [ -n "$TARGET" ] && \
+            ERRMSG='' USAGE %s "--list-systemd and --remove-systemd cannot be combined with any other option"
+        [ -d /etc/systemd/system/. ] || USAGE "'/etc/systemd/system/' does not exists, is systemd installed and running?"
+        [  -n "$LISTSYSTEMD" ] && {
+            printf "\n\n--- Listing all loaded nw-watchdog systemd units: ---\n"
+            systemctl list-units --all nw-watchdog-\* 2>/dev/null | grep -oE 'nw-watchdog-.*\.service.*'       
+            printf "\n--- Listing all installed nw-watchdog systemd units: ---\n"
+            systemctl list-unit-files --all nw-watchdog-\* 2>/dev/null
+            exit 0
+        }
+        [ -n "$RMSYSTEMDSERVICE" ] || ERRMSG='' USAGE %s "--remove-systemd requires a service or unit name to remove"
+        [ `id -u` -eq 0 ] || USAGE %s "$nwwatchdog --remove-systemd must be run as root"
+        systemctl daemon-reload || USAGE %s "Failed to reload systemd. Is systemd installed and running?"
+        UNITNAME="$RMSYSTEMDSERVICE"
+        systemctl list-unit-files "$UNITNAME" >/dev/null 2>&1 || {
+            UNITNAME="nw-watchdog-$RMSYSTEMDSERVICE.service"
+            systemctl list-unit-files "$UNITNAME" >/dev/null 2>&1 \
+                || USAGE "Neither '%s' or '%s' is a valid systemd service unit name.\n       %s" \
+                         "$RMSYSTEMDSERVICE" "$UNITNAME" \
+                         "Use --list-systemd to list all nw-watchdog systemd units."
+        }
+        systemctl stop "$UNITNAME" || printf "\nWARNING: failed to stop '$UNITNAME'\n" 1>&2
+        systemctl disable "$UNITNAME" || printf "\nWARNING: failed to disable '$UNITNAME'\n" 1>&2
+        rm -vf "/etc/systemd/system/$UNITNAME" || printf "\nWARNING: failed to remove '/etc/systemd/system/$UNITNAME'\n" 1>&2
+        systemctl daemon-reload || printf "\nWARNING: Failed to reload systemd." 1>&2
         exit 0
     }
-    [ -n "$RMSYSTEMDSERVICE" ] || ERRMSG='' USAGE %s "--remove-systemd requires a service or unit name to remove"
-    [ `id -u` -eq 0 ] || USAGE %s "$nwwatchdog --remove-systemd must be run as root"
-    systemctl daemon-reload || USAGE %s "Failed to reload systemd. Is systemd installed and running?"
-    UNITNAME="$RMSYSTEMDSERVICE"
-    systemctl list-unit-files "$UNITNAME" >/dev/null 2>&1 || {
-        UNITNAME="nw-watchdog-$RMSYSTEMDSERVICE.service"
-        systemctl list-unit-files "$UNITNAME" >/dev/null 2>&1 \
-            || USAGE "Neither '%s' or '%s' is a valid systemd service unit name.\n       %s" \
-                     "$RMSYSTEMDSERVICE" "$UNITNAME" \
-                     "Use --list-systemd to list all nw-watchdog systemd units."
-    }
-    systemctl stop "$UNITNAME" || printf "\nWARNING: failed to stop '$UNITNAME'\n" 1>&2
-    systemctl disable "$UNITNAME" || printf "\nWARNING: failed to disable '$UNITNAME'\n" 1>&2
-    rm -vf "/etc/systemd/system/$UNITNAME" || printf "\nWARNING: failed to remove '/etc/systemd/system/$UNITNAME'\n" 1>&2
-    systemctl daemon-reload || printf "\nWARNING: Failed to reload systemd." 1>&2
-    exit 0
-}
 
 [ -z "$PINGTARGET" -a -z "$PINGNEXTHOP" ] && \
     ERRMSG="You must allow pinging of target and/or nexthop!\t(Can't combine --no-ping-target and --no-ping-nexthop!)\n$ERRMSG"
@@ -892,10 +888,10 @@ done
 }
 [ "$LOGFILE" = '-' ] && { LOGSIZE=0 ; LOGSIZEb=0 ; LOGFILE='' ;}
 [ "$PIDFILE" = '-' ] && PIDFILE='/dev/null'
-  
+
 printf "%s" "$LOGSIZE" | grep -iqE '^[0-9]+*[KMG]*$' || {
-        ERRPTN="$ERRPTN\n* %s"
-        set -- "Invalid logsize '$LOGSIZE'" "$@"
+    ERRPTN="$ERRPTN\n* %s"
+    set -- "Invalid logsize '$LOGSIZE'" "$@"
 }
 
 dienl() {
@@ -905,9 +901,9 @@ dienl() {
 }
 [ -n "$LOGFILE" -a -z "$SYSTEMDSERVICENAME" ] && {
     touch "$LOGFILE" 2>/dev/null || \
-	dienl "%s\n%s\n" \
-	      "Cannot write to logfile '$LOGFILE'." \
-	      "Fix permissions, run as user with access or specify another --logfile."
+        dienl "%s\n%s\n" \
+              "Cannot write to logfile '$LOGFILE'." \
+              "Fix permissions, run as user with access or specify another --logfile."
 }
 
 LOGSIZEb="$LOGSIZE"
@@ -1166,12 +1162,12 @@ nexthop() {
     printf "%s" "$SYSTEMDSERVICENAME" | grep -qEe '^[a-zA-Z0-9_-]+$' || \
         USAGE "Invalid systemd service name '%s'\n       %s\n       %s" "$SYSTEMDSERVICENAME" \
               "The SYSTEMDSERVICENAME must contain only alphanumeric characters, hyphens and underscores" \
-	      "and be no longer than 236 characters."
+              "and be no longer than 236 characters."
     [ `printf "%s" "$SYSTEMDSERVICENAME" | wc -c` -gt 236 ] && USAGE "Systemd service name\n       '%s'\n       %s" \
-								     "$SYSTEMDSERVICENAME" "is too long (max 236 characters)" 
+                                                                     "$SYSTEMDSERVICENAME" "is too long (max 236 characters)" 
     [ `id -u` -eq 0 ] || USAGE %s "$nwwatchdog --install-systemd must be run as root"
     [ -d /etc/systemd/system/. ] || USAGE "'/etc/systemd/system/' does not exists,\n       systemd '%s.service' NOT installed!" \
-					  "$SYSTEMDSERVICENAME"
+                                          "$SYSTEMDSERVICENAME"
     for DIR in /run/nw-watchdog /var/log/nw-watchdog; do # /var/log/nw-watchdog/$SYSTEMDSERVICENAME.systemd; do
         [ -d $DIR ] || {
             mkdir $DIR || dienl "Failed to create directory '%s',\n       systemd '%s.service' NOT installed!" $DIR $SYSTEMDSERVICENAME
@@ -1414,13 +1410,13 @@ else
     nexthop
     EXITCODE=$?
     while [ $EXITCODE -ne 0 ]; do
-            warn "No interface specified and no route to target '%s' (%s) available, make sure interface comes up,\n\t%s\n\t%s" \
-                 "$TARGET" "$TADDR" \
-                 'or stop this instance and start it again using --interface or --force-interface to bring it up automatically.' \
-                 "... sleeping for $GRACE seconds."
-            sleep $GRACE
-            nexthop
-            EXITCODE=$?
+        warn "No interface specified and no route to target '%s' (%s) available, make sure interface comes up,\n\t%s\n\t%s" \
+             "$TARGET" "$TADDR" \
+             'or stop this instance and start it again using --interface or --force-interface to bring it up automatically.' \
+             "... sleeping for $GRACE seconds."
+        sleep $GRACE
+        nexthop
+        EXITCODE=$?
     done
 fi
 
@@ -1439,22 +1435,26 @@ while true; do
             isup "$TADDR" || {
                 if [ -n "$PINGNEXTHOP" ]; then
                     if isup "$NEXTHOP" noresolve; then
-                        alert DOWN "Not getting replies from target '%s' (%s) on interface '%s', but nexthop '%s' is reachable... sleeping for %d seconds." \
+                        alert DOWN \
+                              "Not getting replies from target '%s' (%s) on interface '%s', but nexthop '%s' is reachable... sleeping for %d seconds." \
                               "$TARGET" "$TADDR" "$IFC" "$NEXTHOP" $GRACE
                         sleep $GRACE
                     else
-                        alert UNREACHABLE "Not getting replies from target '%s' (%s) on interface '%s', and nexthop '%s' is not reachable.\n\t%s\n\t%s\n\t%s" \
-                                          "$TARGET" "$TADDR" "$IFC" "$NEXTHOP" 'Resetting interface:' "$IFCDOWN" "$IFCUP"
+                        alert UNREACHABLE \
+                              "Not getting replies from target '%s' (%s) on interface '%s', and nexthop '%s' is not reachable.\n\t%s\n\t%s\n\t%s" \
+                              "$TARGET" "$TADDR" "$IFC" "$NEXTHOP" 'Resetting interface:' "$IFCDOWN" "$IFCUP"
                         ifreset && nexthop
                     fi
                 else
-                    alert DOWN "Not getting replies from target '%s' (%s) on interface '%s'.\n\t%s\n\t%s\n\t%s" \
-                               "$TARGET" "$TADDR" "$IFC" 'Resetting interface:' "$IFCDOWN" "$IFCUP"
+                    alert DOWN \
+                          "Not getting replies from target '%s' (%s) on interface '%s'.\n\t%s\n\t%s\n\t%s" \
+                          "$TARGET" "$TADDR" "$IFC" 'Resetting interface:' "$IFCDOWN" "$IFCUP"
                     ifreset && nexthop
                 fi
             }
         else
-            alert UNREACHABLE "Not getting replies from target '%s' (%s) and no route to target available, resetting interface (%s):\n\t%s\n\t%s" \
+            alert UNREACHABLE \
+                  "Not getting replies from target '%s' (%s) and no route to target available, resetting interface (%s):\n\t%s\n\t%s" \
                   "$TARGET" "$TADDR" "$IFC" "$IFCDOWN" "$IFCUP"
             ifreset && nexthop
         fi
@@ -1469,16 +1469,18 @@ while true; do
             [ -n "$CONTINUOUSTOPOLOGYDETECT" ] && { resolve_target; nexthop ;}
         done
         trace "nexthop '%s' (for --no-ping-target '%s' (%s)) on interface '%s', not reachable, checking link and nexthop." \
-             "$NEXTHOP" "$TARGET" "$TADDR" "$IFC"
+              "$NEXTHOP" "$TARGET" "$TADDR" "$IFC"
         if { resolve_target && nexthop ;} || { linkcheck && resolve_target && nexthop ;}; then
             isup "$NEXTHOP" noresolve || {
-                alert UNREACHABLE "nexthop '%s' (for --no-ping-target '%s' (%s)), not reachable, resetting interface ('%s'):\n\t%s\n\tsleep 1\n\t%s" \
+                alert UNREACHABLE \
+                      "nexthop '%s' (for --no-ping-target '%s' (%s)), not reachable, resetting interface ('%s'):\n\t%s\n\tsleep 1\n\t%s" \
                       "$NEXTHOP" "$TARGET" "$TADDR" "$IFC" "$IFCDOWN" "$IFCUP"
                 ifreset && nexthop
             }
         else
-            alert UNREACHBLE "No route to --no-ping-target '%s' (%s). Resetting interface (%s):\n\t%s\n\tsleep 1\n\t%s" \
-                             "$TARGET" "$TADDR" "$IFC" "$IFCDOWN" "$IFCUP"
+            alert UNREACHBLE \
+                  "No route to --no-ping-target '%s' (%s). Resetting interface (%s):\n\t%s\n\tsleep 1\n\t%s" \
+                  "$TARGET" "$TADDR" "$IFC" "$IFCDOWN" "$IFCUP"
             ifreset && nexthop
         fi
     fi
