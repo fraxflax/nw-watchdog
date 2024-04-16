@@ -35,7 +35,7 @@ These options take no arguments, and may be specified in any order. They can be 
 
 * __--help | -h__<br>
 	Shows this help, using `$PAGER` if set to an executable, otherwise `less` or `more` if available in `/sbin:/bin:/usr/sbin:/usr/bin:$PATH`<br>
-(Use `--no-pager` to avoid using a pager).
+All other options are ignored, apart from `--no-pager` which can be used to avoid using a pager.
 
 * __--no-pager | --no-less | --no-more | -M__<br>
 	Do NOT use a pager for help and error messages.
@@ -90,6 +90,9 @@ If the <ins>TARGET</ins> is not on the same subnet as the source, the reachabili
 	If it's combined with any of the options it provides shortcuts for, the specified option will take precedence over the `--debug` shortcut.
 
 	This option cannot be combined with `--install-systemd` (but it would be wise to test the configuration with `--debug` before installing as a systemd service).
+
+* __--version__<br>
+    Prints the version of __nw-watchdog__ to stdout and immediately exits. All other options are ignored.
 
 ## OPTIONS (with ARGUMENT)
 These opions takes a single argument each and may be specified in any order. Specify with equalsign or space or no space between option and argument. They can only be grouped together with the shortform of the NO-ARGUMENT-OPTIONS above, and must be last in such groupings (e.g. `-PAV5`).
@@ -566,7 +569,9 @@ __nw-watchdog__ will function without the below listed utilities, but will use t
   If available it will be used as default `--alert` command. Otherwise, alerting will be done to stderr by default.
 
 - Installed and running `systemd`  with `systemctl` (and `mkdir`, `chmod`, `rm`)<br>
-  `systemd` is (obviously) required for the `--install-systemd`, `--list-systemd` and `--remove-systemd` options to be functional. The folder `/etc/systemd/system/` must exist, `systemctl` must be in the PATH and `systemd` must be running.<br>
-  Unless all required directories are already existing, `mkdir` and `chmod` are also used by `--install-systemd`.<br>
+  `systemd` is (obviously) required for the `--install-systemd`, `--list-systemd` and `--remove-systemd` options to be functional.<br>
+  The folder `/etc/systemd/system/` must exist, `systemctl` must be in the PATH and `systemd` must be running.<br>
+  `chmod` is used by `--install-systemd` (but will function without it).<br>
+  Unless all required directories are already existing, `mkdir` is used by `--install-systemd`.<br>
   `rm` is used by `--remove-systemd` to remove the systemd unit file for the service.
   
