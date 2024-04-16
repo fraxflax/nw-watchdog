@@ -803,14 +803,15 @@ while [ $# -gt 0 ]; do
         for o in $AOPTIONS; do
             eval "R=\"\${${o}RE}\"" # should be \" or AR will contain variabel names instead of content
             if printf %s "$OPT" | grep -qE "^$R$"; then
-                printf %s "$xOPTIONS" | grep -qE ":$o:" && {
+                if printf %s "$xOPTIONS" | grep -qE ":$o:"; then
 		    eval "oARG=\"\$${o}\""
 		    [ "$oARG" = "$ARG" ] || {
 			ERRMSG="Option '$OPT' $R specified multiple times with different values.\n$ERRMSG"
 			break
                     }
-		}
-                xOPTIONS="${xOPTIONS}${o}:"
+		else
+                    xOPTIONS="${xOPTIONS}${o}:"
+		fi
 		eval "AR=\"\${${o}ARE}\"" # should be \" or AR will contain variabel names instead of content
 		printf %s "$ARG" | grep -qE "^$AR$" || {
                     ERRMSG="Invalid argument '$ARG' for option '$OPT' $R.\n$ERRMSG"
