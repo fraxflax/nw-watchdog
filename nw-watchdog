@@ -838,7 +838,7 @@ while [ $# -gt 0 ]; do
 done
 
 [ -n "$VERSHOW" ] && { printf '%s\n' "$VERSION"; exit 0; }
-[ -n "$HELP" ] && USAGE 
+[ -n "$HELP" ] && ERRMSG='' USAGE 
 
 [ -n "$LISTSYSTEMD" ] || printf %s "$xOPTIONS" | grep -qE ':RMSYSTEMDSERVICE:' && {
     printf %s "$xOPTIONS" | grep -qE ':.*:.*:' || [ -n "$TARGET" ] && \
