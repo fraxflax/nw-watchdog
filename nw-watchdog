@@ -837,7 +837,7 @@ while [ $# -gt 0 ]; do
     fi
 done
 
-[ -n "$VERSION" ] && { printf '%s\n' "$VERSION"; exit 0; }
+[ -n "$VERSHOW" ] && { printf '%s\n' "$VERSION"; exit 0; }
 [ -n "$HELP" ] && USAGE 
 
 [ -n "$LISTSYSTEMD" ] || printf %s "$xOPTIONS" | grep -qE ':RMSYSTEMDSERVICE:' && {
@@ -905,7 +905,7 @@ dienl() {
 }
 [ -n "$LOGFILE" -a -z "$SYSTEMDSERVICENAME" ] && {
     touch "$LOGFILE" 2>/dev/null || \
-	dienl "%s\n%s\n\n" \
+	dienl "%s\n%s\n" \
 	      "Cannot write to logfile '$LOGFILE'." \
 	      "Fix permissions, run as user with access or specify another --logfile."
 }
