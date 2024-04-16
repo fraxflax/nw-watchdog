@@ -47,7 +47,7 @@ PIDFILE=/run/nw-watchdog.pid;       PIDFILERE='(--pidfile|-p)';          PIDFILE
 SLOWUPTIMEOUT=3;              SLOWUPTIMEOUTRE='(--slow-up-timeout|-t)';  SLOWUPTIMEOUTARE='[1-9][0-9]*' # integer greater than or equal to 1
 SLEEP=10;                             SLEEPRE='(--interval|--sleep|-s)'; SLEEPARE='[1-9][0-9]*'         # integer greater than or equal to 1
 GRACE=20;                             GRACERE='(--ifup-grace|-g)';       GRACEARE='[1-9][0-9]*'         # integer greater than or equal to 1
-MAXNOLINK=1;                       AXNOLINKRE='(--max-nolink|-n)';       MAXNOLINKARE='[0-9]+'          # integer greater than or equal to 0
+MAXNOLINK=1;                      MAXNOLINKRE='(--max-nolink|-n)';       MAXNOLINKARE='[0-9]+'          # integer greater than or equal to 0
 IFCUPT='ip link set up %{IFC}';      IFCUPTRE='(--ifcup|-u)';            IFCUPTARE='.+'                 # non-emty string
 IFCDOWNT='ip link set down %{IFC}'; IFCDOWNTRE='(--ifcdown|-U)';         IFCDOWNTARE='.+'               # non-emty string
 ALERTCMDT='if which wall >/dev/null; then exec wall; else cat 1>&2; fi';
@@ -109,8 +109,24 @@ which sh >/dev/null 2>&1 || deperr which sh $lacking
 for x in $DEPENDENCIES; do which $x>/dev/null || lacking="$lacking $x"; done
 [ -n "$lacking" ] && deperr $lacking
 
+ERRMSG=''
+COLS=72; _b_=''; ___=''; __='';
+_show_errmsg() {
+    [ -n "$ERRMSG" ] || return
+    #printf "$ERRMSG\n"
+    #printf '[%s]' "$ERRMSG"
+    div=''; i=0;
+    while [ $i -lt $COLS ]; do div="~$div"; i=$((i+1)); done
+    printf '\n%s\n%s: %s\n' "$_b_$div" "${_b_}ERROR$__" "$1"
+    printf "$ERRMSG" | while read l; do
+	[ -n "$l" ] || break
+	l=`printf '%s' "$l" | sed -E 's/\t/\n   /g'`
+	printf '%s %s\n' "$_b_*$__" "$l"
+    done
+    printf '%s\n\n' "$_b_$div"
+}
 nwwatchdog=`basename "$0"` 2>/dev/null || nwwatchdog=nw-watchdog
-USAGE() {
+_USAGE() {
     TPUTOK=1
     which tput>/dev/null 2>&1 && {
             TPUTOK=0
@@ -122,12 +138,8 @@ USAGE() {
         }                                                      #  ( '\033[Om' instead of '\033[m^O' )
     [ $TPUTOK -eq 0 ] || { COLS=72; _b_=''; ___=''; __=''; }
     FMT=cat; which fmt>/dev/null && FMT="fmt -s -w $COLS"
-    [ -n "$1" ] && {
-        printf "$1"
-        printf "$2\n" | while read l; do [ -n "$l" ] && printf "\n* $l"; done
-        printf "$3\n"
-    }
-$FMT<<EOU
+    _show_errmsg "$1"
+    $FMT<<EOU
 $__
 ${_b_}NAME $__
     $_b_$nwwatchdog$__ - Network Watchdog
@@ -717,44 +729,37 @@ EOU
         ${_b_}rm$__ is used by ${_b_}--remove-systemd$__ to remove the systemd unit file for the service.
 
 EOU
-    [ -n "$1" ] && {
-        printf "$1"
-        printf "$2\n" | while read l; do [ -n "$l" ] && printf "\n* $l"; done
-        printf "$3\n"
-    }
+    _show_errmsg "$1"
 }
-USAGEpager() {
-    [ -n "$PAGERUSE" ] || {
-        USAGE "$@"
-        return
+USAGE() {
+    [ -z "$PAGERUSE" ] && {
+        _USAGE "$1"
+	[ -n "$ERRMSG" ] && exit 1
+	exit 0
     }
     if which "$PAGER" >/dev/null 2>&1; then
         LESS="$LESS -R"; export LESS # make sure less, if used, passes ANSI color escape sequences to terminal
-        USAGE "$@" | "$PAGER"
+        _USAGE "$1" | "$PAGER"
     elif which less >/dev/null 2>&1; then
-        USAGE "$@" | less -R
+        _USAGE "$1" | less -R
     elif which more >/dev/null 2>&1; then
-        USAGE "$@" | more
+        _USAGE "$1" | more
     else
-        USAGE "$@"
+        _USAGE "$1"
     fi
-}
-dieUSAGEpager() {
-    USAGEpager "\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nERROR: $1" \
-               "$ERRMSG" \
-               "\n... aborting!\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
-    exit 1
+    [ -n "$ERRMSG" ] && exit 1
+    exit 0
 }
 SOPTRE=''
 for o in $SOPTIONS; do
     [ -n "$SOPTRE" ] && SOPTRE="$SOPTRE|"
-    eval "r='\${${o}RE'}"; eval "SOPTRE=\"$SOPTRE$r\""
+    eval "r='\${${o}RE'}"; eval "SOPTRE=\"$SOPTRE$r\"" # should be \" or SOPTRE will contain variabel names instead of content
 done
 SOPTRE="($SOPTRE)"
 AOPTRE=''
 for o in $AOPTIONS; do
     [ -n "$AOPTRE" ] && AOPTRE="$AOPTRE|"
-    eval "r='\${${o}RE'}"; eval "AOPTRE=\"$AOPTRE$r\""
+    eval "r='\${${o}RE'}"; eval "AOPTRE=\"$AOPTRE$r\"" # should be \" or AOPTRE will contain variabel names instead of content
 done
 AOPTRE="($AOPTRE)"
 NDOPTRE=`printf "%s|%s" "$SOPTRE" "$AOPTRE" | sed -E 's/\(-*|\)//g' | sed -E 's/\|-*/\|/g'`
@@ -762,69 +767,65 @@ NDOPTRE=`printf "%s|%s" "$SOPTRE" "$AOPTRE" | sed -E 's/\(-*|\)//g' | sed -E 's/
 xOPTIONS=':'
 while [ $# -gt 0 ]; do
     ARG="$1"; shift
-    if printf %s "$ARG" | grep -qE "^${SOPTRE}$"; then     # No Argument Option
+    if printf %s "$ARG" | grep -qE "^${SOPTRE}$"; then                      # No Argument Option
         for o in $SOPTIONS; do
-            eval "R=\"\${${o}RE}\""
+            eval "R=\"\${${o}RE}\"" # should be \" or R will contain variabel names instead of content
             if printf %s "$ARG" | grep -qE "^$R$"; then
-                eval "$o=\"\${${o}V}\""
-                xOPTIONS="${xOPTIONS}${o}:"
+                eval "$o=\"\${${o}V}\"" # should be \" or o will contain variabel names instead of content
+		xOPTIONS="${xOPTIONS}${o}:"
                 break
             fi
         done
-    elif printf %s "$ARG" | grep -qE "^-${SOPTSRE}(${NDOPTRE})"; then # Grouped Options
+    elif printf %s "$ARG" | grep -qE "^-${SOPTSRE}(${NDOPTRE})"; then       # Grouped Options
         A=`printf "%s" "$ARG" | grep -oE '^..'`
         B=`printf "%s" "$ARG" | cut -c3-`
         set -- "$A" "-$B" "$@"
-    elif printf %s "$ARG" | grep -qE "^${AOPTRE}"; then    # Option with Argument
-        if printf %s "$ARG" | grep -qE "^${AOPTRE}$"; then
+    elif printf %s "$ARG" | grep -qE "^${AOPTRE}"; then                     # Option with Argument
+        if printf %s "$ARG" | grep -qE "^${AOPTRE}$"; then                  # Option [space] Argument
             OPT=$ARG
             ARG="$1"
             [ $# -gt 0 ] && shift
-        elif printf "%s" "$ARG" | grep -qE  "^${AOPTRE}=[^[:space:]]"; then
+        elif printf "%s" "$ARG" | grep -qE  "^${AOPTRE}=[^[:space:]]"; then # Option [equals] Argument
             OPT="${ARG%%=*}"
             ARG="${ARG#*=}"
-        else
-            OPT=`printf %s "$ARG" | grep -oE "${AOPTRE}"`
-            ARG=`printf "%s" "$ARG" | sed -E "s/${AOPTRE}//"`
-            [ "$ARG" = '=' ] && {
-                ARG=''
-                ERRMSG="$ERRMSG\n'$OPT=' seem to lack an arugment. If the argument really should be '=', use the syntax '$OPT=='."
-                break
-            }
+        else                                                                # Option [no-space] Argument
+            OPT=`printf %s "$ARG" | grep -oE "^${AOPTRE}"`
+            ARG=`printf "%s" "$ARG" | sed -E "s/^${AOPTRE}//"`
+	    [ "$ARG" = '=' ] && {
+		ERRMSG="'$OPT=' seem to lack an arugment.\tIf the argument really should be '=', use the syntax '$OPT=='.\n$ERRMSG"
+		ARG=''
+	    }
         fi
-        [ -z "$ARG" ] && {
-            ERRMSG="$ERRMSG\nOption '$OPT' requires an argument."
-            break
-        }
+	[ -z "$ARG" ] && ERRMSG="Option '$OPT' requires an argument.\n$ERRMSG"
         for o in $AOPTIONS; do
-            eval "R=\"\${${o}RE}\""
+            eval "R=\"\${${o}RE}\"" # should be \" or AR will contain variabel names instead of content
             if printf %s "$OPT" | grep -qE "^$R$"; then
                 printf %s "$xOPTIONS" | grep -qE ":$o:" && {
-                    ERRMSG="$ERRMSG\nOption '$OPT' $R specified multiple times."
+                    ERRMSG="Option '$OPT' $R specified multiple times.\n$ERRMSG"
                     break
                 }
                 xOPTIONS="${xOPTIONS}${o}:"
-                eval "AR=\"\${${o}ARE}\""
-                printf %s "$ARG" | grep -qE "^$AR$" || {
-                    ERRMSG="$ERRMSG\nInvalid argument '$ARG' for option '$OPT' $R."
+		eval "AR=\"\${${o}ARE}\"" # should be \" or AR will contain variabel names instead of content
+		printf %s "$ARG" | grep -qE "^$AR$" || {
+                    ERRMSG="Invalid argument '$ARG' for option '$OPT' $R.\n$ERRMSG"
                     break
                 }
-                eval "$o=\"$ARG\""
+                eval "$o='$ARG'"
                 break
             fi
         done
-
     else                                                   # TARGET
         if printf "%s" "$ARG" | grep -qE '^-'; then
-            ERRMSG="$ERRMSG\nInvalid OPTION: '$ARG'"
+            ERRMSG="Invalid OPTION: '$ARG'\n$ERRMSG"
         else
-            [ -z "$TARGET" ] || ERRMSG="$ERRMSG\nMultiple TARGETs specified ('$TARGET' + '$ARG')."
+            [ -z "$TARGET" ] || ERRMSG="Multiple TARGETs specified ('$TARGET' + '$ARG').\n$ERRMSG"
             TARGET="$ARG"
+echo "[TARGET] = [$TARGET]"	    
             printf "%s" "$TARGET" \
                 | grep -qE '^((0*[0-9]?[0-9]|1[0-9][0-9]|2([0-4][0-9]|5[0-5]))\.){3}(0*[0-9]?[0-9]|1[0-9][0-9]|2([0-4][0-9]|5[0-5]))$' \
                 || printf "%s" "$TARGET" \
                     | grep -qE '^[a-zA-Z0-9_][a-zA-Z0-9_.-]*$' || {
-                    ERRMSG="$ERRMSG\nInvalid TARGET '$TARGET'. Must be an IP address or a valid hostname."
+                    ERRMSG="Invalid TARGET '$TARGET'. Must be an IP address or a valid hostname.\n$ERRMSG"
                 }
         fi
     fi
@@ -860,21 +861,33 @@ done
 }
 
 [ -z "$PINGTARGET" -a -z "$PINGNEXTHOP" ] && \
-    ERRMSG="$ERRMSG\nYou must allow pinging of target and/or nexthop! (Can't combine --no-ping-target and --no-ping-nexthop!)"
+    ERRMSG="You must allow pinging of target and/or nexthop!\t(Can't combine --no-ping-target and --no-ping-nexthop!)\n$ERRMSG"
 
-[ -n "$INSTALLSYSTEMD" -a "$LOGFILE" = '-' ] && { LOGSIZE=0 ; LOGSIZEb=0 ;}
-[ "$LOGFILE" = '-' ] && LOGFILE=''
+[ -n "$INSTALLSYSTEMD" -a -n "$DEBUG" ] && ERRMSG="--install-systemd cannot be combined with --debug\n$ERRMSG"
+
+[ -n "$TARGET" ] || ERRMSG="TARGET not specified! Specify IP address or valid hostname.\n$ERRMSG"
+
+### Die showing the USAGE if found errors in options and arguments above ###
+[ -n "$ERRMSG" ] && USAGE 'Option Errors'
+
+[ -n "$DEBUG" ] && {
+    printf %s "$xOPTIONS" | grep -qE ':V:'             || V=6  
+    printf %s "$xOPTIONS" | grep -qE ':LOGFILE:'       || LOGFILE=-
+    printf %s "$xOPTIONS" | grep -qE ':PIDFILE:'       || PIDFILE=-
+    printf %s "$xOPTIONS" | grep -qE ':SLOWUPTIMEOUT:' || SLOWUPTIMEOUT=1
+    printf %s "$xOPTIONS" | grep -qE ':SLEEP:'         || SLEEP=3
+    printf %s "$xOPTIONS" | grep -qE ':GRACE:'         || GRACE=5
+    printf %s "$xOPTIONS" | grep -qE ':ALERTCMDT:'     || ALERTCMDT=cat
+    printf %s "$xOPTIONS" | grep -qE ':ALERTCMD:'      || ALERTCMD=cat
+    FORK=''
+}
+[ "$LOGFILE" = '-' ] && { LOGSIZE=0 ; LOGSIZEb=0 ; LOGFILE='' ;}
 [ "$PIDFILE" = '-' ] && PIDFILE='/dev/null'
-
+  
 printf "%s" "$LOGSIZE" | grep -iqE '^[0-9]+*[KMG]*$' || {
         ERRPTN="$ERRPTN\n* %s"
         set -- "Invalid logsize '$LOGSIZE'" "$@"
 }
-
-[ -n "$TARGET" ] || ERRMSG="$ERRMSG\nTARGET not specified! Specify IP address or valid hostname."
-
-### Die showing the USAGE if found errors in options and arguments above ###
-[ -n "$ERRMSG" ] && dieUSAGEpager 'Option Errors'
 
 [ -n "$LOGFILE" ] && {
     touch "$LOGFILE" 2>/dev/null || {
@@ -1130,8 +1143,8 @@ nexthop() {
     [ -z "$CONTINUOUSTOPOLOGYDETECT" ] && NOPTS="${NOPTS}T"
 
     AOPTS="V$V -t$SLOWUPTIMEOUT -s$SLEEP -g$GRACE -n$MAXNOLINK -u'$IFCUPT' -U'$IFCDOWNT' -a'$ALERTCMDT' -z$LOGSIZE"
-    [ -z "$STATICIFC" -a -n "$IFC" ] && AOPTS="$AOPTS -i'$IFC'"
-    [ -n "$STATICIFC" ] && AOPTS="$AOPTS -I'$IFC'"
+    [ -z "$STATICIFC" -a -n "$IFC" ] && AOPTS="$AOPTS -i$IFC"
+    [ -n "$STATICIFC" ] && AOPTS="$AOPTS -I$IFC"
     debug "NOPTS=%s\nAOPTS=%s\n" "$NOPTS" "$AOPTS"
 }
 ### Systemd service creation
