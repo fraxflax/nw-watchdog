@@ -1,5 +1,5 @@
 # nw-watchdog
-__Version:__ 1.1.0-beta (unreleased main branch)
+__Version:__ 1.1.0-beta2 (unreleased main branch)
 
 __nw-watchdog__ is a higly configurable network watchdog written in POSIX shell script for use in Linux, depending only on Linux most standard tools that are normally installed by default in all distributions (also see the __DEPENDENCIES__ section).
 
