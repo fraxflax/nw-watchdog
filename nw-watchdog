@@ -112,13 +112,16 @@ for x in $DEPENDENCIES; do which $x>/dev/null || lacking="$lacking $x"; done
 ERRMSG=''
 COLS=72; _b_=''; ___=''; __='';
 _show_errmsg() {
-    [ -n "$ERRMSG" ] || return
-    #printf "$ERRMSG\n"
-    #printf '[%s]' "$ERRMSG"
+    [ -n "$ERRMSG" -o -n "$1" ] || return
     div=''; i=0;
     while [ $i -lt $COLS ]; do div="~$div"; i=$((i+1)); done
-    printf '\n%s\n%s: %s\n' "$_b_$div" "${_b_}ERROR$__" "$1"
-    printf "$ERRMSG" | while read l; do
+    printf '\n%s\n%s: %s' "$_b_$div" "${_b_}ERROR$__"
+    [ -n "$1" ] && {
+	PTN="$1"; shift
+	printf "$PTN\n" "$@"
+    }
+    LINES=`printf '%s' "$ERRMSG" | sed -E 's/\n/\t/g;s/\\[nt]/\t/g;s/%/%%/g'`
+    printf "$LINES" | while read l; do
 	[ -n "$l" ] || break
 	l=`printf '%s' "$l" | sed -E 's/\t/\n   /g'`
 	printf '%s %s\n' "$_b_*$__" "$l"
@@ -138,7 +141,7 @@ _USAGE() {
         }                                                      #  ( '\033[Om' instead of '\033[m^O' )
     [ $TPUTOK -eq 0 ] || { COLS=72; _b_=''; ___=''; __=''; }
     FMT=cat; which fmt>/dev/null && FMT="fmt -s -w $COLS"
-    _show_errmsg "$1"
+    _show_errmsg "$@"
     $FMT<<EOU
 $__
 ${_b_}NAME $__
@@ -729,25 +732,25 @@ EOU
         ${_b_}rm$__ is used by ${_b_}--remove-systemd$__ to remove the systemd unit file for the service.
 
 EOU
-    _show_errmsg "$1"
+    _show_errmsg "$@"
 }
 USAGE() {
     [ -z "$PAGERUSE" ] && {
-        _USAGE "$1"
-	[ -n "$ERRMSG" ] && exit 1
+        _USAGE "$@"
+	[ -n "$ERRMSG" -o -n "$1" ] && exit 1
 	exit 0
     }
     if which "$PAGER" >/dev/null 2>&1; then
         LESS="$LESS -R"; export LESS # make sure less, if used, passes ANSI color escape sequences to terminal
-        _USAGE "$1" | "$PAGER"
+        _USAGE "$@" | "$PAGER"
     elif which less >/dev/null 2>&1; then
-        _USAGE "$1" | less -R
+        _USAGE "$@" | less -R
     elif which more >/dev/null 2>&1; then
-        _USAGE "$1" | more
+        _USAGE "$@" | more
     else
-        _USAGE "$1"
+        _USAGE "$@"
     fi
-    [ -n "$ERRMSG" ] && exit 1
+    [ -n "$ERRMSG" -o -n "$1" ] && exit 1
     exit 0
 }
 SOPTRE=''
@@ -820,7 +823,6 @@ while [ $# -gt 0 ]; do
         else
             [ -z "$TARGET" ] || ERRMSG="Multiple TARGETs specified ('$TARGET' + '$ARG').\n$ERRMSG"
             TARGET="$ARG"
-echo "[TARGET] = [$TARGET]"	    
             printf "%s" "$TARGET" \
                 | grep -qE '^((0*[0-9]?[0-9]|1[0-9][0-9]|2([0-4][0-9]|5[0-5]))\.){3}(0*[0-9]?[0-9]|1[0-9][0-9]|2([0-4][0-9]|5[0-5]))$' \
                 || printf "%s" "$TARGET" \
@@ -831,27 +833,29 @@ echo "[TARGET] = [$TARGET]"
     fi
 done
 
-[ -n "$HELP" ] && { USAGEpager ; exit 0 ; }
+[ -n "$HELP" ] && USAGE 
 
-[ -n "$LISTSYSTEMD" -o -n "$RMSYSTEMDSERVICE" ] && {
-    printf %s "$xOPTIONS" | grep -qE ':.*:.*:' && dieUSAGEpager "--list-systemd and --remove-systemd cannot be combined with any other option"
-    [ -d /etc/systemd/system/. ] || dieUSAGEpager "'/etc/systemd/system/' does not exists, is systemd installed and running?"
+[ -n "$LISTSYSTEMD" ] || printf %s "$xOPTIONS" | grep -qE ':RMSYSTEMDSERVICE:' && {
+    printf %s "$xOPTIONS" | grep -qE ':.*:.*:' || [ -n "$TARGET" ] && \
+	ERRMSG='' USAGE %s "--list-systemd and --remove-systemd cannot be combined with any other option"
+    [ -d /etc/systemd/system/. ] || USAGE "'/etc/systemd/system/' does not exists, is systemd installed and running?"
     [  -n "$LISTSYSTEMD" ] && {
         printf "\n\n--- Listing all loaded nw-watchdog systemd units: ---\n"
-        systemctl list-units --all nw-watchdog-\* 2>/dev/null | grep -oE 'nw-watchdog-.*\.service.*'
+        systemctl list-units --all nw-watchdog-\* 2>/dev/null | grep -oE 'nw-watchdog-.*\.service.*'       
         printf "\n--- Listing all installed nw-watchdog systemd units: ---\n"
         systemctl list-unit-files --all nw-watchdog-\* 2>/dev/null
         exit 0
     }
-    [ `id -u` -eq 0 ] || dieUSAGEpager "$nwwatchdog --remove-systemd must be run as root"
-    systemctl daemon-reload || dieUSAGEpager "Failed to reload systemd. Is systemd installed and running?"
+    [ -n "$RMSYSTEMDSERVICE" ] || ERRMSG='' USAGE %s "--remove-systemd requires a service or unit name to remove"
+    [ `id -u` -eq 0 ] || USAGE %s "$nwwatchdog --remove-systemd must be run as root"
+    systemctl daemon-reload || USAGE %s "Failed to reload systemd. Is systemd installed and running?"
     UNITNAME="$RMSYSTEMDSERVICE"
     systemctl list-unit-files "$UNITNAME" >/dev/null 2>&1 || {
         UNITNAME="nw-watchdog-$RMSYSTEMDSERVICE.service"
         systemctl list-unit-files "$UNITNAME" >/dev/null 2>&1 \
-            || dieUSAGEpager "Neither '%s' or '%s' is a valid systemd service unit name.\n%s" \
-                             "$RMSYSTEMDSERVICE" "$UNITNAME" \
-                             "Use --list-systemd to list all nw-watchdog systemd units."
+            || USAGE "Neither '%s' or '%s' is a valid systemd service unit name.\n       %s" \
+                     "$RMSYSTEMDSERVICE" "$UNITNAME" \
+                     "Use --list-systemd to list all nw-watchdog systemd units."
     }
     systemctl stop "$UNITNAME" || printf "\nWARNING: failed to stop '$UNITNAME'\n" 1>&2
     systemctl disable "$UNITNAME" || printf "\nWARNING: failed to disable '$UNITNAME'\n" 1>&2
@@ -868,7 +872,7 @@ done
 [ -n "$TARGET" ] || ERRMSG="TARGET not specified! Specify IP address or valid hostname.\n$ERRMSG"
 
 ### Die showing the USAGE if found errors in options and arguments above ###
-[ -n "$ERRMSG" ] && USAGE 'Option Errors'
+[ -n "$ERRMSG" ] && USAGE %s 'Option Errors'
 
 [ -n "$DEBUG" ] && {
     printf %s "$xOPTIONS" | grep -qE ':V:'             || V=6  
@@ -889,13 +893,16 @@ printf "%s" "$LOGSIZE" | grep -iqE '^[0-9]+*[KMG]*$' || {
         set -- "Invalid logsize '$LOGSIZE'" "$@"
 }
 
-[ -n "$LOGFILE" ] && {
-    touch "$LOGFILE" 2>/dev/null || {
-        printf "\nERROR: %s\n%s\n\n" \
-               "Cannot write to logfile '$LOGFILE'." \
-               "Fix permissions, run as user with access or specify another --logfile." 1>&2
-        exit 1
-    }
+dienl() {
+    diePATN="$1 ... aborting!" ; shift
+    _show_errmsg "$diePATN" "$@"
+    exit 1
+}
+[ -n "$LOGFILE" -a -z "$SYSTEMDSERVICENAME" ] && {
+    touch "$LOGFILE" 2>/dev/null || \
+	dienl "%s\n%s\n\n" \
+	      "Cannot write to logfile '$LOGFILE'." \
+	      "Fix permissions, run as user with access or specify another --logfile."
 }
 
 LOGSIZEb="$LOGSIZE"
@@ -1005,6 +1012,7 @@ error() {
 die() {
     diePATN="$1 ... aborting!" ; shift
     error "$diePATN" "$@"
+    _show_errmsg "$diePATN" "$@"
     exit 1
 }
 warn() {
@@ -1151,16 +1159,17 @@ nexthop() {
 [ -n "$SYSTEMDSERVICENAME" ] && {
     LOGFILE=''
     printf "%s" "$SYSTEMDSERVICENAME" | grep -qEe '^[a-zA-Z0-9_-]+$' || \
-        dieUSAGEpager "Invalid systemd service name '%s'\n%s" "$SYSTEMDSERVICENAME" \
-                      "The SYSTEMDSERVICENAME must contain only alphanumeric characters, hyphens and underscores and be no longer than 236 characters."
-    [ `printf "%s" "$SYSTEMDSERVICENAME" | wc -c` -gt 236 ] && dieUSAGEpager "Systemd service name '%s' is too long (max 236 characters)" "$SYSTEMDSERVICENAME"
-
-    [ `id -u` -eq 0 ] || die "$nwwatchdog --install-systemd must be run as root"
-
-    [ -d /etc/systemd/system/. ] || die "'/etc/systemd/system/' does not exists, systemd '$SYSTEMDSERVICENAME.service' NOT installed!"
+        USAGE "Invalid systemd service name '%s'\n       %s\n       %s" "$SYSTEMDSERVICENAME" \
+              "The SYSTEMDSERVICENAME must contain only alphanumeric characters, hyphens and underscores" \
+	      "and be no longer than 236 characters."
+    [ `printf "%s" "$SYSTEMDSERVICENAME" | wc -c` -gt 236 ] && USAGE "Systemd service name\n       '%s'\n       %s" \
+								     "$SYSTEMDSERVICENAME" "is too long (max 236 characters)" 
+    [ `id -u` -eq 0 ] || USAGE %s "$nwwatchdog --install-systemd must be run as root"
+    [ -d /etc/systemd/system/. ] || USAGE "'/etc/systemd/system/' does not exists,\n       systemd '%s.service' NOT installed!" \
+					  "$SYSTEMDSERVICENAME"
     for DIR in /run/nw-watchdog /var/log/nw-watchdog; do # /var/log/nw-watchdog/$SYSTEMDSERVICENAME.systemd; do
         [ -d $DIR ] || {
-            mkdir $DIR || die "Failed to create directory '%s', systemd '%s.service' NOT installed!" $DIR $SYSTEMDSERVICENAME
+            mkdir $DIR || dienl "Failed to create directory '%s',\n       systemd '%s.service' NOT installed!" $DIR $SYSTEMDSERVICENAME
         }
         chmod 0755 $DIR || printf "WARNING: Failed to set permissions on '%s'\n" "$DIR" 1>&2
     done
@@ -1181,8 +1190,8 @@ ExecStart=/bin/sh '`readlink -e "$0"`' '$TARGET' -$NOPTS$AOPTS -p/var/run/nw-wat
 WantedBy=sysinit.target
 EOF
     chmod 0644 $DIR || printf "WARNING: Failed to set permissions on '/etc/systemd/system/nw-watchdog-%s.service'\n" "$SYSTEMDSERVICENAME" 1>&2
-    systemctl daemon-reload || die "failed to reload systemd"
-    systemctl enable nw-watchdog-$SYSTEMDSERVICENAME.service || die "failed to enable the $SYSTEMDSERVICENAME.service"
+    systemctl daemon-reload || die "failed to reload systemd, service not enabled, nor started"
+    systemctl enable nw-watchdog-$SYSTEMDSERVICENAME.service || die "failed to enable the $SYSTEMDSERVICENAME.service, service not started"
     systemctl restart nw-watchdog-$SYSTEMDSERVICENAME.service || die "failed to start the $SYSTEMDSERVICENAME.service"
     systemctl status --no-pager nw-watchdog-$SYSTEMDSERVICENAME.service
     exit 0
@@ -1268,7 +1277,7 @@ isup() {
 
 [ -n "$PIDFILE" ] || PIDFILE=/run/nw-watchdog.pid
 touch "$PIDFILE" 2>/dev/null || die "%s\n%s" "Cannot write to pidfile '$PIDFILE'." \
-                                        "Specify another --pidfile or check permissions or privileges of effective user (userid=`id -u`)"
+                                    "Specify another --pidfile or check permissions or privileges of effective user (userid=`id -u`)"
 PID=`cat "$PIDFILE"`
 [ "$PID" -gt 0 ] 2>/dev/null && [ -d /proc/$PID ] && die "Process already running with pid $PID"
 
