@@ -37,6 +37,9 @@ Unless plans change, they will be in the next release.
   If an interface is specified with `--interface` or `--force-interface` an initial check for existance of the device is made.
   Attempts to bring it up is performed unless `--no-interface-reset` is specified. Using `--force-interface` will require the interface to come up before proceeding. This addresses the bug of when a non existing interface was specified as `--force-interface` TARGET could be considered UP if reachable via other paths.
 
+* __Options and Arguments Parsing__
+All options and arguments are now parsed in a more general approach making it easier and more fool proof to introduce or change options and possible argument values allowing for quicker development with less bugs introduced.
+
 ## v1.0.0 - First stable Release, 2024-04-03
 https://github.com/fraxflax/nw-watchdog/tree/v1.0.0 <br>
 Download release: https://github.com/fraxflax/nw-watchdog/releases/tag/v1.0.0 <br>
