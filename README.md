@@ -1,5 +1,7 @@
 # nw-watchdog
-__Version:__ 1.1.0-beta2 (unreleased main branch)
+__Version:__ 1.1.x-main-YYYYMMDD-NNN (unreleased main branch)<br>
+(potential release version - main branch - date - running number)<br>
+Use `nw-watchdog --version` to show actual date and running number
 
 __nw-watchdog__ is a higly configurable network watchdog written in POSIX shell script for use in Linux, depending only on Linux most standard tools that are normally installed by default in all distributions (also see the __DEPENDENCIES__ section).
 
