@@ -2,7 +2,9 @@
 __nw-watchdog__ - Network Watchdog
 
 ## VERSION
-1.1.0-beta2 (main branch)
+1.1.x-main-YYYYMMDD-NNN (unreleased main branch)<br>
+(potential release version - main branch - date - running number)<br>
+Use `nw-watchdog --version` to show actual date and running number
 
 ## SYNOPSIS
 __nw-watchdog__ <ins>TARGET</ins> [ OPTIONS ]

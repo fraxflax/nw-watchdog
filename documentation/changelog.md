@@ -1,9 +1,14 @@
 # CHANGELOG
 Also see __[WIP-TODO.md](https://github.com/fraxflax/nw-watchdog/blob/main/documentation/WIP-TODO.md)__ for __Work in Progress__ (features / changes currently being worked on) and future plans.
 
-## IN MAIN (unreleased version 1.1.0-beta)
+## IN MAIN (unreleased version v1.1.x)
 These changes are already merged into the main branch and available in https://github.com/fraxflax/nw-watchdog <br>
 Unless plans change, they will be in the next release.
+
+* _currently nothing_
+
+## v1.1.0 - Feature Release, 2024-04-17
+https://github.com/fraxflax/nw-watchdog/tree/v1.1.0
 
 * New alert states: __LINKDOWN__ and __LINKUP__<br>
   In version 1.0.0, if there is no link on the interface a WARNING alert is sent causing alerts to be sent repeatedly under certain circumstances (e.g. every _max-nolink * ifup-grace_ second  if the link is physically lost (switch port down, cable damaged / out, etc) and `--force-interface` with a `--max-nolink` greater than 0 is used.<br>
