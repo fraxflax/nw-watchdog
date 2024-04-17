@@ -26,7 +26,7 @@ Just copy / download the `nw-watchdog` script into your PATH and make it executa
   
   Download v1.1.0: [nw-watchdog](https://raw.githubusercontent.com/fraxflax/nw-watchdog/v1.1.0/nw-watchdog)
   ```
-  curl -o /usr/local/bin/nw-watchdog https://raw.githubusercontent.com/fraxflax/nw-watchdog/v1.0.0/nw-watchdog ; chmod a+rx /usr/local/bin/nw-watchdog
+  curl -o /usr/local/bin/nw-watchdog https://raw.githubusercontent.com/fraxflax/nw-watchdog/v1.1.0/nw-watchdog ; chmod a+rx /usr/local/bin/nw-watchdog
   ```
 * All releases are available for download here: https://github.com/fraxflax/nw-watchdog/releases
 
