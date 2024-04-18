@@ -49,7 +49,7 @@ All other options are ignored, apart from `--no-pager` which can be used to avoi
 * __--no-pager | --no-less | --no-more | -M__<br>
 	Do NOT use a pager for help and error messages.
 
-	__--install-systemd__ implies __--no-pager__
+	__--install-systemd__ will enforce __--no-pager__ for the installed systemd service.
 
 * __--no-ping-target | -P__<br>
 	If the <ins>TARGET</ins> is the next hop (on the same subnet), reachability of the <ins>TARGET</ins> is checked by arp cache status and ping.<br>
