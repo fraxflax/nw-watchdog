@@ -1,7 +1,5 @@
 #!/bin/sh
-VERSION="1.1.0-main-20240418-002" # shown by --version | --help | -h
-# running number -000 shows it's is the same as the released version (1.1.0 in this case)
-#VERSION="1.1.0-development-20240418-002"
+VERSION='1.1.1'
 #
 #       nw-watchdog is a higly configurable network watchdog written
 #       in POSIX shell script for use in Linux.
@@ -147,13 +145,7 @@ ${_b_}NAME $__
     $_b_$nwwatchdog$__ - Network Watchdog
 
 ${_b_}VERSION $__
-    $_b_$VERSION$__
-
-    This version is based on the latest released version, which is 1.1.0.
-
-    However, the version format for any unreleased version is:
-    LATESTRELESE-BRANCH-CHANGEDATE-RUNNINGNUMBER
-    where BRANCH is the git branch, CHANGEDATE is the date (YYYYMMDD) the latest change was commited and RUNNINGNUMBER indicates how many changes was commited that day.
+    $VERSION
 
 ${_b_}SYNOPSIS $__
 
