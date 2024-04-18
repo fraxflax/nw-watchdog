@@ -11,7 +11,7 @@ where BRANCH is the git branch, CHANGEDATE is the date (YYYYMMDD) the latest cha
 For the "testing versions" (unreleased main branch) wich contains verifed changes that are likely to make it into the next release, the versions currently look like this:<br>
 1.1.0-main-YYYYMMDD-NNN
 
-Use `nw-watchdog --version` to show actual date and running number
+Use `nw-watchdog --version` or `nw-watchdog --help` to show actual date and running number
 
 ## SYNOPSIS
 __nw-watchdog__ <ins>TARGET</ins> [ OPTIONS ]

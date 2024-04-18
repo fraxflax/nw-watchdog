@@ -150,7 +150,13 @@ ${_b_}NAME $__
     $_b_$nwwatchdog$__ - Network Watchdog
 
 ${_b_}VERSION $__
-    $VERSION
+    $_b_$VERSION$__
+
+    This version is based on the latest released version, which is 1.1.0.
+
+    However, the version format for any unreleased version is:
+    LATESTRELESE-BRANCH-CHANGEDATE-RUNNINGNUMBER
+    where BRANCH is the git branch, CHANGEDATE is the date (YYYYMMDD) the latest change was commited and RUNNINGNUMBER indicates how many changes was commited that day.
 
 ${_b_}SYNOPSIS $__
 
