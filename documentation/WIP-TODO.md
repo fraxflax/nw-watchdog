@@ -8,10 +8,11 @@ For changes that already made it to the latest testing version (main branch) and
 ## WORK IN PROGRESS 
 These changes are currently being worked on in separate branches.
 
-* _currently nothing_
+* _currently nothing_ (feel free to come with suggestions: nw-watchdog@axnet.nu)
 
 ## TODO
 Planned future features / changes.
 
 * MAYBE: Support multiple targets in one instance ????
 * The BIG one: IPv6 support
+* Are you lacking any functionality? ... Feel free to come with suggestions: nw-watchdog@axnet.nu
