@@ -1,7 +1,7 @@
 #!/bin/sh
-VERSION="1.1.0-main-20240417-000" # shown by --version | --help | -h
+VERSION="1.1.0-main-20240418-001" # shown by --version | --help | -h
 # running number -000 shows it's is the same as the released version (1.1.0 in this case)
-#VERSION="1.1.0-development-20240417-000"
+#VERSION="1.1.0-development-20240418-001"
 #
 #       nw-watchdog is a higly configurable network watchdog written
 #       in POSIX shell script for use in Linux.
@@ -196,7 +196,7 @@ ${_b_}OPTIONS $__(no arguments)
     $_b_--no-pager | --no-less | --no-more | -M$__
         Do NOT use a pager for help and error messages.
 
-        $_b_--install-systemd$__ implies $_b_--no-pager$__
+        $_b_--install-systemd$__ will enforce $_b_--no-pager$__ for the installed systemd service.
 
     $_b_--no-ping-target | -P $__
         If the ${___}TARGET${__} is the next hop (on the same subnet), reachability of the ${___}TARGET${__} is checked by arp cache status and ping.
