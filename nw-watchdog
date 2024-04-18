@@ -1,7 +1,7 @@
 #!/bin/sh
-VERSION="1.1.1-main-20240418-000" # shown by --version | --help | -h
+VERSION="1.1.1-main-20240418-001" # shown by --version | --help | -h
 # running number -000 shows it's is the same as the released version (1.1.1 in this case)
-#VERSION="1.1.1-development-20240418-000"
+#VERSION="1.1.1-development-20240418-001"
 #
 #       nw-watchdog is a higly configurable network watchdog written
 #       in POSIX shell script for use in Linux.
@@ -149,7 +149,7 @@ ${_b_}NAME $__
 ${_b_}VERSION $__
     $_b_$VERSION$__
 
-    This version is based on the latest released version, which is 1.1.0.
+    This version is based on the latest released version, which is 1.1.1.
 
     However, the version format for any unreleased version is:
     LATESTRELESE-BRANCH-CHANGEDATE-RUNNINGNUMBER
