@@ -1,8 +1,4 @@
 # nw-watchdog
-__Version:__ 1.1.x-main-YYYYMMDD-NNN (unreleased main branch)<br>
-(potential release version - main branch - date - running number)<br>
-Use `nw-watchdog --version` to show actual date and running number
-
 __nw-watchdog__ is a higly configurable network watchdog written in POSIX shell script for use in Linux, depending only on Linux most standard tools that are normally installed by default in all distributions (also see the __DEPENDENCIES__ section).
 
 It monitors the network connectivity to a specified <ins>TARGET</ins> and/or the next hop towards that <ins>TARGET</ins>, alerting upon lost connectivity explaining what is wrong. It can reset the source interface and will detect topology changes and, if allowed, reconfigure itself accordingly. It's intended to run as a daemon and has an option to install itself as a systemd service.  If you want to monitor the connectivity to several <ins>TARGET</ins>s, you can run several instances of __nw-watchdog__ using different `--pidfile` option arguments.
