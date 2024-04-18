@@ -5,7 +5,12 @@ Also see __[WIP-TODO.md](https://github.com/fraxflax/nw-watchdog/blob/main/docum
 These changes are already merged into the main branch and available in https://github.com/fraxflax/nw-watchdog <br>
 Unless plans change, they will be in the next release.
 
-* Corrected and updated documentation (and branch versioning format explained in non-released version's help).
+* _currently nothing_ (feel free to come with suggestions: nw-watchdog@axnet.nu)
+
+## v1.1.1 - Update Release, 2024-04-18
+https://github.com/fraxflax/nw-watchdog/tree/v1.1.1
+
+* Corrected and updated documentation.
 
 ## v1.1.0 - Feature Release, 2024-04-17
 https://github.com/fraxflax/nw-watchdog/tree/v1.1.0
