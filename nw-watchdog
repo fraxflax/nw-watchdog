@@ -1,25 +1,22 @@
 #!/bin/sh
-VERSION="1.1.0-main-20240418-001" # shown by --version | --help | -h
+VERSION="1.1.0-main-20240418-002" # shown by --version | --help | -h
 # running number -000 shows it's is the same as the released version (1.1.0 in this case)
-#VERSION="1.1.0-development-20240418-001"
+#VERSION="1.1.0-development-20240418-002"
 #
 #       nw-watchdog is a higly configurable network watchdog written
 #       in POSIX shell script for use in Linux.
 #
 #       Get the latest version from https://github.com/fraxflax/nw-watchdog
 #
-#       nw-watchdog is free software written by Fredrik Ax <frax@axnet.nu>.
+#       nw-watchdog is free software written by Fredrik Ax <nw-watchdog@axnet.nu>.
 #       Feel free to modify and/or (re)distribute it in any way you like.
 #       (It's always nice to be mentioned though ;-) )
-#       It comes with ABSOLUTELY NO WARRANTY.
 #
+#       nw-watchdog  comes with ABSOLUTELY NO WARRANTY.
 #
-# frax - FIXME / TODO:
-#
-# * MAYBE: Support multiple targets in one instance ????
-#
-# * The big one: IPv6 support
-#
+#       If you expirence any problems with nw-watchdog, are lacking
+#       any functionality or just want to voice your opions about it,
+#       feel free to contact me via e-mail: nw-watchdog@axnet.nu
 #
 ###########################################################################################
 # DEFAULTS                                    # Corresponding Command Line Options
@@ -171,11 +168,13 @@ ${_b_}DESCRIPTION $__
 
     It monitors the network connectivity to a specified ${___}TARGET${__} and/or the next hop towards that ${___}TARGET${__}, alerting upon lost connectivity explaining what is wrong. It can reset the source interface and will detect topology changes and, if allowed, reconfigure itself accordingly. It's intended to run as a daemon and has an option to install itself as a systemd service.  If you want to monitor the connectivity to several ${___}TARGET${__}s, you can run several instances of $_b_$nwwatchdog$__ using different $_b_--pidfile$__ option arguments.
 
-    $_b_$nwwatchdog$__ is free software written by Fredrik Ax <frax@axnet.nu>.
+    $_b_$nwwatchdog$__ is free software written by ${_b_}Fredrik Ax$__ <${_b_}nw-watchdog@axnet.nu$__>.
     Feel free to modify and/or (re)distribute it in any way you like.
     ... it's always nice to be mentioned though ;-)
 
     $_b_$nwwatchdog$__ comes with ABSOLUTELY NO WARRANTY.
+
+    If you expirence any problems with ${_b_}nw-watchdog$__, are lacking any functionality or just want to voice your opions about it, feel free to contact me via e-mail.
 
     Get the latest version from https://github.com/fraxflax/nw-watchdog
 
