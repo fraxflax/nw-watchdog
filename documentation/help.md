@@ -176,7 +176,7 @@ These opions takes a single argument each and may be specified in any order. Spe
   Default: `/run/nw-watchdog.pid`<br>
   Pidfile to use.
 
-* __--slow-up-timeout | -t__ <ins>seconds</ins> <a name="sutt"</a><br>
+* __--slow-up-timeout | -t__ <ins>seconds</ins> <a name="sutt"></a><br>
   Default: `3`<br>
   <ins>seconds</ins> must be an integer greater than zero.
 
