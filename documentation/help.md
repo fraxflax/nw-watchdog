@@ -21,7 +21,7 @@ __nw-watchdog__ __--list-systemd__
 __nw-watchdog__ __--remove-systemd__ <ins>SERVICENAME</ins> | <ins>UNITNAME<ins>
 
 ## DESCRIPTION
-__nw-watchdog__ is a higly configurable network watchdog written in POSIX shell script for use in Linux, depending only on Linux most standard tools that are normally installed by default in all distributions (also see the [__DEPENDENCIES__ section](#deps).
+__nw-watchdog__ is a higly configurable network watchdog written in POSIX shell script for use in Linux, depending only on Linux most standard tools that are normally installed by default in all distributions (also see the __[DEPENDENCIES](#deps)__ section.
 
 It monitors the network connectivity to a specified <ins>TARGET</ins> and/or the next hop towards that <ins>TARGET</ins>, alerting upon lost connectivity explaining what is wrong. It can reset the source interface and will detect topology changes and, if allowed, reconfigure itself accordingly. It's intended to run as a daemon and has an option to install itself as a systemd service.  If you want to monitor the connectivity to several <ins>TARGET</ins>s, you can run several instances of __nw-watchdog__ using different `--pidfile` option arguments.
 
@@ -55,7 +55,7 @@ All other options are ignored, apart from `--no-pager` which can be used to avoi
 
 * __--no-ping-target | -P__<br>
 	If the <ins>TARGET</ins> is the next hop (on the same subnet), reachability of the <ins>TARGET</ins> is checked by arp cache status and ping.<br>
-If the <ins>TARGET</ins> is not on the same subnet as the source, the reachability of the <ins>TARGET</ins> is checked by pinging it in a certain pattern (see `--slow-up-timeout` for details).
+If the <ins>TARGET</ins> is not on the same subnet as the source, the reachability of the <ins>TARGET</ins> is checked by pinging it in a certain pattern (see  [--slow-up-timeout](#slow) for details).
 
 	`--no-ping-target` disables the ping-checks for the <ins>TARGET</ins>. Only connectivity to the NEXTHOP for the <ins>TARGET</ins> is checked.<br>
 	This can be useful if <ins>TARGET</ins> does not reply to ping, or if it desirable to only alert if there is no route to the <ins>TARGET</ins> or NEXTHOP is unreachable.
@@ -124,7 +124,7 @@ These opions takes a single argument each and may be specified in any order. Spe
 
 	__3__ - alert<br>
 	Log and alert on irreparable connectivity failures, interface down, and other things disrupting the monitored connection, as well as on warnings and errors.<br>
-	Also see the `--alert` option.
+	Also see the [--alert](#alrt) option.
 
 	__4__ - info (default)<br>
 	Same as level 3, but also logs some useful information on what's going on, such as topology changes, some test failures forcing more testing, interface resets, etc
@@ -175,7 +175,7 @@ These opions takes a single argument each and may be specified in any order. Spe
 * __--pidfile | -p__ <ins>pidfile</ins><br>
   Default: `/run/nw-watchdog.pid`<br>
   Pidfile to use.
-
+<a name="slow"</a>
 * __--slow-up-timeout | -t__ <ins>seconds</ins><br>
   Default: `3`<br>
   <ins>seconds</ins> must be an integer greater than zero.
@@ -238,7 +238,7 @@ These opions takes a single argument each and may be specified in any order. Spe
 
   - strongSwan IPSec (setup for IPSec policy routing):<br>
 	`--ifcup='ipsec up connection-name'`<br>
-	(see __EXAMPLES__  below for a more extensive IPSec example using vti tunnel interface)
+	(see __[EXAMPLES](#exes)__ section below for a more extensive IPSec example using vti tunnel interface)
 
 * __--ifcdown | -U__ <ins>STRING</ins><br>
   Default: `ip link set down %{IFC}`<br>
@@ -263,8 +263,8 @@ These opions takes a single argument each and may be specified in any order. Spe
 
   - strongSwan IPSec (setup for IPSec policy routing):<br>
 	`--ifcup='ipsec down connection-name'`<br>
-	(see __EXAMPLES__  below for a more extensive IPSec example using vti tunnel interface)
-
+	(see __[EXAMPLES](#exes)__ section below for a more extensive IPSec example using vti tunnel interface)
+<a name="alrt"></a>
 * __--alert | -a__ <ins>STRING</ins><br>
 	Default: `if which wall >/dev/null; then exec wall; else cat 1>&2; fi`
 
@@ -337,7 +337,7 @@ These opions takes a single argument each and may be specified in any order. Spe
 	```shell
 	sudo rm /var/log/nw-watchdog/SERVICENAME.log
 	```
-
+<a name="exes"></a>
 ## EXAMPLES
 
 #### <ins>ISP gateway monitoring:</ins>
@@ -436,7 +436,7 @@ Note: It would be smoother to use a script and `--ifcup=/path/script`, but it ca
 nw-watchdog 10.0.0.1 \
 --no-ping-nexthop \
 --verbosity-level=3 \
---alert='mailx -a "From: nwwatchdog@`hostname -f`" -s "wireguard wg0" admin@`cat /etc/mailname`' \
+='mailx -a "From: nwwatchdog@`hostname -f`" -s "wireguard wg0" admin@`cat /etc/mailname`' \
 --force-interface=wg0 \
 --ifcup='ip link add wg0 type wireguard ;
          ip link set wg0 up ;
@@ -576,7 +576,7 @@ __nw-watchdog__ will function without the below listed utilities, but will use t
   Is used to determine the terminal width and output bold and underlined text in this help page.
 
 - `wall`<br>
-  If available it will be used as default `--alert` command. Otherwise, alerting will be done to stderr by default.
+  If available it will be used as default `` command. Otherwise, alerting will be done to stderr by default.
 
 - Installed and running `systemd`  with `systemctl` (and `mkdir`, `chmod`, `rm`)<br>
   `systemd` is (obviously) required for the `--install-systemd`, `--list-systemd` and `--remove-systemd` options to be functional.<br>
