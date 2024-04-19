@@ -175,8 +175,8 @@ These opions takes a single argument each and may be specified in any order. Spe
 * __--pidfile | -p__ <ins>pidfile</ins><br>
   Default: `/run/nw-watchdog.pid`<br>
   Pidfile to use.
-<a name="slow"</a>
-* __--slow-up-timeout | -t__ <ins>seconds</ins><br>
+
+* __--slow-up-timeout | -t__ <ins>seconds</ins> <a name="slow"</a><br>
   Default: `3`<br>
   <ins>seconds</ins> must be an integer greater than zero.
 
@@ -264,8 +264,8 @@ These opions takes a single argument each and may be specified in any order. Spe
   - strongSwan IPSec (setup for IPSec policy routing):<br>
 	`--ifcup='ipsec down connection-name'`<br>
 	(see __[EXAMPLES](#exes)__ section below for a more extensive IPSec example using vti tunnel interface)
-<a name="alrt"></a>
-* __--alert | -a__ <ins>STRING</ins><br>
+
+* __--alert | -a__ <ins>STRING</ins> <a name="alrt"></a><br>
 	Default: `if which wall >/dev/null; then exec wall; else cat 1>&2; fi`
 
 	Errors, warnings and alerts regarding change of state will be piped to:<br>
@@ -337,8 +337,7 @@ These opions takes a single argument each and may be specified in any order. Spe
 	```shell
 	sudo rm /var/log/nw-watchdog/SERVICENAME.log
 	```
-<a name="exes"></a>
-## EXAMPLES
+## EXAMPLES <a name="exes"></a>
 
 #### <ins>ISP gateway monitoring:</ins>
 ```shell
@@ -535,8 +534,8 @@ Below we see that the watchdog actually brings down all the vpn-interfaces and b
 00:01:13  TRACE: ... and for changes in topology
 00:01:13  ALERT: UP - Target 'vpn.inside.dom' (10.0.10.1) is up.
 ```
-<a name="deps"></a>
-## DEPENDENCIES
+
+## DEPENDENCIES <a name="deps"></a>
 __nw-watchdog__ depends on the below executables being available in `/sbin:/bin:/usr/sbin:/usr/bin:$PATH` or being shell-builtin. A check is done at startup and if any of these tools are missing, __nw-watchdog__ will exit with an error telling which are lacking.
 	
 - `sh`
