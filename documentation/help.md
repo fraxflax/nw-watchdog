@@ -21,7 +21,7 @@ __nw-watchdog__ __--list-systemd__
 __nw-watchdog__ __--remove-systemd__ <ins>SERVICENAME</ins> | <ins>UNITNAME<ins>
 
 ## DESCRIPTION
-__nw-watchdog__ is a higly configurable network watchdog written in POSIX shell script for use in Linux, depending only on Linux most standard tools that are normally installed by default in all distributions (also see the __DEPENDENCIES__ section).
+__nw-watchdog__ is a higly configurable network watchdog written in POSIX shell script for use in Linux, depending only on Linux most standard tools that are normally installed by default in all distributions (also see the [__DEPENDENCIES__ section](#deps).
 
 It monitors the network connectivity to a specified <ins>TARGET</ins> and/or the next hop towards that <ins>TARGET</ins>, alerting upon lost connectivity explaining what is wrong. It can reset the source interface and will detect topology changes and, if allowed, reconfigure itself accordingly. It's intended to run as a daemon and has an option to install itself as a systemd service.  If you want to monitor the connectivity to several <ins>TARGET</ins>s, you can run several instances of __nw-watchdog__ using different `--pidfile` option arguments.
 
@@ -535,7 +535,7 @@ Below we see that the watchdog actually brings down all the vpn-interfaces and b
 00:01:13  TRACE: ... and for changes in topology
 00:01:13  ALERT: UP - Target 'vpn.inside.dom' (10.0.10.1) is up.
 ```
-
+<a name="deps"></a>
 ## DEPENDENCIES
 __nw-watchdog__ depends on the below executables being available in `/sbin:/bin:/usr/sbin:/usr/bin:$PATH` or being shell-builtin. A check is done at startup and if any of these tools are missing, __nw-watchdog__ will exit with an error telling which are lacking.
 	
