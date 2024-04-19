@@ -55,7 +55,7 @@ All other options are ignored, apart from `--no-pager` which can be used to avoi
 
 * __--no-ping-target | -P__<br>
 	If the <ins>TARGET</ins> is the next hop (on the same subnet), reachability of the <ins>TARGET</ins> is checked by arp cache status and ping.<br>
-If the <ins>TARGET</ins> is not on the same subnet as the source, the reachability of the <ins>TARGET</ins> is checked by pinging it in a certain pattern (see  [--slow-up-timeout](#slow) for details).
+If the <ins>TARGET</ins> is not on the same subnet as the source, the reachability of the <ins>TARGET</ins> is checked by pinging it in a certain pattern (see  [--slow-up-timeout](#sutt) for details).
 
 	`--no-ping-target` disables the ping-checks for the <ins>TARGET</ins>. Only connectivity to the NEXTHOP for the <ins>TARGET</ins> is checked.<br>
 	This can be useful if <ins>TARGET</ins> does not reply to ping, or if it desirable to only alert if there is no route to the <ins>TARGET</ins> or NEXTHOP is unreachable.
@@ -176,7 +176,7 @@ These opions takes a single argument each and may be specified in any order. Spe
   Default: `/run/nw-watchdog.pid`<br>
   Pidfile to use.
 
-* __--slow-up-timeout | -t__ <ins>seconds</ins> <a name="slow"</a><br>
+* __--slow-up-timeout | -t__ <ins>seconds</ins> <a name="sutt"</a><br>
   Default: `3`<br>
   <ins>seconds</ins> must be an integer greater than zero.
 
