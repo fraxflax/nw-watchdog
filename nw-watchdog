@@ -971,7 +971,7 @@ alert() {
                     ;;
             esac
         }
-        [ "$STATE" = "$ALERTSTATE" ] && return                                # Same state
+        [ "$STATE" = "$ALERTSTATE" ] || return                                # Same state
         [ "$ALERTSTATE" = LINKDOWN ] && [ "$STATE" = DOWN ] && return         # LINKDOWN implies DOWN
         [ "$ALERTSTATE" = LINKDOWN ] && [ "$STATE" = UNREACHABLE ] && return  # LINKDOWN implies UNREACHABLE
         [ "$ALERTSTATE" = UNREACHABLE ] && [ "$STATE" = DOWN ] && return      # UNREACHABLE implies DOWN
