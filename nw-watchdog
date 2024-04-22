@@ -1084,7 +1084,7 @@ linkcheck() {
             ip link show $IFC | grep -oq 'state DOWN' || {
                 IPADDRS=''; ip addr show dev $IFC | grep -qE 'inet6? .* scope global' && IPADDRS=y
                 [ -n "$IPADDRS" ] && [ -n "$IPADDRALRT" ] \
-                    || warn "%s\n\t%s" \
+                    || warn '%s\n\t%s' \
                             "There is no IPv4 or IPv6 global scope ip address on interface '$IFC'!" \
                             "If that is ok, you can disable these alerts with --no-ipaddr-alert."
                 alert LINKUP 'Link up on interface "%s"!' "$IFC"
