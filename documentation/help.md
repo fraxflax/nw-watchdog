@@ -341,7 +341,7 @@ These opions takes a single argument each and may be specified in any order. Spe
 nw-watchdog 1.2.3.4 \
 --interval=60 \
 --no-ping-target \
---interface=__eth0 \
+--interface=eth0 \
 --slow-up-timeout=1 \
 --ifup-grace=300
 ```
