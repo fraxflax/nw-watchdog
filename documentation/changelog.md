@@ -7,6 +7,14 @@ Unless plans change, they will be in the next release.
 
 * _currently nothing_ (feel free to come with suggestions: nw-watchdog@axnet.nu)
 
+## v1.1.2 - Update Release, 2024-04-23
+https://github.com/fraxflax/nw-watchdog/tree/v1.1.2
+
+* Code improvments and optimizations, rewritten tests, replaced deprecated syntax, replaced dynamic strings with static ones where possible, and more.
+  Large thanks to __Joakim Roupert__ for his input both in the form of disussions and pull requests.
+
+* POSIX reference
+
 ## v1.1.1 - Update Release, 2024-04-18
 https://github.com/fraxflax/nw-watchdog/tree/v1.1.1
 

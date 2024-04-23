@@ -14,11 +14,12 @@ If you expirence any problems with __nw-watchdog__, are lacking any functionalit
 ## INSTALL
 Just copy / download the `nw-watchdog` script into your PATH and make it executable.<br>
 
-* Latest release of the script is version 1.1.1.
+* Latest release of the script is version 1.1.2.
+  Containing code improvments and optimizations, rewritten tests, replaced deprecated syntax, replaced dynamic strings with static ones where possible, and more. Large thanks to __Joakim Roupert__!
   
-  Download v1.1.1: [nw-watchdog](https://raw.githubusercontent.com/fraxflax/nw-watchdog/v1.1.1/nw-watchdog)
+  Download v1.1.2: [nw-watchdog](https://raw.githubusercontent.com/fraxflax/nw-watchdog/v1.1.2/nw-watchdog)
   ```
-  curl -o /usr/local/bin/nw-watchdog https://raw.githubusercontent.com/fraxflax/nw-watchdog/v1.1.1/nw-watchdog ; chmod a+rx /usr/local/bin/nw-watchdog
+  curl -o /usr/local/bin/nw-watchdog https://raw.githubusercontent.com/fraxflax/nw-watchdog/v1.1.2/nw-watchdog ; chmod a+rx /usr/local/bin/nw-watchdog
   ```
 * All releases are available for download here: https://github.com/fraxflax/nw-watchdog/releases
 
