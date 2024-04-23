@@ -870,7 +870,7 @@ done
 [ "$PINGTARGET" ] || [ "$PINGNEXTHOP" ] || \
     ERRMSG="You must allow pinging of target and/or nexthop!\t(Can't combine --no-ping-target and --no-ping-nexthop!)\n$ERRMSG"
 
-[ "$INSTALLSYSTEMD" && [ "$DEBUG" ] && ERRMSG="--install-systemd cannot be combined with --debug\n$ERRMSG"
+[ "$INSTALLSYSTEMD" ] && [ "$DEBUG" ] && ERRMSG="--install-systemd cannot be combined with --debug\n$ERRMSG"
 
 [ "$TARGET" ] || ERRMSG="TARGET not specified! Specify IP address or valid hostname.\n$ERRMSG"
 
