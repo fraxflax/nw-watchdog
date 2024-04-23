@@ -11,7 +11,7 @@ Unless plans change, they will be in the next release.
 https://github.com/fraxflax/nw-watchdog/tree/v1.1.2
 
 * Code improvments and optimizations, rewritten tests, replaced deprecated syntax, replaced dynamic strings with static ones where possible, and more.
-  Large thanks to __Joakim Roupert__ for his input both in the form of disussions and pull requests.
+  Large thanks to __[Joakim Roupert](https://github.com/d97jro)__ for his input both in the form of disussions and pull requests.
 
 * POSIX reference
 
