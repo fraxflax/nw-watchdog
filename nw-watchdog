@@ -1,5 +1,5 @@
 #!/bin/sh
-VERSION=1.1.1-development-20240422-003
+VERSION=1.1.1-development-20240423-001
 #
 #       nw-watchdog is a higly configurable network watchdog written
 #       in POSIX shell script for use in Linux.
@@ -10,11 +10,14 @@ VERSION=1.1.1-development-20240422-003
 #       Feel free to modify and/or (re)distribute it in any way you like.
 #       (It's always nice to be mentioned though ;-) )
 #
-#       nw-watchdog  comes with ABSOLUTELY NO WARRANTY.
+#       nw-watchdog comes with ABSOLUTELY NO WARRANTY.
 #
 #       If you expirence any problems with nw-watchdog, are lacking
 #       any functionality or just want to voice your opions about it,
 #       feel free to contact me via e-mail: nw-watchdog@axnet.nu
+#
+#       POSIX IEEE Std 1003.1-2017 (Revision of IEEE Std 1003.1-2008):
+#       https://pubs.opengroup.org/onlinepubs/9699919799/utilities/contents.html
 #
 ###########################################################################################
 # DEFAULTS                                    # Corresponding Command Line Options
@@ -36,7 +39,7 @@ DEBUG=''                              DEBUGRE='(-d|--debug)';                   
 VERSHOW='';                         VERSHOWRE='--version';                                   VERSHOWV=y
 
 V=4;                                      VRE='(--verbosity-level|-V)';  VARE='[0-9]+'                  # integer >= 0
-IFC='';                                 IFCRE='(--interface|-i)';        IFCARE='[^[:space:]/]+'        # non-empty string not whitespaces or slashes
+IFC='';                                 IFCRE='(--interface|-i)';        IFCARE='[^[:space:]/]+'        # non-empty string without whitespaces and slashes
 STATICIFC='';                     STATICIFCRE='(--force-interface|-I)';  STATICIFCARE=$IFCARE           # same as IFCARE
 LOGFILE='/var/log/nw-watchdog.log'; LOGFILERE='(--logfile|-l)';          LOGFILEARE='.+'                # non-emty string
 LOGSIZE=0;                          LOGSIZERE='(--logsize|-z)';          LOGSIZEARE='[0-9]+[kKmMgG]?'   # integer >= 0,  optional [kKmMgG]
@@ -135,7 +138,7 @@ _USAGE() {
             ___=$(tput smul)  2>/dev/null || TPUTOK=$((TPUTOK+1))
             #__=$(tput sgr0)  2>/dev/null || TPUTOK=$((TPUTOK+1)) 'tput sgr0' in combination with 'less -R' does not work on all terminal
             __=$(printf '\033[0m')                              #  types, so always use the universal ANSI reset escape sequence instead
-        }                                                      #  ( '\033[Om' instead of '\033[m^O' )
+        }                                                       #  ( '\033[Om' instead of '\033[m^O' )
     [ $TPUTOK -eq 0 ] || { COLS=72; _b_=''; ___=''; __=''; }
     FMT='cat'; which fmt >/dev/null && FMT="fmt -s -w $COLS"
     _show_errmsg "$@"
@@ -839,7 +842,7 @@ while [ $# -gt 0 ]; do
 done
 
 [ "$VERSHOW" ] && { printf '%s\n' "$VERSION"; exit 0; }
-[ "$HELP" ] && ERRMSG='' USAGE 
+[ "$HELP" ] && ERRMSG='' USAGE
 
 [ "$LISTSYSTEMD" ] || printf %s "$xOPTIONS" | grep -qE ':RMSYSTEMDSERVICE:' && {
         printf %s "$xOPTIONS" | grep -qE ':.*:.*:' || [ "$TARGET" ] && \
@@ -847,7 +850,7 @@ done
         [ -d /etc/systemd/system/. ] || USAGE "'/etc/systemd/system/' does not exists, is systemd installed and running?"
         [  -n "$LISTSYSTEMD" ] && {
             printf '\n\n--- Listing all loaded nw-watchdog systemd units: ---\n'
-            systemctl list-units --all nw-watchdog-\* 2>/dev/null | grep -oE 'nw-watchdog-.*\.service.*'       
+            systemctl list-units --all nw-watchdog-\* 2>/dev/null | grep -oE 'nw-watchdog-.*\.service.*'
             printf '\n--- Listing all installed nw-watchdog systemd units: ---\n'
             systemctl list-unit-files --all nw-watchdog-\* 2>/dev/null
             exit 0
@@ -881,7 +884,7 @@ done
 [ "$ERRMSG" ] && USAGE %s 'Option Errors'
 
 [ "$DEBUG" ] && {
-    printf %s "$xOPTIONS" | grep -qE ':V:'             || V=6  
+    printf %s "$xOPTIONS" | grep -qE ':V:'             || V=6
     printf %s "$xOPTIONS" | grep -qE ':LOGFILE:'       || LOGFILE=-
     printf %s "$xOPTIONS" | grep -qE ':PIDFILE:'       || PIDFILE=-
     printf %s "$xOPTIONS" | grep -qE ':SLOWUPTIMEOUT:' || SLOWUPTIMEOUT=1
@@ -906,7 +909,7 @@ dienl() {
 }
 [ "$LOGFILE" ] && {
     [ "$SYSTEMDSERVICENAME" ] || {
-	touch "$LOGFILE" 2>/dev/null || \
+        touch "$LOGFILE" 2>/dev/null || \
         dienl "%s\n%s\n" \
               "Cannot write to logfile '$LOGFILE'." \
               "Fix permissions, run as user with access or specify another --logfile."
@@ -965,7 +968,7 @@ alert() {
 
     [ "$STATE" = ERROR ] || [ "$STATE" = WARNING ] || [ "$STATE" = INITIAL ] || { # always alert on ERROR, WARNING and INITIAL
         [ "$ALERTSTATE" = INITIAL ] && {                                          # Do not alert if we are up after INITIAL
-	    [ "$STATE" = UP ] || [ "$STATE" = REACHABLE ] || ["$STATE" = LINKUP ] && return
+            [ "$STATE" = UP ] || [ "$STATE" = REACHABLE ] || ["$STATE" = LINKUP ] && return
         }
         [ "$STATE" = "$ALERTSTATE" ] || return                                # Same state
         [ "$ALERTSTATE" = LINKDOWN ] && [ "$STATE" = DOWN ] && return         # LINKDOWN implies DOWN
@@ -1159,10 +1162,10 @@ nexthop() {
     [ "$IFCUPDOWN" ] || NOPTS="${NOPTS}R"
     [ "$CONTINUOUSTOPOLOGYDETECT" ] || NOPTS="${NOPTS}T"
 
-    AOPTS="V$V -t$SLOWUPTIMEOUT -s$SLEEP -g$GRACE -n$MAXNOLINK -u'$IFCUPT' -U'$IFCDOWNT' -a'$ALERTCMDT' -z$LOGSIZE"  
+    AOPTS="V$V -t$SLOWUPTIMEOUT -s$SLEEP -g$GRACE -n$MAXNOLINK -u'$IFCUPT' -U'$IFCDOWNT' -a'$ALERTCMDT' -z$LOGSIZE"
     if [ "$STATICIFC" ]; then AOPTS="$AOPTS -I$IFC"
     elif [ "$IFC" ]; then AOPTS="$AOPTS -i$IFC"; fi
-    
+
     debug 'NOPTS=%s\nAOPTS=%s\n' "$NOPTS" "$AOPTS"
 }
 ### Systemd service creation
@@ -1173,8 +1176,8 @@ nexthop() {
               'The SYSTEMDSERVICENAME must contain only alphanumeric characters, hyphens and underscores' \
               'and be no longer than 236 characters.'
     [ $(printf %s "$SYSTEMDSERVICENAME" | wc -c) -gt 236 ] && \
-	USAGE 'Systemd service name\n       "%s"\n       %s' \
-              "$SYSTEMDSERVICENAME" "is too long (max 236 characters)" 
+        USAGE 'Systemd service name\n       "%s"\n       %s' \
+              "$SYSTEMDSERVICENAME" "is too long (max 236 characters)"
     [ $(id -u) -eq 0 ] || USAGE %s "$nwwatchdog --install-systemd must be run as root"
     [ -d /etc/systemd/system/. ] || USAGE "'/etc/systemd/system/' does not exists,\n       systemd '%s.service' NOT installed!" \
                                           "$SYSTEMDSERVICENAME"
@@ -1237,7 +1240,7 @@ isup() {
 
     # quick check if line is already up
     ping -q -w1 -c1 -I$IFC $isupADDR >/dev/null 2>&1 && {
-	debug '%s is quick-up on %s' "$isupADDR" "$IFC"
+        debug '%s is quick-up on %s' "$isupADDR" "$IFC"
         return 0
     }
     trace 'quick-up failed ... trying slow-up ...'
@@ -1434,7 +1437,7 @@ while true; do
         [ "$CONTINUOUSTOPOLOGYDETECT" ] && trace '... and for changes in topology'
         while isup $TADDR; do
             alert UP 'Target "%s" (%s) is up.' "$TARGET" "$TADDR"
-            debug 'Target "%s" (%s) is up. Sleeping for %d seconds.' "$TARGET" "$TADDR" $SLEEP 
+            debug 'Target "%s" (%s) is up. Sleeping for %d seconds.' "$TARGET" "$TADDR" $SLEEP
             sleep $SLEEP
             [ "$CONTINUOUSTOPOLOGYDETECT" ] && { resolve_target; nexthop ;}
         done
@@ -1472,7 +1475,7 @@ while true; do
         [ "$CONTINUOUSTOPOLOGYDETECT" ] && trace '... and for changes in topology'
         while isup $NEXTHOP; do
             alert REACHABLE 'Nexthop "%s" for target "%s" (%s) is reachable.' "$NEXTHOP" "$TARGET" "$TADDR"
-            debug 'Nexthop "%s" for target "%s" (%s) is reachable. Sleeping for %d seconds.' "$NEXTHOP" "$TARGET" "$TADDR" $SLEEP 
+            debug 'Nexthop "%s" for target "%s" (%s) is reachable. Sleeping for %d seconds.' "$NEXTHOP" "$TARGET" "$TADDR" $SLEEP
             sleep $SLEEP
             [ "$CONTINUOUSTOPOLOGYDETECT" ] && { resolve_target; nexthop ;}
         done
