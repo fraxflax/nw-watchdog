@@ -1,5 +1,5 @@
 #!/bin/sh
-VERSION=1.1.2-development-20240423-004
+VERSION=1.1.2-main-20240423-000
 #
 #       nw-watchdog is a higly configurable network watchdog written
 #       in POSIX shell script for use in Linux.
@@ -874,7 +874,7 @@ done
 [ "$PINGTARGET" ] || [ "$PINGNEXTHOP" ] || \
     ERRMSG="You must allow pinging of target and/or nexthop!\t(Can't combine --no-ping-target and --no-ping-nexthop!)\n$ERRMSG"
 
-[ "$INSTALLSYSTEMD" && [ "$DEBUG" ] && ERRMSG="--install-systemd cannot be combined with --debug\n$ERRMSG"
+[ "$INSTALLSYSTEMD" ] && [ "$DEBUG" ] && ERRMSG="--install-systemd cannot be combined with --debug\n$ERRMSG"
 
 [ "$TARGET" ] || ERRMSG="TARGET not specified! Specify IP address or valid hostname.\n$ERRMSG"
 
