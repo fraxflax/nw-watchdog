@@ -15,7 +15,7 @@ If you expirence any problems with __nw-watchdog__, are lacking any functionalit
 Just copy / download the `nw-watchdog` script into your PATH and make it executable.<br>
 
 * Latest release of the script is version 1.1.2.
-  Containing code improvments and optimizations, rewritten tests, replaced deprecated syntax, replaced dynamic strings with static ones where possible, and more. Large thanks to __[Joakim Roupert](https://github.com/d97jro)__!
+  Containing code improvments and optimizations, rewritten tests, replaced deprecated syntax, replaced dynamic strings with static ones where possible, and more. Large thanks to __[Joakim Roupert](https://github.com/d97jro)__! Also see the [full changelog](https://github.com/fraxflax/nw-watchdog/blob/Release-version-1.1.2/documentation/changelog.md).
   
   Download v1.1.2: [nw-watchdog](https://raw.githubusercontent.com/fraxflax/nw-watchdog/v1.1.2/nw-watchdog)
   ```
