@@ -1,5 +1,5 @@
 #!/bin/sh
-VERSION=1.1.1-development-20240422-002
+VERSION=1.1.1-development-20240422-003
 #
 #       nw-watchdog is a higly configurable network watchdog written
 #       in POSIX shell script for use in Linux.
@@ -104,22 +104,22 @@ The following executable(s) are lacking in your PATH:
 fi
 which sh >/dev/null 2>&1 || deperr which sh $lacking
 for x in $DEPENDENCIES; do which "$x" >/dev/null || lacking="$lacking $x"; done
-[ -n "$lacking" ] && deperr $lacking
+[ "$lacking" ] && deperr $lacking
 
 ERRMSG=''
 COLS=72; _b_=''; ___=''; __='';
 _show_errmsg() {
-    [ -n "$ERRMSG" ] || [ -n "$1" ] || return
+    [ "$ERRMSG" ] || [ "$1" ] || return
     div=''; i=0;
     while [ $i -lt $COLS ]; do div="~$div"; i=$((i+1)); done
     printf '\n%s\n%s: %s' "$_b_$div" "${_b_}ERROR$__"
-    [ -n "$1" ] && {
+    [ "$1" ] && {
         PTN=$1; shift
         printf "$PTN\n" "$@"
     }
     lines=$(printf %s "$ERRMSG" | sed -E 's/%/%%/g')
     printf "$lines" | while read l; do
-        [ -n "$l" ] || break
+        [ "$l" ] || break
         l=$(printf %s "$l" | sed -E 's/\t/\n   /g')
         printf '%s %s\n' "$_b_*$__" "$l"
     done
@@ -736,9 +736,9 @@ EOU
     _show_errmsg "$@"
 }
 USAGE() {
-    [ -z "$PAGERUSE" ] && {
+    [ "$PAGERUSE" ] || {
         _USAGE "$@"
-        [ -n "$ERRMSG" ] || [ -n "$1" ] || exit 0
+        [ "$ERRMSG" ] || [ "$1" ] || exit 0
         exit 1
     }
     if which "$PAGER" >/dev/null 2>&1; then
@@ -751,18 +751,18 @@ USAGE() {
     else
         _USAGE "$@"
     fi
-    [ -n "$ERRMSG" ] || [ -n "$1" ] || exit 0
+    [ "$ERRMSG" ] || [ "$1" ] || exit 0
     exit 1
 }
 SOPTRE=''
 for o in $SOPTIONS; do
-    [ -n "$SOPTRE" ] && SOPTRE="$SOPTRE|"
+    [ "$SOPTRE" ] && SOPTRE="$SOPTRE|"
     eval "r='\${${o}RE'}"; eval "SOPTRE=\"$SOPTRE$r\"" # should be \" or SOPTRE will contain variabel names instead of content
 done
 SOPTRE="($SOPTRE)"
 AOPTRE=''
 for o in $AOPTIONS; do
-    [ -n "$AOPTRE" ] && AOPTRE="$AOPTRE|"
+    [ "$AOPTRE" ] && AOPTRE="$AOPTRE|"
     eval "r='\${${o}RE'}"; eval "AOPTRE=\"$AOPTRE$r\"" # should be \" or AOPTRE will contain variabel names instead of content
 done
 AOPTRE="($AOPTRE)"
@@ -800,7 +800,7 @@ while [ $# -gt 0 ]; do
                 ARG=''
             }
         fi
-        [ -z "$ARG" ] && ERRMSG="Option '$OPT' requires an argument.\n$ERRMSG"
+        [ "$ARG" ] || ERRMSG="Option '$OPT' requires an argument.\n$ERRMSG"
         for o in $AOPTIONS; do
             eval "R=\"\${${o}RE}\"" # should be \" or AR will contain variabel names instead of content
             if printf %s "$OPT" | grep -qE "^$R$"; then
@@ -826,7 +826,7 @@ while [ $# -gt 0 ]; do
         if printf %s "$ARG" | grep -qE '^-'; then
             ERRMSG="Invalid OPTION: '$ARG'\n$ERRMSG"
         else
-            [ -z "$TARGET" ] || ERRMSG="Multiple TARGETs specified ('$TARGET' + '$ARG').\n$ERRMSG"
+            [ "$TARGET" ] && ERRMSG="Multiple TARGETs specified ('$TARGET' + '$ARG').\n$ERRMSG"
             TARGET=$ARG
             printf %s "$TARGET" \
                 | grep -qE '^((0*[0-9]?[0-9]|1[0-9][0-9]|2([0-4][0-9]|5[0-5]))\.){3}(0*[0-9]?[0-9]|1[0-9][0-9]|2([0-4][0-9]|5[0-5]))$' \
@@ -838,11 +838,11 @@ while [ $# -gt 0 ]; do
     fi
 done
 
-[ -n "$VERSHOW" ] && { printf '%s\n' "$VERSION"; exit 0; }
-[ -n "$HELP" ] && ERRMSG='' USAGE 
+[ "$VERSHOW" ] && { printf '%s\n' "$VERSION"; exit 0; }
+[ "$HELP" ] && ERRMSG='' USAGE 
 
-[ -n "$LISTSYSTEMD" ] || printf %s "$xOPTIONS" | grep -qE ':RMSYSTEMDSERVICE:' && {
-        printf %s "$xOPTIONS" | grep -qE ':.*:.*:' || [ -n "$TARGET" ] && \
+[ "$LISTSYSTEMD" ] || printf %s "$xOPTIONS" | grep -qE ':RMSYSTEMDSERVICE:' && {
+        printf %s "$xOPTIONS" | grep -qE ':.*:.*:' || [ "$TARGET" ] && \
             ERRMSG='' USAGE %s "--list-systemd and --remove-systemd cannot be combined with any other option"
         [ -d /etc/systemd/system/. ] || USAGE "'/etc/systemd/system/' does not exists, is systemd installed and running?"
         [  -n "$LISTSYSTEMD" ] && {
@@ -852,7 +852,7 @@ done
             systemctl list-unit-files --all nw-watchdog-\* 2>/dev/null
             exit 0
         }
-        [ -n "$RMSYSTEMDSERVICE" ] || ERRMSG='' USAGE %s "--remove-systemd requires a service or unit name to remove"
+        [ "$RMSYSTEMDSERVICE" ] || ERRMSG='' USAGE %s "--remove-systemd requires a service or unit name to remove"
         [ $(id -u) -eq 0 ] || USAGE %s "$nwwatchdog --remove-systemd must be run as root"
         systemctl daemon-reload || USAGE %s "Failed to reload systemd. Is systemd installed and running?"
         UNITNAME=$RMSYSTEMDSERVICE
@@ -870,17 +870,17 @@ done
         exit 0
     }
 
-[ -z "$PINGTARGET" ] && [ -z "$PINGNEXTHOP" ] && \
+[ "$PINGTARGET" ] || [ "$PINGNEXTHOP" ] || \
     ERRMSG="You must allow pinging of target and/or nexthop!\t(Can't combine --no-ping-target and --no-ping-nexthop!)\n$ERRMSG"
 
-[ -n "$INSTALLSYSTEMD" && [ -n "$DEBUG" ] && ERRMSG="--install-systemd cannot be combined with --debug\n$ERRMSG"
+[ "$INSTALLSYSTEMD" && [ "$DEBUG" ] && ERRMSG="--install-systemd cannot be combined with --debug\n$ERRMSG"
 
-[ -n "$TARGET" ] || ERRMSG="TARGET not specified! Specify IP address or valid hostname.\n$ERRMSG"
+[ "$TARGET" ] || ERRMSG="TARGET not specified! Specify IP address or valid hostname.\n$ERRMSG"
 
 ### Die showing the USAGE if found errors in options and arguments above ###
-[ -n "$ERRMSG" ] && USAGE %s 'Option Errors'
+[ "$ERRMSG" ] && USAGE %s 'Option Errors'
 
-[ -n "$DEBUG" ] && {
+[ "$DEBUG" ] && {
     printf %s "$xOPTIONS" | grep -qE ':V:'             || V=6  
     printf %s "$xOPTIONS" | grep -qE ':LOGFILE:'       || LOGFILE=-
     printf %s "$xOPTIONS" | grep -qE ':PIDFILE:'       || PIDFILE=-
@@ -904,11 +904,13 @@ dienl() {
     _show_errmsg "$diePATN" "$@"
     exit 1
 }
-[ -n "$LOGFILE" ] && [ -z "$SYSTEMDSERVICENAME" ] && {
-    touch "$LOGFILE" 2>/dev/null || \
+[ "$LOGFILE" ] && {
+    [ "$SYSTEMDSERVICENAME" ] || {
+	touch "$LOGFILE" 2>/dev/null || \
         dienl "%s\n%s\n" \
               "Cannot write to logfile '$LOGFILE'." \
               "Fix permissions, run as user with access or specify another --logfile."
+    }
 }
 
 LOGSIZEb=$LOGSIZE
@@ -924,14 +926,14 @@ test -n "$STATICIFC" && { CONTINUOUSTOPOLOGYDETECT='' ; IFC=$STATICIFC ;}
 log() {
     logPATN="%s  $1"; shift
     logentry=$(printf "$logPATN" "$(date '+%Y-%m-%d %H:%M:%S %z')" "$@")
-    if [ -n "$LOGFILE" ]; then
+    if [ "$LOGFILE" ]; then
         [ "$LOGSIZEb" -gt 0 ] && {
             # Remove top 10 lines until log file is smaller than LOGSIZEb,
             # silently skip if we can't lock the file
             if which flock >/dev/null 2>&1; then
-                skip=''
-                while [ -z "$skip" ] && [ $(stat --printf='%s' "$LOGFILE") -gt $LOGSIZEb ]; do
-                    flock -w1 "$LOGFILE" -c "cp '$LOGFILE' '$LOGFILE.$$' ; tail -n +11 '$LOGFILE.$$' >'$LOGFILE'; rm '$LOGFILE.$$'" || skip=y
+                ok=y
+                while [ "$ok" ] && [ $(stat --printf=%s "$LOGFILE") -gt $LOGSIZEb ]; do
+                    flock -w1 "$LOGFILE" -c "cp '$LOGFILE' '$LOGFILE.$$' ; tail -n +11 '$LOGFILE.$$' >'$LOGFILE'; rm '$LOGFILE.$$'" || ok=''
                 done
             else
                 while [ $(stat --printf=%s $LOGFILE) -gt $LOGSIZEb ]; do
@@ -963,13 +965,7 @@ alert() {
 
     [ "$STATE" = ERROR ] || [ "$STATE" = WARNING ] || [ "$STATE" = INITIAL ] || { # always alert on ERROR, WARNING and INITIAL
         [ "$ALERTSTATE" = INITIAL ] && {                                          # Do not alert if we are up after INITIAL
-            case "$STATE" in
-                UP|REACHABLE|LINKUP)
-                    return
-                    ;;
-                *)
-                    ;;
-            esac
+	    [ "$STATE" = UP ] || [ "$STATE" = REACHABLE ] || ["$STATE" = LINKUP ] && return
         }
         [ "$STATE" = "$ALERTSTATE" ] || return                                # Same state
         [ "$ALERTSTATE" = LINKDOWN ] && [ "$STATE" = DOWN ] && return         # LINKDOWN implies DOWN
@@ -980,25 +976,25 @@ alert() {
         [ "$REACHABLE"  = REACHABLE ] && [ "$STATE" = LINKUP ] && return      # REACHABLE implies LINKUP
     }
     ALERTCMD=$(printf %s "$ALERTCMDT" | sed -E "s/\%\{STATE\}/$STATE/g" | sed -E "s/\%\{LASTSTATE\}/$ALERTSTATE/g")
-    if [ -n "$TARGET" ]; then
+    if [ "$TARGET" ]; then
         ALERTCMD=$(printf %s "$ALERTCMD" | sed -E "s/\%\{TARGET\}/$TARGET/g")
     else
         ALERTCMD=$(printf %s "$ALERTCMD" | sed -E "s/\%\{TARGET\}/unspecified-target/g")
     fi
 
-    if [ -n "$IFC" ]; then
+    if [ "$IFC" ]; then
         ALERTCMD=$(printf %s "$ALERTCMD" | sed -E "s/\%\{IFC\}/$IFC/g")
     else
         ALERTCMD=$(printf %s "$ALERTCMD" | sed -E "s/\%\{IFC\}/topology-not-yet-detected/g")
     fi
 
-    if [ -n "$TADDR" ]; then
+    if [ "$TADDR" ]; then
         ALERTCMD=$(printf %s "$ALERTCMD" | sed -E "s/\%\{TADDR\}/$TADDR/g")
     else
         ALERTCMD=$(printf %s "$ALERTCMD" | sed -E "s/\%\{TADDR\}/unresolved-target/g")
     fi
 
-    if [ -n "$NEXTHOP" ]; then
+    if [ "$NEXTHOP" ]; then
         ALERTCMD=$(printf %s "$ALERTCMD" | sed -E "s/\%\{NEXTHOP\}/$NEXTHOP/g")
     else
         ALERTCMD=$(printf %s "$ALERTCMD" | sed -E "s/\%\{NEXTHOP\}/topology-not-yet-detected/g")
@@ -1048,11 +1044,11 @@ debug() {
 }
 
 ifreset() {
-    [ -n "$IFCUPDOWN" ] || {
+    [ "$IFCUPDOWN" ] || {
         info 'Not resetting interface due to --no-interface-reset.'
         return 0
     }
-    [ -n "$IFC" ] || die 'Internal ERROR: No interface to reset!'
+    [ "$IFC" ] || die 'Internal ERROR: No interface to reset!'
     info 'Resetting interface (%s).' "$IFC"
     trace 'sh -c "%s"' "$IFCDOWN"
     IFCDD=$(sh -c "$IFCDOWN" 2>&1)
@@ -1068,7 +1064,7 @@ ifreset() {
         warn '%s\n\t%s' \
              "Could not reset interface '$IFC'." \
              "Check your --if-up and --if-down commands and/or privilegdes of effective user (userid=$(id -u))."
-        [ -z "$1" ] || return 1
+        [ "$1" ] && return 1
     }
     debug '"%s" exited with %d and output: "%s"' "$IFCUP" $EXITCODE "$IFCUD"
     trace 'Sleeping for %d seconds.' $GRACE
@@ -1077,13 +1073,13 @@ ifreset() {
 }
 
 linkcheck() {
-    [ -n "$IFC" ] || die 'Internal ERROR: No interface to check link for!'
+    [ "$IFC" ] || die 'Internal ERROR: No interface to check link for!'
     NOLINK=0
     while true; do
         ip link show $IFC>/dev/null 2>&1 && {
             ip link show $IFC | grep -oq 'state DOWN' || {
                 IPADDRS=''; ip addr show dev $IFC | grep -qE 'inet6? .* scope global' && IPADDRS=y
-                [ -n "$IPADDRS" ] && [ -n "$IPADDRALRT" ] \
+                [ "$IPADDRS" ] && [ "$IPADDRALRT" ] \
                     || warn '%s\n\t%s' \
                             "There is no IPv4 or IPv6 global scope ip address on interface '$IFC'!" \
                             "If that is ok, you can disable these alerts with --no-ipaddr-alert."
@@ -1107,18 +1103,18 @@ linkcheck() {
 
 nexthop() {
     NIFC=$(ip route get $TADDR | grep -o 'dev [^ ]*' | while read -r _ h _; do echo $h; done)
-    if [ -n "$NIFC" ]; then
+    if [ "$NIFC" ]; then
         NNEXTHOP=$(ip route get $TADDR | grep -oE 'via [^ ]*' | while read -r _ h _; do echo $h; done)
-        [ -z "$NNEXTHOP" ] && {
+        [ "$NNEXTHOP" ] || {
             NNEXTHOP=$TADDR
             debug 'No nexthop detected (ok if same subnet (incl. host-local addr) or peer-to-peer addr), using target as nexthop... '
             # If it's a host-local address 'ip route get' will say lo is source interface even if addr is on different interface
             # which will cause 'ping -I$IFC' to fail, so let's figure which interface holds the address is instead
             [ "$NIFC" = lo ] && {
                 nexthopADDR=$(printf %s "$TADDR" | sed -E 's/\./\\\\./g')
-                [ -n "$(ip addr | grep -E "inet $nexthopADDR( |\/)")" ] && {
+                [ "$(ip addr | grep -E "inet $nexthopADDR( |\/)")" ] && {
                     LIFC=$(ip addr | grep -B9999 -E "inet $nexthopADDR( |\/)" | grep -oE '^[0-9]+:\s+[^@:]+' | tail -1 | sed -E 's/.*\s//')
-                    [ -n "$LIFC" ] && {
+                    [ "$LIFC" ] && {
                         debug 'Found %s on local interface "%s" (overriding "%s")' "$TADDR" "$LIFC" "$NIFC"
                         NIFC=$LIFC
                     }
@@ -1153,23 +1149,24 @@ nexthop() {
     fi
 }
 
-[ -z "$FORK" ] && [ -z "$SYSTEMDSERVICENAME" ] || {
+[ "$FORK" ] || [ "$SYSTEMDSERVICENAME" ] && {
     debug 'MAINPID=%d BASENAME=%s COMM=%s' $$ "$nwwatchdog" "$(cat /proc/$$/comm)"
 
     NOPTS='M' # don't use a pager for output from background / systemd processes
-    [ -z "$PINGNEXTHOP" ] && NOPTS="${NOPTS}N"
-    [ -z "$PINGTARGET" ] && NOPTS="${NOPTS}P"
-    [ -z "$IPADDRALRT" ] && NOPTS="${NOPTS}A"
-    [ -z "$IFCUPDOWN" ] && NOPTS="${NOPTS}R"
-    [ -z "$CONTINUOUSTOPOLOGYDETECT" ] && NOPTS="${NOPTS}T"
+    [ "$PINGNEXTHOP" ] || NOPTS="${NOPTS}N"
+    [ "$PINGTARGET" ] || NOPTS="${NOPTS}P"
+    [ "$IPADDRALRT" ] || NOPTS="${NOPTS}A"
+    [ "$IFCUPDOWN" ] || NOPTS="${NOPTS}R"
+    [ "$CONTINUOUSTOPOLOGYDETECT" ] || NOPTS="${NOPTS}T"
 
-    AOPTS="V$V -t$SLOWUPTIMEOUT -s$SLEEP -g$GRACE -n$MAXNOLINK -u'$IFCUPT' -U'$IFCDOWNT' -a'$ALERTCMDT' -z$LOGSIZE"
-    [ -z "$STATICIFC" ] && [ -n "$IFC" ] && AOPTS="$AOPTS -i$IFC"
-    [ -n "$STATICIFC" ] && AOPTS="$AOPTS -I$IFC"
+    AOPTS="V$V -t$SLOWUPTIMEOUT -s$SLEEP -g$GRACE -n$MAXNOLINK -u'$IFCUPT' -U'$IFCDOWNT' -a'$ALERTCMDT' -z$LOGSIZE"  
+    if [ "$STATICIFC" ]; then AOPTS="$AOPTS -I$IFC"
+    elif [ "$IFC" ]; then AOPTS="$AOPTS -i$IFC"; fi
+    
     debug 'NOPTS=%s\nAOPTS=%s\n' "$NOPTS" "$AOPTS"
 }
 ### Systemd service creation
-[ -n "$SYSTEMDSERVICENAME" ] && {
+[ "$SYSTEMDSERVICENAME" ] && {
     LOGFILE=''
     printf %s "$SYSTEMDSERVICENAME" | grep -qEe '^[a-zA-Z0-9_-]+$' || \
         USAGE 'Invalid systemd service name "%s"\n       %s\n       %s' "$SYSTEMDSERVICENAME" \
@@ -1215,7 +1212,7 @@ EOF
 resolve_target() {
     rtOADDR=$TADDR
     TADDR=$(getent ahostsv4 "$TARGET" | head -1 | sed -E 's/^\s*([0-9.]+)\s.*/\1/')
-    [ -n "$TADDR" ] || {
+    [ "$TADDR" ] || {
         TADDR=$rtOADDR
         info 'Failed to resolve target "%s", keeping "%s"' "$TARGET" "$TADDR"
         return 1
@@ -1289,15 +1286,15 @@ isup() {
     return 1
 }
 
-[ -n "$PIDFILE" ] || PIDFILE=/run/nw-watchdog.pid
+[ "$PIDFILE" ] || PIDFILE=/run/nw-watchdog.pid
 touch "$PIDFILE" 2>/dev/null || die '%s\n%s' "Cannot write to pidfile '$PIDFILE'." \
                                     "Specify another --pidfile or check permissions or privileges of effective user (userid=$(id -u))"
 PID=$(cat "$PIDFILE")
 [ "$PID" -gt 0 ] 2>/dev/null && [ -d /proc/$PID ] && die "Process already running with pid $PID"
 
 ### Forking
-[ -n "$FORK" ] && {
-    if [ -n "$LOGFILE" ]; then AOPTS="$AOPTS -l'$LOGFILE'"
+[ "$FORK" ] && {
+    if [ "$LOGFILE" ]; then AOPTS="$AOPTS -l'$LOGFILE'"
     else AOPTS="$AOPTS -l-"; fi
     AOPTS="$AOPTS -p'$PIDFILE'"
     if [ -x "$0" ]; then
@@ -1337,17 +1334,17 @@ debug '\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\
       "ALERTCMDT='$ALERTCMDT'"
 
 TADDR=''
-[ -n "$IFC" ] && {
+[ "$IFC" ] && {
     IFCUP=$(printf %s "$IFCUPT" | sed -E "s/\%\{IFC\}/$IFC/g")
     IFCDOWN=$(printf %s "$IFCDOWNT" | sed -E "s/\%\{IFC\}/$IFC/g")
 
     ip link show $IFC>/dev/null 2>&1 || { # device does not exist
-        if [ -n "$IFCUPDOWN" ]; then
+        if [ "$IFCUPDOWN" ]; then
             info 'Interface "%s" is not available (no such device), trying to bring it up.' "$IFC"
             sh -c "$IFCUP" >/dev/null 2>&1
             trace 'Sleeping for %d seconds.' $GRACE
             sleep $GRACE
-            if [ -n "$STATICIFC" ]; then
+            if [ "$STATICIFC" ]; then
                 while ! ip link show $IFC >/dev/null 2>&1; do
                     warn '--force-interface "%s" not available (no such device), will keep trying to bring it up.\n\t%s' "$IFC" \
                          "... or you might want to check your options and restart this instance with correct ones if wrong."
@@ -1383,7 +1380,7 @@ TADDR=''
                     sleep $GRACE
                 done
             fi
-        elif [ -n "$STATICIFC" ]; then
+        elif [ "$STATICIFC" ]; then
             while ! ip link show $IFC >/dev/null 2>&1; do
                 warn '--force-interface "%s" is not available (no such device),\n\t%s\n\t%s\n\t%s\n\t%s' "$IFC" \
                      'and ---no-interface-reset prevents bringing it up,' \
@@ -1415,7 +1412,7 @@ while [ -z "$TADDR" ]; do
     }
 done
 
-if [ -n "$IFC" ]; then
+if [ "$IFC" ]; then
     nexthop || { linkcheck && { nexthop || { ifreset && nexthop ;};};}
 else
     nexthop
@@ -1432,19 +1429,19 @@ else
 fi
 
 while true; do
-    if [ -n "$PINGTARGET" ]; then
+    if [ "$PINGTARGET" ]; then
         trace 'Continuously checking if target is up...'
-        [ -n "$CONTINUOUSTOPOLOGYDETECT" ] && trace '... and for changes in topology'
+        [ "$CONTINUOUSTOPOLOGYDETECT" ] && trace '... and for changes in topology'
         while isup $TADDR; do
             alert UP 'Target "%s" (%s) is up.' "$TARGET" "$TADDR"
             debug 'Target "%s" (%s) is up. Sleeping for %d seconds.' "$TARGET" "$TADDR" $SLEEP 
             sleep $SLEEP
-            [ -n "$CONTINUOUSTOPOLOGYDETECT" ] && { resolve_target; nexthop ;}
+            [ "$CONTINUOUSTOPOLOGYDETECT" ] && { resolve_target; nexthop ;}
         done
         trace 'No reply from target "%s" (%s), checking link and topology.' "$TARGET" "$TADDR"
         if nexthop || { linkcheck && nexthop ;}; then
             isup "$TADDR" || {
-                if [ -n "$PINGNEXTHOP" ]; then
+                if [ "$PINGNEXTHOP" ]; then
                     if isup "$NEXTHOP" noresolve; then
                         alert DOWN \
                               'Not getting replies from target "%s" (%s) on interface "%s", but nexthop "%s" is reachable... sleeping for %d seconds.' \
@@ -1472,12 +1469,12 @@ while true; do
 
     else
         trace 'Continuously checking if nexthop is reachable...'
-        [ -n "$CONTINUOUSTOPOLOGYDETECT" ] && trace '... and for changes in topology'
+        [ "$CONTINUOUSTOPOLOGYDETECT" ] && trace '... and for changes in topology'
         while isup $NEXTHOP; do
             alert REACHABLE 'Nexthop "%s" for target "%s" (%s) is reachable.' "$NEXTHOP" "$TARGET" "$TADDR"
             debug 'Nexthop "%s" for target "%s" (%s) is reachable. Sleeping for %d seconds.' "$NEXTHOP" "$TARGET" "$TADDR" $SLEEP 
             sleep $SLEEP
-            [ -n "$CONTINUOUSTOPOLOGYDETECT" ] && { resolve_target; nexthop ;}
+            [ "$CONTINUOUSTOPOLOGYDETECT" ] && { resolve_target; nexthop ;}
         done
         trace 'nexthop "%s" (for --no-ping-target "%s" (%s)) on interface "%s", not reachable, checking link and nexthop.' \
               "$NEXTHOP" "$TARGET" "$TADDR" "$IFC"
