@@ -1,5 +1,5 @@
 # nw-watchdog
-__nw-watchdog__ is a higly configurable network watchdog written in POSIX shell script for use in Linux, depending only on Linux most standard tools that are normally installed by default in all distributions (also see the __[DEPENDENCIES](https://github.com/fraxflax/nw-watchdog/blob/main/documentation/help.md#deps)__ section).
+__nw-watchdog__ is a higly configurable network watchdog written in [POSIX](https://pubs.opengroup.org/onlinepubs/9699919799/utilities/contents.html) shell script for use in Linux, depending only on Linux most standard tools that are normally installed by default in all distributions (also see the __[DEPENDENCIES](https://github.com/fraxflax/nw-watchdog/blob/main/documentation/help.md#deps)__ section).
 
 It monitors the network connectivity to a specified <ins>TARGET</ins> and/or the next hop towards that <ins>TARGET</ins>, alerting upon lost connectivity explaining what is wrong. It can reset the source interface and will detect topology changes and, if allowed, reconfigure itself accordingly. It's intended to run as a daemon and has an option to install itself as a systemd service.  If you want to monitor the connectivity to several <ins>TARGET</ins>s, you can run several instances of __nw-watchdog__ using different `--pidfile` option arguments.
 
@@ -14,11 +14,12 @@ If you expirence any problems with __nw-watchdog__, are lacking any functionalit
 ## INSTALL
 Just copy / download the `nw-watchdog` script into your PATH and make it executable.<br>
 
-* Latest release of the script is version 1.1.1.
+* Latest release of the script is version 1.1.2.
+  Containing code improvments and optimizations, rewritten tests, replaced deprecated syntax, replaced dynamic strings with static ones where possible, and more. Large thanks to __[Joakim Roupert](https://github.com/d97jro)__! Also see the [full changelog](https://github.com/fraxflax/nw-watchdog/blob/Release-version-1.1.2/documentation/changelog.md).
   
-  Download v1.1.1: [nw-watchdog](https://raw.githubusercontent.com/fraxflax/nw-watchdog/v1.1.1/nw-watchdog)
+  Download v1.1.2: [nw-watchdog](https://raw.githubusercontent.com/fraxflax/nw-watchdog/v1.1.2/nw-watchdog)
   ```
-  curl -o /usr/local/bin/nw-watchdog https://raw.githubusercontent.com/fraxflax/nw-watchdog/v1.1.1/nw-watchdog ; chmod a+rx /usr/local/bin/nw-watchdog
+  curl -o /usr/local/bin/nw-watchdog https://raw.githubusercontent.com/fraxflax/nw-watchdog/v1.1.2/nw-watchdog ; chmod a+rx /usr/local/bin/nw-watchdog
   ```
 * All releases are available for download here: https://github.com/fraxflax/nw-watchdog/releases
 
