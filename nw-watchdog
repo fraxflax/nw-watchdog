@@ -738,8 +738,8 @@ EOU
 USAGE() {
     [ -z "$PAGERUSE" ] && {
         _USAGE "$@"
-        [ -n "$ERRMSG" ] || [ -n "$1" ] && exit 1
-        exit 0
+        [ -n "$ERRMSG" ] || [ -n "$1" ] || exit 0
+        exit 1
     }
     if which "$PAGER" >/dev/null 2>&1; then
         LESS="$LESS -R"; export LESS # make sure less, if used, passes ANSI color escape sequences to terminal
@@ -751,8 +751,8 @@ USAGE() {
     else
         _USAGE "$@"
     fi
-    [ -n "$ERRMSG" ] || [ -n "$1" ] && exit 1
-    exit 0
+    [ -n "$ERRMSG" ] || [ -n "$1" ] || exit 0
+    exit 1
 }
 SOPTRE=''
 for o in $SOPTIONS; do
@@ -870,10 +870,10 @@ done
         exit 0
     }
 
-[ -z "$PINGTARGET" -a -z "$PINGNEXTHOP" ] && \
+[ -z "$PINGTARGET" ] && [ -z "$PINGNEXTHOP" ] && \
     ERRMSG="You must allow pinging of target and/or nexthop!\t(Can't combine --no-ping-target and --no-ping-nexthop!)\n$ERRMSG"
 
-[ -n "$INSTALLSYSTEMD" -a -n "$DEBUG" ] && ERRMSG="--install-systemd cannot be combined with --debug\n$ERRMSG"
+[ -n "$INSTALLSYSTEMD" && [ -n "$DEBUG" ] && ERRMSG="--install-systemd cannot be combined with --debug\n$ERRMSG"
 
 [ -n "$TARGET" ] || ERRMSG="TARGET not specified! Specify IP address or valid hostname.\n$ERRMSG"
 
@@ -904,7 +904,7 @@ dienl() {
     _show_errmsg "$diePATN" "$@"
     exit 1
 }
-[ -n "$LOGFILE" -a -z "$SYSTEMDSERVICENAME" ] && {
+[ -n "$LOGFILE" ] && [ -z "$SYSTEMDSERVICENAME" ] && {
     touch "$LOGFILE" 2>/dev/null || \
         dienl "%s\n%s\n" \
               "Cannot write to logfile '$LOGFILE'." \
@@ -930,7 +930,7 @@ log() {
             # silently skip if we can't lock the file
             if which flock >/dev/null 2>&1; then
                 skip=''
-                while [ -z "$skip" -a $(stat --printf=%s $LOGFILE) -gt $LOGSIZEb ]; do
+                while [ -z "$skip" ] && [ $(stat --printf='%s' "$LOGFILE") -gt $LOGSIZEb ]; do
                     flock -w1 "$LOGFILE" -c "cp '$LOGFILE' '$LOGFILE.$$' ; tail -n +11 '$LOGFILE.$$' >'$LOGFILE'; rm '$LOGFILE.$$'" || skip=y
                 done
             else
@@ -961,17 +961,23 @@ alert() {
     [ $V -ge 3 ] || return
     STATE=$1; shift
 
-    [ "$STATE" = ERROR -o "$STATE" = WARNING -o "$STATE" = INITIAL ] || { # always alert on ERROR, WARNING and INITIAL
-        [ "$ALERTSTATE" = INITIAL ] && {                                      # Do not alert if we are up after INITIAL
-            [ "$STATE" = UP -o "$STATE" = REACHABLE -o "$STATE" = LINKUP ] && return
+    [ "$STATE" = ERROR ] || [ "$STATE" = WARNING ] || [ "$STATE" = INITIAL ] || { # always alert on ERROR, WARNING and INITIAL
+        [ "$ALERTSTATE" = INITIAL ] && {                                          # Do not alert if we are up after INITIAL
+            case "$STATE" in
+                UP|REACHABLE|LINKUP)
+                    return
+                    ;;
+                *)
+                    ;;
+            esac
         }
-        [ "$STATE" != "$ALERTSTATE" ] && return                                # Same state
-        [ "$ALERTSTATE" = LINKDOWN -a "$STATE" = DOWN ] && return         # LINKDOWN implies DOWN
-        [ "$ALERTSTATE" = LINKDOWN -a "$STATE" = UNREACHABLE ] && return  # LINKDOWN implies UNREACHABLE
-        [ "$ALERTSTATE" = UNREACHABLE -a "$STATE" = DOWN ] && return      # UNREACHABLE implies DOWN
-        [ "$ALERTSTATE" = UP -a "$STATE" = REACHABLE ] && return          # UP implies REACHABLE
-        [ "$ALERTSTATE" = UP -a "$STATE" = LINKUP ] && return             # UP implies LINKUP
-        [ "$REACHABLE"  = REACHABLE -a "$STATE" = LINKUP ] && return      # REACHABLE implies LINKUP
+        [ "$STATE" = "$ALERTSTATE" ] || return                                # Same state
+        [ "$ALERTSTATE" = LINKDOWN ] && [ "$STATE" = DOWN ] && return         # LINKDOWN implies DOWN
+        [ "$ALERTSTATE" = LINKDOWN ] && [ "$STATE" = UNREACHABLE ] && return  # LINKDOWN implies UNREACHABLE
+        [ "$ALERTSTATE" = UNREACHABLE ] && [ "$STATE" = DOWN ] && return      # UNREACHABLE implies DOWN
+        [ "$ALERTSTATE" = UP ] && [ "$STATE" = REACHABLE ] && return          # UP implies REACHABLE
+        [ "$ALERTSTATE" = UP ] && [ "$STATE" = LINKUP ] && return             # UP implies LINKUP
+        [ "$REACHABLE"  = REACHABLE ] && [ "$STATE" = LINKUP ] && return      # REACHABLE implies LINKUP
     }
     ALERTCMD=$(printf %s "$ALERTCMDT" | sed -E "s/\%\{STATE\}/$STATE/g" | sed -E "s/\%\{LASTSTATE\}/$ALERTSTATE/g")
     if [ -n "$TARGET" ]; then
@@ -1077,7 +1083,7 @@ linkcheck() {
         ip link show $IFC>/dev/null 2>&1 && {
             ip link show $IFC | grep -oq 'state DOWN' || {
                 IPADDRS=''; ip addr show dev $IFC | grep -qE 'inet6? .* scope global' && IPADDRS=y
-                [ -n "$IPADDRS" -a -n "$IPADDRALRT" ] \
+                [ -n "$IPADDRS" ] && [ -n "$IPADDRALRT" ] \
                     || warn '%s\n\t%s' \
                             "There is no IPv4 or IPv6 global scope ip address on interface '$IFC'!" \
                             "If that is ok, you can disable these alerts with --no-ipaddr-alert."
@@ -1119,7 +1125,7 @@ nexthop() {
                 }
             }
         }
-        if [ "$IFC" = "$NIFC" -a "$NEXTHOP" = "$NNEXTHOP" ]; then
+        if [ "$IFC" = "$NIFC" ] && [ "$NEXTHOP" = "$NNEXTHOP" ]; then
             debug 'No topology changes detected. IFC="%s" NEXTHOP="%s"' "$IFC" "$NEXTHOP"
             return 0
         elif [ -z "$STATICIFC" ]; then
@@ -1147,7 +1153,7 @@ nexthop() {
     fi
 }
 
-[ -n "$FORK" -o -n "$SYSTEMDSERVICENAME" ] && {
+[ -z "$FORK" ] && [ -z "$SYSTEMDSERVICENAME" ] || {
     debug 'MAINPID=%d BASENAME=%s COMM=%s' $$ "$nwwatchdog" "$(cat /proc/$$/comm)"
 
     NOPTS='M' # don't use a pager for output from background / systemd processes
@@ -1158,7 +1164,7 @@ nexthop() {
     [ -z "$CONTINUOUSTOPOLOGYDETECT" ] && NOPTS="${NOPTS}T"
 
     AOPTS="V$V -t$SLOWUPTIMEOUT -s$SLEEP -g$GRACE -n$MAXNOLINK -u'$IFCUPT' -U'$IFCDOWNT' -a'$ALERTCMDT' -z$LOGSIZE"
-    [ -z "$STATICIFC" -a -n "$IFC" ] && AOPTS="$AOPTS -i$IFC"
+    [ -z "$STATICIFC" ] && [ -n "$IFC" ] && AOPTS="$AOPTS -i$IFC"
     [ -n "$STATICIFC" ] && AOPTS="$AOPTS -I$IFC"
     debug 'NOPTS=%s\nAOPTS=%s\n' "$NOPTS" "$AOPTS"
 }
