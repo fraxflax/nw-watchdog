@@ -538,7 +538,6 @@ __nw-watchdog__ depends on the below executables being available in `/sbin:/bin:
 - `sh`
 - `printf`
 - `which`
-- `basename`
 - `cat`
 - `cut`
 - `date`
