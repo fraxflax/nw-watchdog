@@ -138,7 +138,7 @@ These opions takes a single argument each and may be specified in any order. Spe
 
 	The interface may dynamically change due to topology detection. If you want to force the use of a specific interface, use `--force-interface` instead.
 
-	If neither `--interface` nor `force-interface` is specified the source interface will be determined from the FIB by looking at the route to the <ins>TARGET</ins>. The reason to specify it even so, would be to have __$nwwatchdog__ bring it up if it's down when starting.
+	If neither `--interface` nor `force-interface` is specified the source interface will be determined from the FIB by looking at the route to the <ins>TARGET</ins>. The reason to specify it even so, would be to have __nw-watchdog__ bring it up if it's down when starting.
 
 	`--interface` cannot be combined with `--force-interface`.
 
