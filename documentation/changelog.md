@@ -7,6 +7,8 @@ Unless plans change, they will be in the next release.
 
 * Typos / spelling corrected in help.
 
+* Code optimizations
+
 ## v1.1.2 - Update Release, 2024-04-23
 https://github.com/fraxflax/nw-watchdog/tree/v1.1.2
 
