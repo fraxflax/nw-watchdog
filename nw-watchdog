@@ -910,7 +910,7 @@ dienl() {
         touch "$LOGFILE" 2>/dev/null || \
         dienl "%s\n%s\n" \
               "Cannot write to logfile '$LOGFILE'." \
-              "Fix permissions, run as user with access or specify another --logfile."
+              'Fix permissions, run as user with access or specify another --logfile.'
     }
 }
 
