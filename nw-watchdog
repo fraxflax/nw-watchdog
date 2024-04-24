@@ -140,7 +140,7 @@ _USAGE() {
             __=$(printf '\033[0m')                              #  types, so always use the universal ANSI reset escape sequence instead
         }                                                       #  ( '\033[Om' instead of '\033[m^O' )
     [ $TPUTOK -eq 0 ] || { COLS=72; _b_=''; ___=''; __=''; }
-    FMT='cat'; which fmt >/dev/null && FMT="fmt -s -w $COLS"
+    FMT=cat; which fmt >/dev/null && FMT="fmt -s -w $COLS"
     _show_errmsg "$@"
     $FMT<<EOU
 $__
