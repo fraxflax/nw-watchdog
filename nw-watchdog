@@ -1076,7 +1076,7 @@ ifreset() {
 linkcheck() {
     [ "$IFC" ] || die 'Internal ERROR: No interface to check link for!'
     NOLINK=0
-    while true; do
+    while :; do
         ip link show $IFC>/dev/null 2>&1 && {
             ip link show $IFC | grep -oq 'state DOWN' || {
                 IPADDRS=''; ip addr show dev $IFC | grep -qE 'inet6? .* scope global' && IPADDRS=y
