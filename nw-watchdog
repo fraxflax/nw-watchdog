@@ -1,5 +1,5 @@
 #!/bin/sh
-VERSION=1.1.2-development-20240423-000
+VERSION=1.1.2-development-20240424-001
 #
 #       nw-watchdog is a higly configurable network watchdog written
 #       in POSIX shell script for use in Linux.
@@ -178,7 +178,7 @@ ${_b_}DESCRIPTION $__
     Get the latest version from https://github.com/fraxflax/nw-watchdog
 
 ${_b_}${___}TARGET$__
-    The mandatory (unless $_b_--list-systemd$__ or $_b_--remove-systemd$__ is specified) argument ${___}TARGET$__ is the target (destination) for which he connection is monitored. ${___}TARGET$__ can be an IP address or a resolvable hostname / FQDN. If it's a hostname / FQDN, it will be resolved to an IPv4 address (first one found by getent). The resolved IP address will be used for the monitoring. The name is continuously resolved and if the resolved ip address changes the new IP address will be used for the monitoring from there on.
+    The mandatory (unless $_b_--list-systemd$__ or $_b_--remove-systemd$__ is specified) argument ${___}TARGET$__ is the target (destination) for which the connection is monitored. ${___}TARGET$__ can be an IP address or a resolvable hostname / FQDN. If it's a hostname / FQDN, it will be resolved to an IPv4 address (first one found by getent). The resolved IP address will be used for the monitoring. The name is continuously resolved and if the resolved ip address changes the new IP address will be used for the monitoring from there on.
     Use $_b_--no-continuous-topology-detect$__ to resolve the ${___}TARGET${__} only at startup and failed connectivity checks.
 
     ${___}TARGET$__ can be placed before, after or between valid OPTIONS.
@@ -328,7 +328,7 @@ $FMT<<EOU
         The check whether the ${___}TARGET${__} is up or not, is performed in several steps.
         First a "quick-up" test sends one single ICMP echo packet waiting for the reply for no more than 1 second. If that fails, a more thourough "slow-up" test sends 5 ICMP echos.
 
-        $_b_--slow-up-timeout$__ controls he TIMEOUT for waiting on each packet in the slow-up test.
+        $_b_--slow-up-timeout$__ controls the TIMEOUT for waiting on each packet in the slow-up test.
         5 packets are always sent in the slow-up test.
         The packets are sent adaptively, meaning that as soon as a reply is received the next packet is sent without delay, giving slow-up a total time of 5 * RTT to the ${___}TARGET${__} if the connection is up.
         The DEADLINE = TIMEOUT * 5 is the maximum time the slow-up test will take if the ${___}TARGET${__} is down.
