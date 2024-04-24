@@ -893,7 +893,7 @@ done
     FORK=''
 }
 [ "$LOGFILE" = '-' ] && { LOGSIZE=0 ; LOGSIZEb=0 ; LOGFILE='' ;}
-[ "$PIDFILE" = '-' ] && PIDFILE='/dev/null'
+[ "$PIDFILE" = '-' ] && PIDFILE=/dev/null
 
 printf %s "$LOGSIZE" | grep -iqE '^[0-9]+*[KMG]*$' || {
     ERRPTN="$ERRPTN\n* %s"
