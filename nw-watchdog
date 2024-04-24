@@ -1,5 +1,5 @@
 #!/bin/sh
-VERSION=1.1.2-main-20240424-001
+VERSION=1.1.2-main-20240424-002
 #
 #       nw-watchdog is a higly configurable network watchdog written
 #       in POSIX shell script for use in Linux.
@@ -140,7 +140,7 @@ _USAGE() {
             __=$(printf '\033[0m')                              #  types, so always use the universal ANSI reset escape sequence instead
         }                                                       #  ( '\033[Om' instead of '\033[m^O' )
     [ $TPUTOK -eq 0 ] || { COLS=72; _b_=''; ___=''; __=''; }
-    FMT='cat'; which fmt >/dev/null && FMT="fmt -s -w $COLS"
+    FMT=cat; which fmt >/dev/null && FMT="fmt -s -w $COLS"
     _show_errmsg "$@"
     $FMT<<EOU
 $__
@@ -893,7 +893,7 @@ done
     FORK=''
 }
 [ "$LOGFILE" = '-' ] && { LOGSIZE=0 ; LOGSIZEb=0 ; LOGFILE='' ;}
-[ "$PIDFILE" = '-' ] && PIDFILE='/dev/null'
+[ "$PIDFILE" = '-' ] && PIDFILE=/dev/null
 
 printf %s "$LOGSIZE" | grep -iqE '^[0-9]+*[KMG]*$' || {
     ERRPTN="$ERRPTN\n* %s"
@@ -910,7 +910,7 @@ dienl() {
         touch "$LOGFILE" 2>/dev/null || \
         dienl "%s\n%s\n" \
               "Cannot write to logfile '$LOGFILE'." \
-              "Fix permissions, run as user with access or specify another --logfile."
+              'Fix permissions, run as user with access or specify another --logfile.'
     }
 }
 
@@ -922,7 +922,7 @@ case "$LOGSIZEb" in
 esac
 LOGSIZEb=$((LOGSIZEb*1024))
 
-test -n "$STATICIFC" && { CONTINUOUSTOPOLOGYDETECT='' ; IFC=$STATICIFC ;}
+[ "$STATICIFC" ] && { CONTINUOUSTOPOLOGYDETECT='' ; IFC=$STATICIFC ;}
 
 log() {
     logPATN="%s  $1"; shift
@@ -1076,7 +1076,7 @@ ifreset() {
 linkcheck() {
     [ "$IFC" ] || die 'Internal ERROR: No interface to check link for!'
     NOLINK=0
-    while true; do
+    while :; do
         ip link show $IFC>/dev/null 2>&1 && {
             ip link show $IFC | grep -oq 'state DOWN' || {
                 IPADDRS=''; ip addr show dev $IFC | grep -qE 'inet6? .* scope global' && IPADDRS=y
@@ -1429,7 +1429,7 @@ else
     done
 fi
 
-while true; do
+while :; do
     if [ "$PINGTARGET" ]; then
         trace 'Continuously checking if target is up...'
         [ "$CONTINUOUSTOPOLOGYDETECT" ] && trace '... and for changes in topology'
