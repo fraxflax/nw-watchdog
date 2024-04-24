@@ -1429,7 +1429,7 @@ else
     done
 fi
 
-while true; do
+while :; do
     if [ "$PINGTARGET" ]; then
         trace 'Continuously checking if target is up...'
         [ "$CONTINUOUSTOPOLOGYDETECT" ] && trace '... and for changes in topology'
