@@ -11,8 +11,6 @@ Unless plans change, they will be in the next release.
 
 * Create directories for verified pidfile and logfile if required (fixes "No systemd service startup at reboot" bug).
 
-*  permissions
-
 ## v1.1.2 - Update Release, 2024-04-23
 https://github.com/fraxflax/nw-watchdog/tree/v1.1.2
 
