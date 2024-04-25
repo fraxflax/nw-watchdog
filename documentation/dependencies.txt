@@ -6,6 +6,7 @@ POSIX shell - MUST be shell builtin
 -----------------------------------
 export
 set
+umask
 
 SHELLBUILTIN(?) - explicitly tested if shell builtin
 ----------------------------------------------------
@@ -39,6 +40,8 @@ WANTED - enhances the functionality if available
 flock
 fmt
 less
+mkdir
 more
+systemctl (running systemd)
 tput
 wall
