@@ -1,5 +1,5 @@
 #!/bin/sh
-VERSION=1.1.3-main-20240425-000
+VERSION=1.1.3-main-20240425-001
 #
 #       nw-watchdog is a higly configurable network watchdog written
 #       in POSIX shell script for use in Linux.
@@ -148,11 +148,16 @@ ${_b_}NAME $__
     $_b_$nwwatchdog$__ - Network Watchdog
 
 ${_b_}VERSION $__
-    $_b_$VERSION$__
+EOU
+    if printf %s "$VERSION" | grep -q -e-; then	$FMT<<EOU
+    $VERSION
 
     This is an unreleased version. The version format for all unreleased versions is:
     LATESTRELESE-BRANCH-CHANGEDATE-RUNNINGNUMBER
     where LATESTRELESE is the release this version is based on. BRANCH is the git branch, CHANGEDATE is the date (YYYYMMDD) the latest change was commited and RUNNINGNUMBER indicates how many changes was commited that day.
+EOU
+    else printf '    %s\n' "$VERSION"; fi
+    $FMT<<EOU
 
 ${_b_}SYNOPSIS $__
 
