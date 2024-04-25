@@ -22,14 +22,7 @@ Just copy / download the `nw-watchdog` script into your PATH and make it executa
   ```
 * All releases are available for download here: https://github.com/fraxflax/nw-watchdog/releases
 
-* The latest TESTING version (unreleased main branch) of the script may contain new features / changes that will be in the next release. If so, they are documented in [documentation/changelog.md](https://github.com/fraxflax/nw-watchdog/blob/main/documentation/changelog.md).
-  
-  Download TESTING: [nw-watchdog](https://raw.githubusercontent.com/fraxflax/nw-watchdog/main/nw-watchdog)
-  ```
-  curl -o /usr/local/bin/nw-watchdog https://raw.githubusercontent.com/fraxflax/nw-watchdog/main/nw-watchdog ; chmod a+rx /usr/local/bin/nw-watchdog
-  ```
-
 ## DOCUMENTATION
-See [documentation/help.md](https://github.com/fraxflax/nw-watchdog/blob/main/documentation/help.md) for extensive documentation including examples.<br>
+See v1.1.3 [documentation/help.md](https://github.com/fraxflax/nw-watchdog/blob/Release-version-1.1.3/documentation/help.md) for extensive documentation including examples.<br>
 The same documentation is also available by running:<br>
-`nw-watchdog --help`<br>
+`nw-watchdog --help`
