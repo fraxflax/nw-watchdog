@@ -573,10 +573,9 @@ __nw-watchdog__ will function without the below listed utilities, but will use t
 - `wall`<br>
   If available it will be used as default `` command. Otherwise, alerting will be done to stderr by default.
 
-- Installed and running `systemd`  with `systemctl` (and `mkdir`, `chmod`, `rm`)<br>
+- Installed and running `systemd`  with `systemctl` (and `mkdir`, `rm`)<br>
   `systemd` is (obviously) required for the `--install-systemd`, `--list-systemd` and `--remove-systemd` options to be functional.<br>
   The folder `/etc/systemd/system/` must exist, `systemctl` must be in the PATH and `systemd` must be running.<br>
-  `chmod` is used by `--install-systemd` (but will function without it).<br>
   Unless all required directories are already existing, `mkdir` is used by `--install-systemd`.<br>
   `rm` is used by `--remove-systemd` to remove the systemd unit file for the service.
   

@@ -61,7 +61,7 @@ SOPTSRE='[hMNGPARTfDvd]' # Short options without arguments
 AOPTIONS='V IFC STATICIFC LOGFILE LOGSIZE PIDFILE SLOWUPTIMEOUT SLEEP GRACE MAXNOLINK IFCUPT IFCDOWNT ALERTCMDT SYSTEMDSERVICENAME RMSYSTEMDSERVICE'
 
 # Ensure we have a POSIX (enough) shell
-set >/dev/null 2>&1 && export PATH >/dev/null 2>&1 || {
+set >/dev/null 2>&1 && export PATH >/dev/null 2>&1 && umask 022 || {
         printf '\nThis script must be run in a POSIX compliant shell!\n\n' 1>&2 \
             || echo 'This script must be run in a POSIX compliant shell!' 1>&2
         exit 1
@@ -726,10 +726,9 @@ EOU
     - ${_b_}wall$__
         If available it will be used as default $_b_--alert$__ command. Otherwise, alerting will be done to stderr by default.
 
-    - Installed and running ${_b_}systemd$__  with ${_b_}systemctl$__ (and ${_b_}mkdir$__, ${_b_}chmod$__, ${_b_}rm$__)
+    - Installed and running ${_b_}systemd$__  with ${_b_}systemctl$__ (and ${_b_}mkdir$__, ${_b_}rm$__)
         ${_b_}systemd$__ is (obviously) required for the ${_b_}--install-systemd$__, ${_b_}--list-systemd$__ and ${_b_}--remove-systemd$__ options to be functional.
         The folder ${_b_}/etc/systemd/system/$__ must exist, ${_b_}systemctl$__ must be in the PATH and ${_b_}systemd$__ must be running.
-        ${_b_}chmod$__ is used by ${_b_}--install-systemd$__ (but will function without it).
         Unless all required directories are already existing, ${_b_}mkdir$__ is used by ${_b_}--install-systemd$__.
         ${_b_}rm$__ is used by ${_b_}--remove-systemd$__ to remove the systemd unit file for the service.
 
@@ -899,21 +898,6 @@ printf %s "$LOGSIZE" | grep -iqE '^[0-9]+*[KMG]*$' || {
     ERRPTN="$ERRPTN\n* %s"
     set -- "Invalid logsize '$LOGSIZE'" "$@"
 }
-
-dienl() {
-    diePATN="$1 ... aborting!" ; shift
-    _show_errmsg "$diePATN" "$@"
-    exit 1
-}
-[ "$LOGFILE" ] && {
-    [ "$SYSTEMDSERVICENAME" ] || {
-        touch "$LOGFILE" 2>/dev/null || \
-        dienl "%s\n%s\n" \
-              "Cannot write to logfile '$LOGFILE'." \
-              'Fix permissions, run as user with access or specify another --logfile.'
-    }
-}
-
 LOGSIZEb=$LOGSIZE
 case "$LOGSIZEb" in
     *[Kk]) LOGSIZEb=$(printf %s "$LOGSIZEb" | sed -E 's/[Kk]$//') ;;
@@ -921,6 +905,23 @@ case "$LOGSIZEb" in
     *[Gg]) LOGSIZEb=$(printf %s "$LOGSIZEb" | sed -E 's/[Gg]$//'); LOGSIZEb=$((LOGSIZEb*1048576)) ;;
 esac
 LOGSIZEb=$((LOGSIZEb*1024))
+dienl() {
+    diePATN="$1 ... aborting!" ; shift
+    _show_errmsg "$diePATN" "$@"
+    exit 1
+}
+[ "$LOGFILE" ] && {
+    [ "$SYSTEMDSERVICENAME" ] || {
+	LOGDIR=${LOGFILE%/*}
+	if [ -d "$LOGDIR/." ] || mkdir -p "$LOGDIR"; then
+	    touch "$LOGFILE" 2>/dev/null || dienl '%s\n%s' "Cannot write to logfile '$LOGFILE'." \
+						  'Fix permissions, run as user with access or specify another --logfile.'
+	else
+	    dienl 'Cannot create non-exiting directory for --logfile="%s"\n%s' "$LOGFILE" \
+		  'Fix permissions, run as user with access or specify another --logfile.'
+	fi
+    }
+}
 
 [ "$STATICIFC" ] && { CONTINUOUSTOPOLOGYDETECT='' ; IFC=$STATICIFC ;}
 
@@ -1179,29 +1180,20 @@ nexthop() {
     [ $(id -u) -eq 0 ] || USAGE %s "$nwwatchdog --install-systemd must be run as root"
     [ -d /etc/systemd/system/. ] || USAGE "'/etc/systemd/system/' does not exists,\n       systemd '%s.service' NOT installed!" \
                                           "$SYSTEMDSERVICENAME"
-    for DIR in /run/nw-watchdog /var/log/nw-watchdog; do # /var/log/nw-watchdog/$SYSTEMDSERVICENAME.systemd; do
-        [ -d $DIR ] || {
-            mkdir $DIR || dienl 'Failed to create directory "%s",\n       systemd "nw-watchdog-%s.service" NOT installed!' $DIR $SYSTEMDSERVICENAME
-        }
-        chmod 0755 $DIR || printf 'WARNING: Failed to set permissions on "%s"\n' "$DIR" 1>&2
-    done
-
-    #cat<<EOF
     cat>/etc/systemd/system/nw-watchdog-$SYSTEMDSERVICENAME.service<<EOF
 [Unit]
 Description=$nwwatchdog for connectivity to $TARGET
 Wants=network.target
 
 [Service]
-Type=forking
 KillMode=process
-PIDFile=/var/run/nw-watchdog/$SYSTEMDSERVICENAME.pid
-ExecStart=/bin/sh '$(readlink -e "$0")' '$TARGET' -$NOPTS$AOPTS -p/var/run/nw-watchdog/$SYSTEMDSERVICENAME.pid -l/var/log/nw-watchdog/$SYSTEMDSERVICENAME.log
+Type=forking
+PIDFile=/run/nw-watchdog/$SYSTEMDSERVICENAME.pid
+ExecStart=/bin/sh '$(readlink -e "$0")' '$TARGET' -$NOPTS$AOPTS -p/run/nw-watchdog/$SYSTEMDSERVICENAME.pid -l/var/log/nw-watchdog/$SYSTEMDSERVICENAME.log
 
 [Install]
 WantedBy=sysinit.target
 EOF
-    chmod 0644 $DIR || printf 'WARNING: Failed to set permissions on "/etc/systemd/system/nw-watchdog-%s.service"\n' "$SYSTEMDSERVICENAME" 1>&2
     systemctl daemon-reload || die 'failed to reload systemd, service not enabled, nor started'
     systemctl enable nw-watchdog-$SYSTEMDSERVICENAME.service || die 'failed to enable the nw-watchdog-%s.service, service not started' "$SYSTEMDSERVICENAME"
     systemctl restart nw-watchdog-$SYSTEMDSERVICENAME.service || die 'failed to start the nw-watchdog-%s.service' "$SYSTEMDSERVICENAME"
@@ -1288,8 +1280,14 @@ isup() {
 }
 
 [ "$PIDFILE" ] || PIDFILE=/run/nw-watchdog.pid
-touch "$PIDFILE" 2>/dev/null || die '%s\n%s' "Cannot write to pidfile '$PIDFILE'." \
-                                    "Specify another --pidfile or check permissions or privileges of effective user (userid=$(id -u))"
+PIDDIR=${PIDFILE%/*}
+if [ -d "$PIDDIR/." ] || mkdir -p "$PIDDIR"; then
+    touch "$PIDFILE" 2>/dev/null || die '%s\n%s' "Cannot write to pidfile '$PIDFILE'." \
+					'Fix permissions, run as user with access or specify another --pidfile.'
+else
+    die 'Cannot create directory for --pidfile="%s"\n%s' "$PIDFILE" \
+	'Fix permissions, run as user with access or specify another --pidfile.'
+fi
 PID=$(cat "$PIDFILE")
 [ "$PID" -gt 0 ] 2>/dev/null && [ -d /proc/$PID ] && die "Process already running with pid $PID"
 
