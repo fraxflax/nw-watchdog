@@ -1,5 +1,5 @@
 #!/bin/sh
-VERSION=1.1.3-development-20240425-002
+VERSION=1.1.3-main-20240428-001
 #
 #       nw-watchdog is a higly configurable network watchdog written
 #       in POSIX shell script for use in Linux.
