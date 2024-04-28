@@ -5,7 +5,11 @@ Also see __[WIP-TODO.md](https://github.com/fraxflax/nw-watchdog/blob/main/docum
 These changes are already merged into the main branch and available in https://github.com/fraxflax/nw-watchdog <br>
 Unless plans change, they will be in the next release.
 
-* _currently nothing_ 
+* Optimised resolving TARGET
+
+* Optimized initial device existance and link up check
+
+* Fixed bug "Not alerting on STATE change."
 
 ## v1.1.3 - Update and Bugfix Release, 2024-04-25
 https://github.com/fraxflax/nw-watchdog/tree/v1.1.3
