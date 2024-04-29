@@ -1119,9 +1119,9 @@ nexthop() {
             # If it's a host-local address 'ip route get' will say lo is source interface even if addr is on different interface
             # which will cause 'ping -I$IFC' to fail, so let's figure which interface holds the address is instead
             [ "$NIFC" = lo ] && {
-                nexthopADDR=$(printf %s "$TADDR" | sed -E 's/\./\\\\./g')
+                nexthopADDR=$(printf %s "$TADDR" | sed -E 's/\./\\./g')
                 [ "$(ip addr | grep -E "inet $nexthopADDR( |\/)")" ] && {
-                    LIFC=$(ip addr | grep -B9999 -E "inet $nexthopADDR( |\/)" | grep -oE '^[0-9]+:\s+[^@:]+' | tail -1 | sed -E 's/.*\s//')
+		    LIFC=$(ip addr | grep -B9999 -E "inet $nexthopADDR( |\/)" | grep -oE '^[0-9]+:\s+[^@:]+' | tail -1 | sed -E 's/.*\s//')
                     [ "$LIFC" ] && {
                         debug 'Found %s on local interface "%s" (overriding "%s")' "$TADDR" "$LIFC" "$NIFC"
                         NIFC=$LIFC
