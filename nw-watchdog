@@ -1,5 +1,5 @@
 #!/bin/sh
-VERSION=1.1.4-main-20240429-001
+VERSION=1.1.4-main-20240515-001
 #
 #       nw-watchdog is a higly configurable network watchdog written
 #       in POSIX shell script for use in Linux.
@@ -115,7 +115,7 @@ _show_errmsg() {
     [ "$ERRMSG" ] || [ "$1" ] || return
     div=''; i=0;
     while [ $i -lt $COLS ]; do div="~$div"; i=$((i+1)); done
-    printf '\n%s\n%s: %s' "$_b_$div" "${_b_}ERROR$__"
+    printf '\n%s\n%s: ' "$_b_$div" "${_b_}ERROR$__"
     [ "$1" ] && {
         PTN=$1; shift
         printf "$PTN\n" "$@"
@@ -1120,7 +1120,7 @@ nexthop() {
             # which will cause 'ping -I$IFC' to fail, so let's figure which interface holds the address is instead
             [ "$NIFC" = lo ] && {
                 nexthopADDR=$(printf %s "$TADDR" | sed -E 's/\./\\./g')
-                [ "$(ip addr | grep -E "inet $nexthopADDR( |\/)")" ] && {
+                ip addr | grep -qE "inet $nexthopADDR( |\/)" && {
                     LIFC=$(ip addr | grep -B9999 -E "inet $nexthopADDR( |\/)" | grep -oE '^[0-9]+:\s+[^@:]+' | tail -1 | sed -E 's/.*\s//')
                     [ "$LIFC" ] && {
                         debug 'Found %s on local interface "%s" (overriding "%s")' "$TADDR" "$LIFC" "$NIFC"
