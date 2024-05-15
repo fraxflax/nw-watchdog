@@ -5,6 +5,9 @@ Also see __[WIP-TODO.md](https://github.com/fraxflax/nw-watchdog/blob/main/docum
 These changes are already merged into the main branch and available in https://github.com/fraxflax/nw-watchdog <br>
 Unless plans change, they will be in the next release.
 
+## v1.1.5 - Update Release, 2024-05-15
+https://github.com/fraxflax/nw-watchdog/tree/v1.1.5
+
 * Optimized check of logsize argument
 
 * Fixed escaping of local address check
