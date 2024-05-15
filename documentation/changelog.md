@@ -9,6 +9,8 @@ Unless plans change, they will be in the next release.
 
 * Fixed escaping of local address check
 
+* Minor optimizations
+
 ## v1.1.4 - Update and Bugfix Release, 2024-04-28
 https://github.com/fraxflax/nw-watchdog/tree/v1.1.4
 
