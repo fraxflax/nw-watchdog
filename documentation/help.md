@@ -432,7 +432,7 @@ Note: It would be smoother to use a script and `--ifcup=/path/script`, but it ca
 nw-watchdog 10.0.0.1 \
 --no-ping-nexthop \
 --verbosity-level=3 \
-='mailx -a "From: nwwatchdog@`hostname -f`" -s "wireguard wg0" admin@`cat /etc/mailname`' \
+--alert='mailx -a "From: nwwatchdog@`hostname -f`" -s "wireguard wg0" admin@`cat /etc/mailname`' \
 --force-interface=wg0 \
 --ifcup='ip link add wg0 type wireguard ;
          ip link set wg0 up ;
