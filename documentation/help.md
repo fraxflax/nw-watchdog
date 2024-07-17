@@ -571,7 +571,7 @@ __nw-watchdog__ will function without the below listed utilities, but will use t
   Is used to determine the terminal width and output bold and underlined text in this help page.
 
 - `wall`<br>
-  If available it will be used as default `` command. Otherwise, alerting will be done to stderr by default.
+  If available it will be used as default `--alert` command. Otherwise, alerting will be done to stderr by default.
 
 - Installed and running `systemd`  with `systemctl` (and `mkdir`, `rm`)<br>
   `systemd` is (obviously) required for the `--install-systemd`, `--list-systemd` and `--remove-systemd` options to be functional.<br>
