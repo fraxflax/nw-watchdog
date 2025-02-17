@@ -1232,7 +1232,12 @@ isup() {
         # addr is on local subnet (incl. host-local addrs) or peer-to-peer address
         ip neigh get dev $IFC $isupADDR 2>&1 | grep -q 'REACHABLE' && { debug '%s is arp1-up on %s' "$isupADDR" "$IFC"; return 0 ;}
         ping -q -w2 -c1 -I$IFC $isupADDR >/dev/null 2>&1 && { debug '%s is arp-ping-up on %s' "$isupADDR" "$IFC"; return 0 ;} # also refreshes arp-cache
-        ip neigh get dev $IFC $isupADDR 2>&1 | grep -q 'REACHABLE' && { debug '%s is arp2-up on %s' "$isupADDR" "$IFC"; return 0 ;}
+	while ip neigh get dev $IFC $isupADDR | grep -qE 'STALE|NONE|INCOMPLETE|DELAY|PROBE'; do
+	    ip neigh get dev $IFC $isupADDR | grep -qE 'STALE|NONE|INCOMPLETE|DELAY|PROBE';
+	    debug 'arp-cache for %s is STALE|NONE|INCOMPLETE|DELAY|PROBE wating for it to be change state\n' "$isupADDR"
+	    sleep 1
+	done
+	ip neigh get dev $IFC $isupADDR 2>&1 | grep -q 'REACHABLE' && { debug '%s is arp2-up on %s' "$isupADDR" "$IFC"; return 0 ;}
     }
 
     # quick check if line is already up
@@ -1432,23 +1437,44 @@ while :; do
                               "$TARGET" "$TADDR" "$IFC" "$NEXTHOP" $GRACE
                         sleep $GRACE
                     else
-                        alert UNREACHABLE \
-                              'Not getting replies from target "%s" (%s) on interface "%s", and nexthop "%s" is not reachable.\n\t%s\n\t%s\n\t%s' \
-                              "$TARGET" "$TADDR" "$IFC" "$NEXTHOP" 'Resetting interface:' "$IFCDOWN" "$IFCUP"
-                        ifreset && nexthop
+			if [ $IFCUPDOWN ]; then
+                            alert UNREACHABLE \
+				  'Not getting replies from target "%s" (%s) on interface "%s", and nexthop "%s" is not reachable.\n\t%s\n\t%s\n\t%s' \
+				  "$TARGET" "$TADDR" "$IFC" "$NEXTHOP" 'Resetting interface:' "$IFCDOWN" "$IFCUP"
+                            ifreset && nexthop
+			else
+                            alert UNREACHABLE \
+				  'Not getting replies from target "%s" (%s) on interface "%s", and nexthop "%s" is not reachable.\n\t%s' \
+				  "$TARGET" "$TADDR" "$IFC" "$NEXTHOP" 'Not resetting interface due to --no-interface-reset.'
+                            nexthop
+			fi
                     fi
                 else
-                    alert DOWN \
-                          'Not getting replies from target "%s" (%s) on interface "%s".\n\t%s\n\t%s\n\t%s' \
-                          "$TARGET" "$TADDR" "$IFC" 'Resetting interface:' "$IFCDOWN" "$IFCUP"
-                    ifreset && nexthop
+		    if [ $IFCUPDOWN ]; then
+			alert DOWN \
+                              'Not getting replies from target "%s" (%s) on interface "%s".\n\t%s\n\t%s\n\t%s' \
+                              "$TARGET" "$TADDR" "$IFC" 'Resetting interface:' "$IFCDOWN" "$IFCUP"
+			ifreset && nexthop
+		    else
+                        alert DOWN \
+			      'Not getting replies from target "%s" (%s) on interface "%s".\n\t%s' \
+			      "$TARGET" "$TADDR" "$IFC" 'Not resetting interface due to --no-interface-reset.'
+                        nexthop
+		    fi
                 fi
             }
         else
-            alert UNREACHABLE \
-                  'Not getting replies from target "%s" (%s) and no route to target available, resetting interface (%s):\n\t%s\n\t%s' \
-                  "$TARGET" "$TADDR" "$IFC" "$IFCDOWN" "$IFCUP"
-            ifreset && nexthop
+	    if [ $IFCUPDOWN ]; then
+		alert UNREACHABLE \
+                      'Not getting replies from target "%s" (%s) and no route to target available, resetting interface (%s):\n\t%s\n\t%s' \
+                      "$TARGET" "$TADDR" "$IFC" "$IFCDOWN" "$IFCUP"
+		ifreset && nexthop
+	    else
+		alert UNREACHABLE \
+		      'Not getting replies from target "%s" (%s) and no route to target available, not resetting interface (%s) due to --no-interface-reset.' \
+		      "$TARGET" "$TADDR" "$IFC"
+		nexthop
+	    fi
         fi
 
     else
@@ -1464,16 +1490,30 @@ while :; do
               "$NEXTHOP" "$TARGET" "$TADDR" "$IFC"
         if { resolve_target && nexthop ;} || { linkcheck && resolve_target && nexthop ;}; then
             isup "$NEXTHOP" noresolve || {
-                alert UNREACHABLE \
-                      'nexthop "%s" (for --no-ping-target "%s" (%s)), not reachable, resetting interface ("%s"):\n\t%s\n\tsleep 1\n\t%s' \
-                      "$NEXTHOP" "$TARGET" "$TADDR" "$IFC" "$IFCDOWN" "$IFCUP"
-                ifreset && nexthop
+		if [ $IFCUPDOWN ]; then
+                    alert UNREACHABLE \
+			  'nexthop "%s" (for --no-ping-target "%s" (%s)), not reachable, resetting interface ("%s"):\n\t%s\n\tsleep 1\n\t%s' \
+			  "$NEXTHOP" "$TARGET" "$TADDR" "$IFC" "$IFCDOWN" "$IFCUP"
+                    ifreset && nexthop
+		else
+		    alert UNREACHABLE \
+			  'nexthop "%s" (for --no-ping-target "%s" (%s)), not reachable, not resetting interface (%s) due to --no-interface-reset.' \
+			  "$NEXTHOP" "$TARGET" "$TADDR" "$IFC"
+                    nexthop
+		fi
             }
         else
-            alert UNREACHBLE \
-                  'No route to --no-ping-target "%s" (%s). Resetting interface (%s):\n\t%s\n\tsleep 1\n\t%s' \
-                  "$TARGET" "$TADDR" "$IFC" "$IFCDOWN" "$IFCUP"
-            ifreset && nexthop
+	    if [ $IFCUPDOWN ]; then
+		alert UNREACHABLE \
+                      'No route to --no-ping-target "%s" (%s). Resetting interface (%s):\n\t%s\n\tsleep 1\n\t%s' \
+                      "$TARGET" "$TADDR" "$IFC" "$IFCDOWN" "$IFCUP"
+		ifreset && nexthop
+	    else
+		alert UNREACHABLE \
+		      'No route to --no-ping-target "%s" (%s). Not resetting interface (%s) due to --no-interface-reset.' \
+		      "$TARGET" "$TADDR" "$IFC"
+		nexthop
+	    fi
         fi
     fi
 done

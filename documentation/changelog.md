@@ -5,7 +5,11 @@ Also see __[WIP-TODO.md](https://github.com/fraxflax/nw-watchdog/blob/main/docum
 These changes are already merged into the main branch and available in https://github.com/fraxflax/nw-watchdog <br>
 Unless plans change, they will be in the next release.
 
-* _currently nothing_
+* Waiting for arp statuses STALE, NONE, INCOMPLETE, DELAY & PROBE to change before determinating if NEXTHOP is reachable or not.
+
+* DOWN and UNREACHABLE alerts now tells if the interface is being reset or not
+
+* Corrected documentation.
 
 ## v1.1.5 - Update Release, 2024-05-15
 https://github.com/fraxflax/nw-watchdog/tree/v1.1.5
