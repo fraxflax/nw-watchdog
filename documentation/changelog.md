@@ -104,5 +104,3 @@ Please see
 [v1.0.0 README](https://github.com/fraxflax/nw-watchdog/blob/v1.0.0/README.md),
 or [v1.0.0 documentation/help.md](https://github.com/fraxflax/nw-watchdog/blob/v1.0.0/documentation/help.md) 
 for capabilities / fetures.
-
-
