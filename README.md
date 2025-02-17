@@ -33,3 +33,6 @@ Just copy / download the `nw-watchdog` script into your PATH and make it executa
 See [documentation/help.md](https://github.com/fraxflax/nw-watchdog/blob/main/documentation/help.md) for extensive documentation including examples.<br>
 The same documentation is also available by running:<br>
 `nw-watchdog --help`<br>
+
+## Other network utils
+Also check out https://github.com/fraxflax/frax-net-utils/ for other network utilities written by me.
