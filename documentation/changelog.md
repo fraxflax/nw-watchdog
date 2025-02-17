@@ -6,7 +6,7 @@ Visit https://github.com/fraxflax/nw-watchdog/ for current TESTING version.
 ## v1.1.6 - Update Release, 2025-02-17
 https://github.com/fraxflax/nw-watchdog/tree/v1.1.5
 
-* Waiting for arp statuses STALE, NONE, INCOMPLETE, DELAY & PROBE to change before determinating if NEXTHOP is reachable or not.
+* Waiting for arp statuses STALE, NONE, INCOMPLETE, DELAY & PROBE to change before deciding if NEXTHOP is reachable or not.
 
 * DOWN and UNREACHABLE alerts now tells if the interface is being reset or not
 
