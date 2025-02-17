@@ -432,7 +432,7 @@ Note: It would be smoother to use a script and `--ifcup=/path/script`, but it ca
 nw-watchdog 10.0.0.1 \
 --no-ping-nexthop \
 --verbosity-level=3 \
-='mailx -a "From: nwwatchdog@`hostname -f`" -s "wireguard wg0" admin@`cat /etc/mailname`' \
+--alert='mailx -a "From: nwwatchdog@`hostname -f`" -s "wireguard wg0" admin@`cat /etc/mailname`' \
 --force-interface=wg0 \
 --ifcup='ip link add wg0 type wireguard ;
          ip link set wg0 up ;
@@ -571,7 +571,7 @@ __nw-watchdog__ will function without the below listed utilities, but will use t
   Is used to determine the terminal width and output bold and underlined text in this help page.
 
 - `wall`<br>
-  If available it will be used as default `` command. Otherwise, alerting will be done to stderr by default.
+  If available it will be used as default `--alert` command. Otherwise, alerting will be done to stderr by default.
 
 - Installed and running `systemd`  with `systemctl` (and `mkdir`, `rm`)<br>
   `systemd` is (obviously) required for the `--install-systemd`, `--list-systemd` and `--remove-systemd` options to be functional.<br>
