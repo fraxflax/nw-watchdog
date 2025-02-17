@@ -8,6 +8,7 @@ Unless plans change, they will be in the next release.
 * _currently nothing_
 
 ## v1.1.6 - Update Release, 2025-02-17
+https://github.com/fraxflax/nw-watchdog/tree/v1.1.6
 
 * Waiting for arp statuses STALE, NONE, INCOMPLETE, DELAY & PROBE to change before determinating if NEXTHOP is reachable or not.
 
