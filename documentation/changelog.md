@@ -5,7 +5,7 @@ Also see __[WIP-TODO.md](https://github.com/fraxflax/nw-watchdog/blob/main/docum
 These changes are already merged into the main branch and available in https://github.com/fraxflax/nw-watchdog <br>
 Unless plans change, they will be in the next release.
 
-* _currently nothing_
+* Fixed bug "Redundant LINKUP alert while already REACHABLE."
 
 ## v1.1.6 - Update Release, 2025-02-17
 https://github.com/fraxflax/nw-watchdog/tree/v1.1.6
