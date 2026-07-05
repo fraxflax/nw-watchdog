@@ -2,7 +2,13 @@
 __nw-watchdog__ - Network Watchdog
 
 ## VERSION
-1.1.6
+This is an unreleased version.
+
+The version format for all unreleased versions is:
+LATESTRELESE-BRANCH-CHANGEDATE-RUNNINGNUMBER
+where LATESTRELESE is the release this version is based on. BRANCH is the git branch, CHANGEDATE is the date (YYYYMMDD) the latest change was commited and RUNNINGNUMBER indicates how many changes was commited that day.
+
+Use `nw-watchdog --version` or `nw-watchdog --help` to show the version.
 
 ## SYNOPSIS
 __nw-watchdog__ <ins>TARGET</ins> [ OPTIONS ]
