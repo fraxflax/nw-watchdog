@@ -741,7 +741,7 @@ EOU
     _show_errmsg "$@"
 }
 USAGE() {
-    [ "$PAGERUSE" ] || {
+    [ $PAGERUSE ] || {
         _USAGE "$@"
         [ "$ERRMSG" ] || [ "$1" ] || exit 0
         exit 1
@@ -843,10 +843,10 @@ while [ $# -gt 0 ]; do
     fi
 done
 
-[ "$VERSHOW" ] && { printf '%s\n' "$VERSION"; exit 0; }
-[ "$HELP" ] && ERRMSG='' USAGE
+[ $VERSHOW ] && { printf '%s\n' "$VERSION"; exit 0; }
+[ $HELP ] && ERRMSG='' USAGE
 
-[ "$LISTSYSTEMD" ] || printf %s "$xOPTIONS" | grep -qE ':RMSYSTEMDSERVICE:' && {
+[ $LISTSYSTEMD ] || printf %s "$xOPTIONS" | grep -qE ':RMSYSTEMDSERVICE:' && {
         printf %s "$xOPTIONS" | grep -qE ':.*:.*:' || [ "$TARGET" ] && \
             ERRMSG='' USAGE %s "--list-systemd and --remove-systemd cannot be combined with any other option"
         [ -d /etc/systemd/system/. ] || USAGE "'/etc/systemd/system/' does not exists, is systemd installed and running?"
@@ -875,17 +875,17 @@ done
         exit 0
     }
 
-[ "$PINGTARGET" ] || [ "$PINGNEXTHOP" ] || \
+[ $PINGTARGET ] || [ $PINGNEXTHOP ] || \
     ERRMSG="You must allow pinging of target and/or nexthop!\t(Can't combine --no-ping-target and --no-ping-nexthop!)\n$ERRMSG"
 
-[ "$INSTALLSYSTEMD" ] && [ "$DEBUG" ] && ERRMSG="--install-systemd cannot be combined with --debug\n$ERRMSG"
+[ "$INSTALLSYSTEMD" ] && [ $DEBUG ] && ERRMSG="--install-systemd cannot be combined with --debug\n$ERRMSG"
 
 [ "$TARGET" ] || ERRMSG="TARGET not specified! Specify IP address or valid hostname.\n$ERRMSG"
 
 ### Die showing the USAGE if found errors in options and arguments above ###
 [ "$ERRMSG" ] && USAGE %s 'Option Errors'
 
-[ "$DEBUG" ] && {
+[ $DEBUG ] && {
     printf %s "$xOPTIONS" | grep -qE ':V:'             || V=6
     printf %s "$xOPTIONS" | grep -qE ':LOGFILE:'       || LOGFILE=-
     printf %s "$xOPTIONS" | grep -qE ':PIDFILE:'       || PIDFILE=-
@@ -1046,7 +1046,7 @@ debug() {
 }
 
 ifreset() {
-    [ "$IFCUPDOWN" ] || {
+    [ $IFCUPDOWN ] || {
         info 'Not resetting interface due to --no-interface-reset.'
         return 0
     }
@@ -1082,7 +1082,7 @@ linkcheck() {
         ip link show $IFC>/dev/null 2>&1 && {
             ip link show $IFC | grep -oq 'state DOWN' || {
                 IPADDRS=''; ip addr show dev $IFC | grep -qE 'inet6? .* scope global' && IPADDRS=y
-                [ "$IPADDRS" ] && [ "$IPADDRALRT" ] \
+                [ "$IPADDRS" ] && [ $IPADDRALRT ] \
                     || warn '%s\n\t%s' \
                             "There is no IPv4 or IPv6 global scope ip address on interface '$IFC'!" \
                             "If that is ok, you can disable these alerts with --no-ipaddr-alert."
@@ -1090,7 +1090,7 @@ linkcheck() {
                 return 0
             }
         }
-        if [ "$IFCUPDOWN" ]; then
+        if [ $IFCUPDOWN ]; then
             NOLINK=$((NOLINK+1))
             [ $MAXNOLINK -gt 0 -a $NOLINK -gt $MAXNOLINK ] && {
                 ip link show $IFC>/dev/null 2>&1 || {
@@ -1157,15 +1157,15 @@ nexthop() {
     fi
 }
 
-[ "$FORK" ] || [ "$SYSTEMDSERVICENAME" ] && {
+[ $FORK ] || [ "$SYSTEMDSERVICENAME" ] && {
     debug 'MAINPID=%d BASENAME=%s COMM=%s' $$ "$nwwatchdog" "$(cat /proc/$$/comm)"
 
     NOPTS='M' # don't use a pager for output from background / systemd processes
-    [ "$PINGNEXTHOP" ] || NOPTS="${NOPTS}N"
-    [ "$PINGTARGET" ] || NOPTS="${NOPTS}P"
-    [ "$IPADDRALRT" ] || NOPTS="${NOPTS}A"
-    [ "$IFCUPDOWN" ] || NOPTS="${NOPTS}R"
-    [ "$CONTINUOUSTOPOLOGYDETECT" ] || NOPTS="${NOPTS}T"
+    [ $PINGNEXTHOP ] || NOPTS="${NOPTS}N"
+    [ $PINGTARGET ] || NOPTS="${NOPTS}P"
+    [ $IPADDRALRT ] || NOPTS="${NOPTS}A"
+    [ $IFCUPDOWN ] || NOPTS="${NOPTS}R"
+    [ $CONTINUOUSTOPOLOGYDETECT ] || NOPTS="${NOPTS}T"
 
     AOPTS="V$V -t$SLOWUPTIMEOUT -s$SLEEP -g$GRACE -n$MAXNOLINK -u'$IFCUPT' -U'$IFCDOWNT' -a'$ALERTCMDT' -z$LOGSIZE"
     if [ "$STATICIFC" ]; then AOPTS="$AOPTS -I$IFC"
@@ -1304,7 +1304,7 @@ PID=$(cat "$PIDFILE")
 [ "$PID" -gt 0 ] 2>/dev/null && [ -d /proc/$PID ] && die "Process already running with pid $PID"
 
 ### Forking
-[ "$FORK" ] && {
+[ $FORK ] && {
     if [ "$LOGFILE" ]; then AOPTS="$AOPTS -l'$LOGFILE'"
     else AOPTS="$AOPTS -l-"; fi
     AOPTS="$AOPTS -p'$PIDFILE'"
@@ -1354,7 +1354,7 @@ printf %s "$TARGET" | grep -qE '^((0*[0-9]?[0-9]|1[0-9][0-9]|2([0-4][0-9]|5[0-5]
     IFCUP=$(printf %s "$IFCUPT" | sed -E "s/\%\{IFC\}/$IFC/g")
     IFCDOWN=$(printf %s "$IFCDOWNT" | sed -E "s/\%\{IFC\}/$IFC/g")
     ip link show $IFC>/dev/null 2>&1 || { # device does not exist
-        if [ "$IFCUPDOWN" ]; then
+        if [ $IFCUPDOWN ]; then
             info 'Interface "%s" is not available (no such device), trying to bring it up.' "$IFC"
             sh -c "$IFCUP" >/dev/null 2>&1
             trace 'Sleeping for %d seconds.' $GRACE
@@ -1418,19 +1418,19 @@ else
 fi
 
 while :; do
-    if [ "$PINGTARGET" ]; then
+    if [ $PINGTARGET ]; then
         trace 'Continuously checking if target is up...'
-        [ "$CONTINUOUSTOPOLOGYDETECT" ] && trace '... and for changes in topology'
+        [ $CONTINUOUSTOPOLOGYDETECT ] && trace '... and for changes in topology'
         while isup $TADDR; do
             alert UP 'Target "%s" (%s) is up.' "$TARGET" "$TADDR"
             debug 'Target "%s" (%s) is up. Sleeping for %d seconds.' "$TARGET" "$TADDR" $SLEEP
             sleep $SLEEP
-            [ "$CONTINUOUSTOPOLOGYDETECT" ] && { resolve_target; nexthop ;}
+            [ $CONTINUOUSTOPOLOGYDETECT ] && { resolve_target; nexthop ;}
         done
         trace 'No reply from target "%s" (%s), checking link and topology.' "$TARGET" "$TADDR"
         if nexthop || { linkcheck && nexthop ;}; then
             isup "$TADDR" || {
-                if [ "$PINGNEXTHOP" ]; then
+                if [ $PINGNEXTHOP ]; then
                     if isup "$NEXTHOP" noresolve; then
                         alert DOWN \
                               'Not getting replies from target "%s" (%s) on interface "%s", but nexthop "%s" is reachable... sleeping for %d seconds.' \
@@ -1479,12 +1479,12 @@ while :; do
 
     else
         trace 'Continuously checking if nexthop is reachable...'
-        [ "$CONTINUOUSTOPOLOGYDETECT" ] && trace '... and for changes in topology'
+        [ $CONTINUOUSTOPOLOGYDETECT ] && trace '... and for changes in topology'
         while isup $NEXTHOP; do
             alert REACHABLE 'Nexthop "%s" for target "%s" (%s) is reachable.' "$NEXTHOP" "$TARGET" "$TADDR"
             debug 'Nexthop "%s" for target "%s" (%s) is reachable. Sleeping for %d seconds.' "$NEXTHOP" "$TARGET" "$TADDR" $SLEEP
             sleep $SLEEP
-            [ "$CONTINUOUSTOPOLOGYDETECT" ] && { resolve_target; nexthop ;}
+            [ $CONTINUOUSTOPOLOGYDETECT ] && { resolve_target; nexthop ;}
         done
         trace 'nexthop "%s" (for --no-ping-target "%s" (%s)) on interface "%s", not reachable, checking link and nexthop.' \
               "$NEXTHOP" "$TARGET" "$TADDR" "$IFC"
