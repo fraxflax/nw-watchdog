@@ -58,6 +58,9 @@ ALERTCMDT='if which wall >/dev/null; then exec wall; else cat 1>&2; fi';
 SYSTEMDSERVICENAME='';    SYSTEMDSERVICENAMERE='--install-systemd';      SYSTEMDSERVICENAMEARE='.+'     # non-emty string
 RMSYSTEMDSERVICE='';        RMSYSTEMDSERVICERE='--remove-systemd';       RMSYSTEMDSERVICEARE='.+'       # non-emty string
 
+# slow-up test: number of ICMP echos sent (the slow-up ping deadline is SUCOUNT * --slow-up-timeout)
+SUCOUNT=5
+
 ##############################################################################
 SOPTIONS='HELP PAGERUSE PINGNEXTHOP PINGTARGET IPADDRALRT IFCUPDOWN CONTINUOUSTOPOLOGYDETECT FORK LISTSYSTEMD VERBOSE DEBUG VERSHOW'
 SOPTSRE='[hMNGPARTfDvd]' # Short options without arguments
@@ -273,7 +276,7 @@ EOU
         Only logs and alerts on errors causing the $_b_$nwwatchdog$__ not to function as intended.
 
         ${_b_}2$__ - warning
-        Also logs and alerts on warnings about configuration, etc.
+        Also logs and alerts on warnings about configuration, etc., and on ${_b_}INITIAL$__ problems (issues that delay or prevent monitoring from starting).
 
         ${_b_}3$__ - alert
         Log and alert on irreparable connectivity failures, interface down, and other things disrupting the monitored connection, as well as on warnings and errors.
@@ -334,12 +337,12 @@ EOU
         ${___}seconds$__ must be an integer greater than zero.
 
         The check whether the ${___}TARGET${__} is up or not, is performed in several steps.
-        First a "quick-up" test sends one single ICMP echo packet waiting for the reply for no more than 1 second. If that fails, a more thourough "slow-up" test sends 5 ICMP echos.
+        First a "quick-up" test sends one single ICMP echo packet waiting for the reply for no more than 1 second. If that fails, a more thourough "slow-up" test sends $SUCOUNT ICMP echos.
 
         $_b_--slow-up-timeout$__ controls the TIMEOUT for waiting on each packet in the slow-up test.
-        5 packets are always sent in the slow-up test.
-        The packets are sent adaptively, meaning that as soon as a reply is received the next packet is sent without delay, giving slow-up a total time of 5 * RTT to the ${___}TARGET${__} if the connection is up.
-        The DEADLINE = TIMEOUT * 5 is the maximum time the slow-up test will take if the ${___}TARGET${__} is down.
+        $SUCOUNT packets are always sent in the slow-up test.
+        The packets are sent adaptively, meaning that as soon as a reply is received the next packet is sent without delay, giving slow-up a total time of $SUCOUNT * RTT to the ${___}TARGET${__} if the connection is up.
+        The DEADLINE = TIMEOUT * $SUCOUNT is the maximum time the slow-up test will take if the ${___}TARGET${__} is down.
 
         $_b_--slow-up-timeout=7$__ is useful for monitoring VPN connections via interfaces that need a long wake-up time if idle (due to regotiation of encryption, exchanging keys, reauthentication, etc).
 
@@ -567,7 +570,7 @@ EOU
     $FMT<<EOU
 
     We use $_b_--ifup-grace=25$__ to allow enough time for IPSec to establish the connection upon start and interface reset.
-    $_b_--slow-up-timeout=5$__ (making the deadline 25 seconds for the slow-up ping test) should be enough for an idle IPSec connection to wakeup and start forwarding packets when monitored.
+    $_b_--slow-up-timeout=5$__ (making the deadline $((5*SUCOUNT)) seconds for the slow-up ping test) should be enough for an idle IPSec connection to wakeup and start forwarding packets when monitored.
 
     In the above example we monitor the connectivity to the peer address inside the VTI tunnel, which is also the NEXTHOP.
     If we are interested in the connectivity to something in the remote network routed via the tunnel we could use that as a ${___}TARGET${__} instead of the peer address:
@@ -882,12 +885,14 @@ done
 [ $PINGTARGET ] || [ $PINGNEXTHOP ] || \
     ERRMSG="You must allow pinging of target and/or nexthop!\t(Can't combine --no-ping-target and --no-ping-nexthop!)\n$ERRMSG"
 
-[ "$INSTALLSYSTEMD" ] && [ $DEBUG ] && ERRMSG="--install-systemd cannot be combined with --debug\n$ERRMSG"
+[ "$SYSTEMDSERVICENAME" ] && [ $DEBUG ] && ERRMSG="--install-systemd cannot be combined with --debug\n$ERRMSG"
 
 [ "$TARGET" ] || ERRMSG="TARGET not specified! Specify IP address or valid hostname.\n$ERRMSG"
 
 ### Die showing the USAGE if found errors in options and arguments above ###
 [ "$ERRMSG" ] && USAGE %s 'Option Errors'
+
+[ $VERBOSE ] && { printf %s "$xOPTIONS" | grep -qE ':V:' || V=5 ;}
 
 [ $DEBUG ] && {
     printf %s "$xOPTIONS" | grep -qE ':V:'             || V=6
@@ -900,6 +905,7 @@ done
     printf %s "$xOPTIONS" | grep -qE ':ALERTCMD:'      || ALERTCMD='cat'
     FORK=''
 }
+
 [ "$LOGFILE" = '-' ] && { LOGSIZE=0 ; LOGSIZEb=0 ; LOGFILE='' ;}
 [ "$PIDFILE" = '-' ] && PIDFILE=/dev/null
 
@@ -910,6 +916,9 @@ case "$LOGSIZEb" in
     *[Gg]) LOGSIZEb=$(printf %s "$LOGSIZEb" | sed -E 's/[Gg]$//'); LOGSIZEb=$((LOGSIZEb*1048576)) ;;
 esac
 LOGSIZEb=$((LOGSIZEb*1024))
+
+# slow-up ping test deadline: SUCOUNT packets * the per-packet --slow-up-timeout (SLOWUPTIMEOUT is final here)
+SUDEADLINE=$((SLOWUPTIMEOUT*SUCOUNT))
 dienl() {
     diePATN="$1 ... aborting!" ; shift
     _show_errmsg "$diePATN" "$@"
@@ -969,9 +978,12 @@ log() {
 }
 ALERTSTATE='INITIAL'
 alert() {
-    [ $V -ge 3 ] || return
+    [ $V -gt 0 ] || return
     STATE=$1; shift
+    [ "$STATE" = ERROR ] && { [ $V -ge 1 ] || return ;}
+    [ "$STATE" = WARNING ] || [ "$STATE" = INITIAL ] && { [ $V -ge 2 ] || return ;}
     [ "$STATE" = ERROR ] || [ "$STATE" = WARNING ] || [ "$STATE" = INITIAL ] || { # always alert on ERROR, WARNING and INITIAL
+        [ $V -ge 3 ] || return
         [ "$ALERTSTATE" = INITIAL ] && {                                          # Do not alert if we are up after INITIAL
             [ "$STATE" = UP ] || [ "$STATE" = REACHABLE ] || [ "$STATE" = LINKUP ] && return
         }
