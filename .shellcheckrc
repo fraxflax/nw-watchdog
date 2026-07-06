@@ -1,0 +1,17 @@
+# shellcheck configuration for nw-watchdog (a single-file POSIX sh program).
+
+# nw-watchdog targets POSIX sh.
+shell=sh
+
+# Disabled info/style checks — each reviewed and accepted as intentional,
+# so a bare `shellcheck nw-watchdog` runs clean:
+#   SC2086  Unquoted expansions that are safe by validation or deliberate:
+#           boolean switch flags tested as [ $FLAG ] ($FLAG is 'y' or ''),
+#           interface names (validated: no whitespace/slash) and integers
+#           (validated numeric). Quoting is used where a value can word-split.
+#   SC2059  printf format string passed as a function's first argument — the
+#           logging/alert wrappers' idiom; '%' in user-supplied data is escaped.
+#   SC2015  A && B || C guard (the POSIX-shell sanity check at startup) where
+#           running C on failure of the && chain is exactly the intent.
+#   SC2162  read without -r in the help/error message display loop.
+disable=SC2086,SC2059,SC2015,SC2162
