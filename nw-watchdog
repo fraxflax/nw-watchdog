@@ -273,7 +273,7 @@ EOU
         Only logs and alerts on errors causing the $_b_$nwwatchdog$__ not to function as intended.
 
         ${_b_}2$__ - warning
-        Also logs and alerts on warnings about configuration, etc.
+        Also logs and alerts on warnings about configuration, etc., and on ${_b_}INITIAL$__ problems (issues that delay or prevent monitoring from starting).
 
         ${_b_}3$__ - alert
         Log and alert on irreparable connectivity failures, interface down, and other things disrupting the monitored connection, as well as on warnings and errors.
@@ -882,12 +882,14 @@ done
 [ $PINGTARGET ] || [ $PINGNEXTHOP ] || \
     ERRMSG="You must allow pinging of target and/or nexthop!\t(Can't combine --no-ping-target and --no-ping-nexthop!)\n$ERRMSG"
 
-[ "$INSTALLSYSTEMD" ] && [ $DEBUG ] && ERRMSG="--install-systemd cannot be combined with --debug\n$ERRMSG"
+[ "$SYSTEMDSERVICENAME" ] && [ $DEBUG ] && ERRMSG="--install-systemd cannot be combined with --debug\n$ERRMSG"
 
 [ "$TARGET" ] || ERRMSG="TARGET not specified! Specify IP address or valid hostname.\n$ERRMSG"
 
 ### Die showing the USAGE if found errors in options and arguments above ###
 [ "$ERRMSG" ] && USAGE %s 'Option Errors'
+
+[ $VERBOSE ] && { printf %s "$xOPTIONS" | grep -qE ':V:' || V=5 ;}
 
 [ $DEBUG ] && {
     printf %s "$xOPTIONS" | grep -qE ':V:'             || V=6
@@ -900,6 +902,7 @@ done
     printf %s "$xOPTIONS" | grep -qE ':ALERTCMD:'      || ALERTCMD='cat'
     FORK=''
 }
+
 [ "$LOGFILE" = '-' ] && { LOGSIZE=0 ; LOGSIZEb=0 ; LOGFILE='' ;}
 [ "$PIDFILE" = '-' ] && PIDFILE=/dev/null
 
@@ -969,9 +972,12 @@ log() {
 }
 ALERTSTATE='INITIAL'
 alert() {
-    [ $V -ge 3 ] || return
+    [ $V -gt 0 ] || return
     STATE=$1; shift
+    [ "$STATE" = ERROR ] && { [ $V -ge 1 ] || return ;}
+    [ "$STATE" = WARNING ] || [ "$STATE" = INITIAL ] && { [ $V -ge 2 ] || return ;}
     [ "$STATE" = ERROR ] || [ "$STATE" = WARNING ] || [ "$STATE" = INITIAL ] || { # always alert on ERROR, WARNING and INITIAL
+        [ $V -ge 3 ] || return
         [ "$ALERTSTATE" = INITIAL ] && {                                          # Do not alert if we are up after INITIAL
             [ "$STATE" = UP ] || [ "$STATE" = REACHABLE ] || [ "$STATE" = LINKUP ] && return
         }
