@@ -823,7 +823,7 @@ while [ $# -gt 0 ]; do
                     ERRMSG="Invalid argument '$ARG' for option '$OPT' $R.\n$ERRMSG"
                     break
                 }
-                eval "$o='$ARG'"
+                eval "$o=\$ARG"
                 break
             fi
         done
@@ -1264,7 +1264,7 @@ isup() {
     # (but unlikely due to -A) return 1 or 2 even if we're up)
     trace 'slow-up failed or ambigious result ... verifying ...'
     ping -q -w2 -c1 -I$IFC $isupADDR >/dev/null  2>&1 && {
-        trace '$isupADDR is verified-up via $IFC'
+        trace '%s is verified-up via %s' "$isupADDR" "$IFC"
         return 0
     }
     # We don't get traffic through
