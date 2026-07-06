@@ -1318,7 +1318,7 @@ PID=$(cat "$PIDFILE")
     exit 0
 }
 
-printf $$ > "$PIDFILE"
+printf %s "$$" > "$PIDFILE"
 debug 'PID=%d BASENAME=%s COMM=%s' $$ "$nwwatchdog" "$(cat /proc/$$/comm)"
 
 debug '\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s' \
