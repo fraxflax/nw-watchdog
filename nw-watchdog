@@ -1,4 +1,7 @@
 #!/bin/sh
+# The option-table vars (${o}RE / ${o}V / ${o}ARE for SOPTIONS+AOPTIONS) are set and read
+# only via eval-based dispatch, which shellcheck cannot follow -> false SC2034/SC2154:
+# shellcheck disable=SC2034,SC2154
 VERSION=1.1.6
 #
 #       nw-watchdog is a higly configurable network watchdog written
@@ -140,7 +143,7 @@ _USAGE() {
         __=$(printf '\033[0m')                              #  types, so always use the universal ANSI reset escape sequence instead
     }                                                       #  ( '\033[Om' instead of '\033[m^O' )
     [ $TPUTOK -eq 0 ] || { COLS=72; _b_=''; ___=''; __=''; }
-    FMT=cat; which fmt >/dev/null && FMT="fmt -s -w $COLS"
+    FMT='cat'; which fmt >/dev/null && FMT="fmt -s -w $COLS"
     _show_errmsg "$@"
     $FMT<<EOU
 $__
@@ -858,6 +861,7 @@ done
             exit 0
         }
         [ "$RMSYSTEMDSERVICE" ] || ERRMSG='' USAGE %s '--remove-systemd requires a service or unit name to remove'
+        # shellcheck disable=SC2046  # id -u emits a single integer
         [ $(id -u) -eq 0 ] || USAGE %s "$nwwatchdog --remove-systemd must be run as root"
         systemctl daemon-reload || USAGE %s 'Failed to reload systemd. Is systemd installed and running?'
         UNITNAME=$RMSYSTEMDSERVICE
@@ -935,10 +939,12 @@ log() {
             # silently skip if we can't lock the file
             if which flock >/dev/null 2>&1; then
                 ok=y
+                # shellcheck disable=SC2046  # stat --printf=%s emits a single integer
                 while [ "$ok" ] && [ $(stat --printf=%s "$LOGFILE") -gt $LOGSIZEb ]; do
                     flock -w1 "$LOGFILE" -c "cp '$LOGFILE' '$LOGFILE.$$' ; tail -n +11 '$LOGFILE.$$' >'$LOGFILE'; rm '$LOGFILE.$$'" || ok=''
                 done
             else
+                # shellcheck disable=SC2046  # stat --printf=%s emits a single integer
                 while [ $(stat --printf=%s $LOGFILE) -gt $LOGSIZEb ]; do
                     cp "$LOGFILE" "$LOGFILE.$$" ; tail -n +11 "$LOGFILE.$$" > "$LOGFILE" ; rm "$LOGFILE.$$"
                 done
@@ -1066,7 +1072,6 @@ ifreset() {
         warn '%s\n\t%s' \
              "Could not reset interface '$IFC'." \
              "Check your --if-up and --if-down commands and/or privilegdes of effective user (userid=$(id -u))."
-        [ "$1" ] && return 1
     }
     debug '"%s" exited with %d and output: "%s"' "$IFCUP" $EXITCODE "$IFCUD"
     trace 'Sleeping for %d seconds.' $GRACE
@@ -1092,7 +1097,7 @@ linkcheck() {
         }
         if [ $IFCUPDOWN ]; then
             NOLINK=$((NOLINK+1))
-            [ $MAXNOLINK -gt 0 -a $NOLINK -gt $MAXNOLINK ] && {
+            [ $MAXNOLINK -gt 0 ] && [ $NOLINK -gt $MAXNOLINK ] && {
                 ip link show $IFC>/dev/null 2>&1 || {
                     alert LINKDOWN 'Interface "%s" ... device does not exist!' "$IFC"
                     return 2
@@ -1101,7 +1106,7 @@ linkcheck() {
                 return 1
             }
             info 'No link on "%s"... reset attempt %d out of %d (0=infinite)' "$IFC" $NOLINK $MAXNOLINK
-            ifreset "$1"
+            ifreset
         else
             alert LINKDOWN 'Link down on interface "%s"!' "$IFC"
             return 1
@@ -1180,9 +1185,11 @@ nexthop() {
         USAGE 'Invalid systemd service name "%s"\n       %s\n       %s' "$SYSTEMDSERVICENAME" \
               'The SYSTEMDSERVICENAME must contain only alphanumeric characters, hyphens and underscores' \
               'and be no longer than 236 characters.'
+    # shellcheck disable=SC2046  # wc -c emits a single integer
     [ $(printf %s "$SYSTEMDSERVICENAME" | wc -c) -gt 236 ] && \
         USAGE 'Systemd service name\n       "%s"\n       %s' \
               "$SYSTEMDSERVICENAME" 'is too long (max 236 characters)'
+    # shellcheck disable=SC2046  # id -u emits a single integer
     [ $(id -u) -eq 0 ] || USAGE %s "$nwwatchdog --install-systemd must be run as root"
     [ -d /etc/systemd/system/. ] || USAGE "'/etc/systemd/system/' does not exists,\n       systemd '%s.service' NOT installed!" \
                                           "$SYSTEMDSERVICENAME"
