@@ -1310,10 +1310,10 @@ PID=$(cat "$PIDFILE")
     AOPTS="$AOPTS -p'$PIDFILE'"
     if [ -x "$0" ]; then
         trace 'forking: %s' "'$0' '$TARGET' -D$NOPTS$AOPTS"
-        { sleep 0.25 ; eval "exec '$0' '$TARGET' -D$NOPTS$AOPTS" ;} &
+        { eval "exec '$0' '$TARGET' -D$NOPTS$AOPTS" ;} &
     else
         trace 'forking: %s' "sh '$0' '$TARGET' -D$NOPTS$AOPTS"
-        { sleep 0.25 ;eval "exec sh '$0' '$TARGET' -D$NOPTS$AOPTS" ;} &
+        { eval "exec sh '$0' '$TARGET' -D$NOPTS$AOPTS" ;} &
     fi
     exit 0
 }
