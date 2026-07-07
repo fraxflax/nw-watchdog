@@ -5,7 +5,23 @@ Also see __[WIP-TODO.md](https://github.com/fraxflax/nw-watchdog/blob/main/docum
 These changes are already merged into the main branch and available in https://github.com/fraxflax/nw-watchdog <br>
 Unless plans change, they will be in the next release.
 
+* Fixed bug "The slow-up connectivity check (--slow-up-timeout) never actually ran (empty ping deadline/count)."
+
 * Fixed bug "Redundant LINKUP alert while already REACHABLE."
+
+* Fixed bug "A quote in an --alert / --ifcup / --ifcdown argument could crash option parsing."
+
+* Fixed bug "--verbose (-v) had no effect."
+
+* Fixed bug "Verbosity levels 1 (error) and 2 (warning) produced no log entries or alerts."
+
+* Fixed bug "--install-systemd combined with --debug was not rejected."
+
+* Fixed bug "'Verify-up' trace message printed literal variable names instead of values."
+
+* Optimization: removed an unnecessary delay when forking to daemonize.
+
+* Cleanup: consistent minimal quoting, tabs -> spaces indentation, corrected 'printf' idiom, and a shellcheck-clean codebase (with a .shellcheckrc). No functional change.
 
 ## v1.1.6 - Update Release, 2025-02-17
 https://github.com/fraxflax/nw-watchdog/tree/v1.1.6
