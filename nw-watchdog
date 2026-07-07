@@ -158,9 +158,10 @@ EOU
     if printf %s "$VERSION" | grep -q -e-; then $FMT<<EOU
     $VERSION
 
-    This is an unreleased version. The version format for all unreleased versions is:
-    LATESTRELESE-BRANCH-CHANGEDATE-RUNNINGNUMBER
-    where LATESTRELESE is the release this version is based on. BRANCH is the git branch, CHANGEDATE is the date (YYYYMMDD) the latest change was commited and RUNNINGNUMBER indicates how many changes was commited that day.
+    This is an unreleased version. Unreleased versions on the main (TESTING) branch use the format
+    LATESTRELEASE-main-CHANGEDATE-PULLREQUESTNUMBER, where LATESTRELEASE is the release this is based on,
+    CHANGEDATE is the date (YYYYMMDD) of the change, and PULLREQUESTNUMBER is the pull request that introduced it.
+    Development-branch builds append "-development" to the main version they are based on.
 EOU
     else printf '    %s\n' "$VERSION"; fi
     $FMT<<EOU
