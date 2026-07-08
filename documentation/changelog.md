@@ -19,9 +19,13 @@ Unless plans change, they will be in the next release.
 
 * Fixed bug "'Verify-up' trace message printed literal variable names instead of values."
 
+* Fixed bug "The interface-reset failure message referenced --if-up / --if-down, which are not real options (the correct options are --ifcup / --ifcdown)."
+
 * Optimization: removed an unnecessary delay when forking to daemonize.
 
-* Cleanup: consistent minimal quoting, tabs -> spaces indentation, corrected 'printf' idiom, and a shellcheck-clean codebase (with a .shellcheckrc). No functional change.
+* Cleanup: consistent minimal quoting, tabs -> spaces indentation, corrected 'printf' idiom, a shellcheck-clean codebase (with a .shellcheckrc), and corrected --help / comment spelling, grammar and example option names, plus documented the %{LASTSTATE} alert placeholder. No functional change.
+
+_The above was found and corrected with the assistance of AI — Anthropic's Claude (Opus 4.8) — with all changes reviewed and merged by the maintainer._
 
 ## v1.1.6 - Update Release, 2025-02-17
 https://github.com/fraxflax/nw-watchdog/tree/v1.1.6
