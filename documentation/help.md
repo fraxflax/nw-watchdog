@@ -4,9 +4,7 @@ __nw-watchdog__ - Network Watchdog
 ## VERSION
 This is an unreleased version.
 
-The version format for all unreleased versions is:
-LATESTRELESE-BRANCH-CHANGEDATE-RUNNINGNUMBER
-where LATESTRELESE is the release this version is based on. BRANCH is the git branch, CHANGEDATE is the date (YYYYMMDD) the latest change was commited and RUNNINGNUMBER indicates how many changes was commited that day.
+Unreleased versions use the format `LATESTRELEASE-CHANNEL-CHANGEDATE-PULLREQUESTNUMBER`, where LATESTRELEASE is the release it is based on, CHANNEL is `testing` (stable enough to run, normally the next release) or `development` (unstable, in progress), CHANGEDATE is the date (YYYYMMDD), and PULLREQUESTNUMBER is the pull request that introduced the change (for a `development` build, the `testing` build it is based on).
 
 Use `nw-watchdog --version` or `nw-watchdog --help` to show the version.
 
@@ -15,20 +13,20 @@ __nw-watchdog__ <ins>TARGET</ins> [ OPTIONS ]
 
 __nw-watchdog__ __--list-systemd__
 
-__nw-watchdog__ __--remove-systemd__ <ins>SERVICENAME</ins> | <ins>UNITNAME<ins>
+__nw-watchdog__ __--remove-systemd__ <ins>SERVICENAME</ins> | <ins>UNITNAME</ins>
 
 ## DESCRIPTION
-__nw-watchdog__ is a higly configurable network watchdog written in POSIX shell script for use in Linux, depending only on Linux most standard tools that are normally installed by default in all distributions (also see the __[DEPENDENCIES](#deps)__ section.
+__nw-watchdog__ is a highly configurable network watchdog written in POSIX shell script for use in Linux, depending only on the most standard Linux tools that are normally installed by default in all distributions (also see the __[DEPENDENCIES](#deps)__ section).
 
-It monitors the network connectivity to a specified <ins>TARGET</ins> and/or the next hop towards that <ins>TARGET</ins>, alerting upon lost connectivity explaining what is wrong. It can reset the source interface and will detect topology changes and, if allowed, reconfigure itself accordingly. It's intended to run as a daemon and has an option to install itself as a systemd service.  If you want to monitor the connectivity to several <ins>TARGET</ins>s, you can run several instances of __nw-watchdog__ using different `--pidfile` option arguments.
+It monitors the network connectivity to a specified <ins>TARGET</ins> and/or the next hop towards that <ins>TARGET</ins>, alerting upon lost connectivity explaining what is wrong. It can reset the source interface and will detect topology changes and, if allowed, reconfigure itself accordingly. It's intended to run as a daemon and has an option to install itself as a systemd service. If you want to monitor the connectivity to several <ins>TARGET</ins>s, you can run several instances of __nw-watchdog__ using different `--pidfile` option arguments.
 
 __nw-watchdog__ is free software written by Fredrik Ax \<nw-watchdog@axnet.nu\>.<br>
 Feel free to modify and/or (re)distribute it in any way you like.<br>
 ... it's always nice to be mentioned though ;-)<br>
 
-If you expirence any problems with __nw-watchdog__, are lacking any functionality or just want to voice your opions about it, feel free to contact me via e-mail.
-
 __nw-watchdog__ comes with ABSOLUTELY NO WARRANTY.
+
+If you experience any problems with __nw-watchdog__, are lacking any functionality or just want to voice your options about it, feel free to contact me via e-mail.
 
 Get the latest version from https://github.com/fraxflax/nw-watchdog
 
@@ -52,17 +50,17 @@ All other options are ignored, apart from `--no-pager` which can be used to avoi
 
 * __--no-ping-target | -P__<br>
 	If the <ins>TARGET</ins> is the next hop (on the same subnet), reachability of the <ins>TARGET</ins> is checked by arp cache status and ping.<br>
-If the <ins>TARGET</ins> is not on the same subnet as the source, the reachability of the <ins>TARGET</ins> is checked by pinging it in a certain pattern (see  [--slow-up-timeout](#sutt) for details).
+If the <ins>TARGET</ins> is not on the same subnet as the source, the reachability of the <ins>TARGET</ins> is checked by pinging it in a certain pattern (see [--slow-up-timeout](#sutt) for details).
 
 	`--no-ping-target` disables the ping-checks for the <ins>TARGET</ins>. Only connectivity to the NEXTHOP for the <ins>TARGET</ins> is checked.<br>
-	This can be useful if <ins>TARGET</ins> does not reply to ping, or if it desirable to only alert if there is no route to the <ins>TARGET</ins> or NEXTHOP is unreachable.
+	This can be useful if <ins>TARGET</ins> does not reply to ping, or if it is desirable to only alert if there is no route to the <ins>TARGET</ins> or NEXTHOP is unreachable.
 
 	`--no-ping-target` cannot be used in combination with `--no-ping-nexthop`.
 
 * __--no-ping-nexthop | -N | --no-ping-gateway | -G__<br>
-	By default, if the connectivity to the <ins>TARGET</ins> cannot be verified, and the next hop (NEXTHOP) is not the <ins>TARGET</ins> itself, the reachability of the NEXTHOP (usually a gateway) is checked, firstly by checking it's status in the arp cache and then by pinging it, rechecking the arp cache status upon failed ping. 
+	By default, if the connectivity to the <ins>TARGET</ins> cannot be verified, and the next hop (NEXTHOP) is not the <ins>TARGET</ins> itself, the reachability of the NEXTHOP (usually a gateway) is checked, firstly by checking its status in the arp cache and then by pinging it, rechecking the arp cache status upon failed ping. 
 
-	`--no-ping-nexthop` disbles the reachaility check for the NEXTHOP so only connectivity to <ins>TARGET</ins> itself is checked. Useful if the NEXTHOP is a peer-to-peer address and not setup to reply to ping.
+	`--no-ping-nexthop` disables the reachability check for the NEXTHOP so only connectivity to <ins>TARGET</ins> itself is checked. Useful if the NEXTHOP is a peer-to-peer address and not set up to reply to ping.
 
 	`--no-ping-nexthop` cannot be used in combination with `--no-ping-target`.
 
@@ -74,7 +72,7 @@ If the <ins>TARGET</ins> is not on the same subnet as the source, the reachabili
   (Do not try to "repair" the connection, just monitor it.)
 
 * __--no-continuous-topology-detect | -T__<br>
-  Normaly the topology (resolving the ip address of the <ins>TARGET</ins>, detecting which source interface to use and the ip address of the NEXTHOP towards the <ins>TARGET</ins>) is detected at startup and continuously monitored for changes.
+  Normally the topology (resolving the ip address of the <ins>TARGET</ins>, detecting which source interface to use and the ip address of the NEXTHOP towards the <ins>TARGET</ins>) is detected at startup and continuously monitored for changes.
 
 	`--no-continuous-topology-detect` disables the topology detection for as long as the <ins>TARGET</ins> replies (or in combination with `--no-ping-target`, for as long as the NEXTHOP is reachable). The topology will only be detected at startup and if the <INS>TARGET</INS> does not reply or if the NEXTHOP cannot be reached, meaning that routing changes making the <INS>TARGET</INS> or NEXTHOP unreachable will not be detected as long as the <INS>TARGET</INS> / NEXTHOP can be reached using the old topology.
 
@@ -93,7 +91,7 @@ If the <ins>TARGET</ins> is not on the same subnet as the source, the reachabili
 	If used in combination with `--verbosity-level`, the specified __--verbosity-level__ will take precedence. 
 
 * __--debug | -d__<br>
-	Shortcut for: `--verbosity-level=6  --logfile=- --logsize=0  --pidfile=/dev/null  --slow-up-timeout=1  --sleep=3 --ifup-grace=5 --alert='cat' --foreground` 
+	Shortcut for: `--verbosity-level=6 --logfile=- --logsize=0 --pidfile=/dev/null --slow-up-timeout=1 --sleep=3 --ifup-grace=5 --alert='cat' --foreground` 
 
 	If it's combined with any of the options it provides shortcuts for, the specified option will take precedence over the `--debug` shortcut.
 
@@ -103,7 +101,7 @@ If the <ins>TARGET</ins> is not on the same subnet as the source, the reachabili
     Prints the version of __nw-watchdog__ to stdout and immediately exits. All other options are ignored.
 
 ## OPTIONS (with ARGUMENT)
-These opions takes a single argument each and may be specified in any order. Specify with equalsign or space or no space between option and argument. They can only be grouped together with the shortform of the NO-ARGUMENT-OPTIONS above, and must be last in such groupings (e.g. `-PAV5`).
+These options take a single argument each and may be specified in any order. Specify with equalsign or space or no space between option and argument. They can only be grouped together with the shortform of the NO-ARGUMENT-OPTIONS above, and must be last in such groupings (e.g. `-PAV5`).
 
 * __--verbosity-level | -V__ <ins>level</ins><br>
 	Default: `4`<br>
@@ -111,13 +109,13 @@ These opions takes a single argument each and may be specified in any order. Spe
 	Determines how much info is logged to the logfile and which alerts are triggered.
 
 	__0__ - none<br>
-	No output to logfile and no alerts triggered at all ... pretty useless unless you just want to keep traffic going keeping a connecting alive without any alerts.
+	No output to logfile and no alerts triggered at all ... pretty useless unless you just want to keep traffic going keeping a connection alive without any alerts.
 
 	__1__ - error<br>
 	Only logs and alerts on errors causing the __nw-watchdog__ not to function as intended.
 
 	__2__ - warning<br>
-	Also logs and alerts on warnings about configuration, etc.
+	Also logs and alerts on warnings about configuration, etc., and on __INITIAL__ problems (issues that delay or prevent monitoring from starting).
 
 	__3__ - alert<br>
 	Log and alert on irreparable connectivity failures, interface down, and other things disrupting the monitored connection, as well as on warnings and errors.<br>
@@ -138,7 +136,7 @@ These opions takes a single argument each and may be specified in any order. Spe
 
 	The interface may dynamically change due to topology detection. If you want to force the use of a specific interface, use `--force-interface` instead.
 
-	If neither `--interface` nor `force-interface` is specified the source interface will be determined from the FIB by looking at the route to the <ins>TARGET</ins>. The reason to specify it even so, would be to have __nw-watchdog__ bring it up if it's down when starting.
+	If neither `--interface` nor `--force-interface` is specified the source interface will be determined from the FIB by looking at the route to the <ins>TARGET</ins>. The reason to specify it even so, would be to have __nw-watchdog__ bring it up if it's down when starting.
 
 	`--interface` cannot be combined with `--force-interface`.
 
@@ -146,7 +144,7 @@ These opions takes a single argument each and may be specified in any order. Spe
   Default: none<br>
   <ins>interface</ins> is the name of the source interface to always use.
 
-	Packets will always be sent from this interface. The forwadring table will be ignored as well as conflicting topology changes.<br>
+	Packets will always be sent from this interface. The forwarding table will be ignored as well as conflicting topology changes.<br>
 	This is useful for monitoring the preferred path and making sure it's up. It does not check if you have connectivity to the <ins>TARGET</ins> via any other path.
 
 	Implies `--no-continuous-topology-detect`.
@@ -167,7 +165,7 @@ These opions takes a single argument each and may be specified in any order. Spe
 
   If the logfile is set to '-' (stdout) this option is ignored.
 
-  If `flock` is available, the logfile will be locked before written to or shrinked, otherwise there is a slight risk of log entries being lost if two or more instances of __nw-watchdog__ are concurently running using the same logfile and at least one of them have `--logsize` set to a value larger than 0.
+  If `flock` is available, the logfile will be locked before written to or shrunk, otherwise there is a slight risk of log entries being lost if two or more instances of __nw-watchdog__ are concurrently running using the same logfile and at least one of them have `--logsize` set to a value larger than 0.
 
 * __--pidfile | -p__ <ins>pidfile</ins><br>
   Default: `/run/nw-watchdog.pid`<br>
@@ -178,16 +176,16 @@ These opions takes a single argument each and may be specified in any order. Spe
   <ins>seconds</ins> must be an integer greater than zero.
 
   The check whether the <ins>TARGET</ins> is up or not, is performed in several steps.<br>
-  First a "quick-up" test sends one single ICMP echo packet waiting for the reply for no more than 1 second. If that fails, a more thourough "slow-up" test sends 5 ICMP echos.
+  First a "quick-up" test sends one single ICMP echo packet waiting for the reply for no more than 1 second. If that fails, a more thorough "slow-up" test sends 5 ICMP echos.
 
   `--slow-up-timeout` controls the TIMEOUT for waiting on each packet in the slow-up test.<br>
   5 packets are always sent in the slow-up test.<br>
   The packets are sent adaptively, meaning that as soon as a reply is received the next packet is sent without delay, giving slow-up a total time of 5 * RTT to the <ins>TARGET</ins> if the connection is up.<br>
   The DEADLINE = TIMEOUT * 5 is the maximum time the slow-up test will take if the <ins>TARGET</ins> is down.
         
-  `--slow-up-timeout=7` is useful for monitoring VPN connections via interfaces that need a long wake-up time if idle (due to regotiation of encryption, exchanging keys, reauthentication, etc).
+  `--slow-up-timeout=7` is useful for monitoring VPN connections via interfaces that need a long wake-up time if idle (due to renegotiation of encryption, exchanging keys, reauthentication, etc).
 
-  `--slow-up-timeout=3` is useful for monitoring connections to <ins>TARGET</ins>s with low to medium latency via interfaces that does not need a long wake-up time (e.g. ethernet interfaces).
+  `--slow-up-timeout=3` is useful for monitoring connections to <ins>TARGET</ins>s with low to medium latency via interfaces that do not need a long wake-up time (e.g. ethernet interfaces).
 
   `--slow-up-timeout=1` is suitable to use for monitoring local <ins>TARGET</ins>s (e.g. NEXTHOP) on ethernet carried subnets.
 
@@ -195,7 +193,7 @@ These opions takes a single argument each and may be specified in any order. Spe
   Default: `10`<br>
   <ins>seconds</ins> must be an integer greater than zero.
 
-  How many seconds to sleep after sucessful ping check. 
+  How many seconds to sleep after successful ping check. 
 
 * __--ifup-grace | -g__ <ins>seconds</ins><br>
   Default: `20`<br>
@@ -207,7 +205,7 @@ These opions takes a single argument each and may be specified in any order. Spe
   Default: `1`<br>
   <ins>number</ins> must be an integer greater than or equal to zero.
 
-  Maximum number of consecutive failed link checks in which the interface have been reset (brought down and up again) before doing new topology check.
+  Maximum number of consecutive failed link checks in which the interface has been reset (brought down and up again) before doing a new topology check.
 
   A word of warning: If set to 0 and interface is not up / goes down, infinite retries to bring the interface up will be made before checking topology. Only set it to 0 if you are sure that the specified interface should always be used and you want to make sure it's up before starting to monitor the connection.<br>
   Typically, you would want to also use `--force-interface` when using `--max-nolink=0`.
@@ -215,13 +213,13 @@ These opions takes a single argument each and may be specified in any order. Spe
 * __--ifcup | -u__ <ins>STRING</ins> <br>
   Default: `ip link set up %{IFC}`<br>
   <ins>STRING</ins> will be passed to 'sh -c' to bring the interface up.<br>
-  __%{IFC}__ will be dynmaically replaced with the interface name currently in use as source interface.
+  __%{IFC}__ will be dynamically replaced with the interface name currently in use as source interface.
 
   Examples:
   - ifupdown:<br>
     `--ifcup='ifup %{IFC}'`
 
-  - ifupdown, non privilege user running __nw-watchdog__:<br>
+  - ifupdown, non-privileged user running __nw-watchdog__:<br>
 	`--ifcup='sudo ifup %{IFC}'`
 
   - NetworkManager device:<br>
@@ -233,34 +231,34 @@ These opions takes a single argument each and may be specified in any order. Spe
   - iproute2 + isc-dhcp-client:<br>
 	`--ifcup='ip link set %{IFC} up && dhclient -pf /run/dhclient-%{IFC}.pid %{IFC}'`
 
-  - strongSwan IPSec (setup for IPSec policy routing):<br>
+  - strongSwan IPSec (set up for IPSec policy routing):<br>
 	`--ifcup='ipsec up connection-name'`<br>
-	(see __[EXAMPLES](#exes)__ section below for a more extensive IPSec example using vti tunnel interface)
+	(see __[EXAMPLES](#exs)__ section below for a more extensive IPSec example using vti tunnel interface)
 
 * __--ifcdown | -U__ <ins>STRING</ins><br>
   Default: `ip link set down %{IFC}`<br>
   <ins>STRING</ins> will be passed to 'sh -c' to bring the interface down.<br>
-  __%{IFC}__ will be dynmaically replaced with the interface name currently in use as source interface.
+  __%{IFC}__ will be dynamically replaced with the interface name currently in use as source interface.
 
   Examples:
   - ifupdown:<br>
 	`--ifcdown='ifdown %{IFC}'`
 
-  - ifupdown, non privilege user running __nw-watchdog__:<br>
+  - ifupdown, non-privileged user running __nw-watchdog__:<br>
 	`--ifcdown='sudo ifdown %{IFC}'`
 
   - NetworkManager device:<br>
 	`--ifcdown='nmcli device down %{IFC}'`
 
   - NetworkManager connection:<br>
-	`--ifcdown='nmcli connection down %{IFC}-connection-name'`
+	`--ifcdown='nmcli connection down connection-name'`
 
   - iproute2 + isc-dhcp-client:<br>
-	{--ifcdown='kill `cat /run/dhclient-%{IFC}.pid\` ; ip link set down %{IFC}'}
+	`--ifcdown='kill $(cat /run/dhclient-%{IFC}.pid) ; ip link set down %{IFC}'`
 
-  - strongSwan IPSec (setup for IPSec policy routing):<br>
-	`--ifcup='ipsec down connection-name'`<br>
-	(see __[EXAMPLES](#exes)__ section below for a more extensive IPSec example using vti tunnel interface)
+  - strongSwan IPSec (set up for IPSec policy routing):<br>
+	`--ifcdown='ipsec down connection-name'`<br>
+	(see __[EXAMPLES](#exs)__ section below for a more extensive IPSec example using vti tunnel interface)
 
 * __--alert | -a__ <ins>STRING</ins> <a name="alrt"></a><br>
 	Default: `if which wall >/dev/null; then exec wall; else cat 1>&2; fi`
@@ -272,14 +270,14 @@ These opions takes a single argument each and may be specified in any order. Spe
 	- __%{IFC}__ - the interface name
 	- __%{TARGET}__ - the <ins>TARGET</ins> for which the connection is monitored
 	- __%{TADDR}__ - the IP address of the <INS>TARGET</INS>
-    - __%{NEXTHOP}__  - the IP address of the NEXTHOP towards <ins>TARGET</ins>
+    - __%{NEXTHOP}__ - the IP address of the NEXTHOP towards <ins>TARGET</ins>
 	- __%{STATE}__ - the state of the alert:
 	  - __ERROR__ for permanent errors
 	  - __WARNING__ for things that might need reconfiguration
-      - __INITIAL__ for intital problems that needs to be resolved before proceeding
-	  - __DOWN__ for lost conenctivity to <INS>TARGET</INS><br>
+      - __INITIAL__ for initial problems that need to be resolved before proceeding
+	  - __DOWN__ for lost connectivity to <INS>TARGET</INS><br>
         (will not be fired if already in DOWN, UNREACHABLE or LINKDOWN state)
-	  - __UNREACHABLE__ for lost conenctivity to NEXTHOP (implies DOWN)<br>
+	  - __UNREACHABLE__ for lost connectivity to NEXTHOP (implies DOWN)<br>
         (will not be fired if already in UNREACHABLE or LINKDOWN state)
       - __LINKDOWN__ no link on source interface after `--max-nolink` reset attempts (implies UNREACHABLE + DOWN)<br>
         (will not be fired if already in LINKDOWN state)
@@ -289,6 +287,8 @@ These opions takes a single argument each and may be specified in any order. Spe
         (will not be fired if already in REACHABLE or UP state)
 	  - __UP__ for restored connectivity to <INS>TARGET</INS> (implies REACHABLE and LINKUP)<br>
         (will not be fired if already in UP state)
+
+	- __%{LASTSTATE}__ - the connectivity/link state prior to %{STATE} (INITIAL until the first change; not updated by ERROR or WARNING alerts)
 
 	The alert command will be launched for every ERROR and WARNING, even repeated ones.<br>
 	For the other states the alert command will be launched only upon state change.
@@ -334,7 +334,7 @@ These opions takes a single argument each and may be specified in any order. Spe
 	```shell
 	sudo rm /var/log/nw-watchdog/SERVICENAME.log
 	```
-## EXAMPLES <a name="exes"></a>
+## EXAMPLES <a name="exs"></a>
 
 #### <ins>ISP gateway monitoring:</ins>
 ```shell
@@ -345,7 +345,7 @@ nw-watchdog 1.2.3.4 \
 --slow-up-timeout=1 \
 --ifup-grace=300
 ```
-Checking once a minute (`--interval=60`) that we have connectivity to the Internet Service Provider's gateway without actually pinging anything on the Internet (`--no-ping-target` `1.2.3.4` ... any Intenet address will do) allowing interface and topology detection (not using --force-interface or --max-no-link=0) but still, if down, bring the supposed initial interface towards the ISP up on startup (`--interface=eth0`) expecting the ISP gateway to have an RTT below 1 second (`--slow-up-timeout=1`) and allowing the interface to be down for up to 5 minutes before considering it a permanent error rechecking topology (`--ifup-grace=300`).
+Checking once a minute (`--interval=60`) that we have connectivity to the Internet Service Provider's gateway without actually pinging anything on the Internet (`--no-ping-target` `1.2.3.4` ... any Internet address will do) allowing interface and topology detection (not using --force-interface or --max-nolink=0) but still, if down, bring the supposed initial interface towards the ISP up on startup (`--interface=eth0`) expecting the ISP gateway to have an RTT below 1 second (`--slow-up-timeout=1`) and allowing the interface to be down for up to 5 minutes before considering it a permanent error rechecking topology (`--ifup-grace=300`).
 
 
 #### <ins>ISP gateway monitoring with forced interface:</ins>
@@ -355,10 +355,10 @@ nw-watchdog 1.2.3.4 \
 --force-interface=eth0 \
 --slow-up-timeout=1 \
 --ifup-grace=30 \
---max-no-link=0 \
+--max-nolink=0 \
 --interval=10
 ```
-Same as above but enforcing the use of the eth0 interface as we know that the ISP gateway should always be reachable via that interface and that is the only Internet facing interface we have. It must be brought up on startup if not already up and there is no use rechecking the topology if it's not up (`--force-interface=eth0`), so if down, we retry to reset it every 30 seconds (`--ifup-grace=30`) forever (`--max-no-link=0`), checking the connectivity every 10 seconds (`--interval=10`).
+Same as above but enforcing the use of the eth0 interface as we know that the ISP gateway should always be reachable via that interface and that is the only Internet facing interface we have. It must be brought up on startup if not already up and there is no use rechecking the topology if it's not up (`--force-interface=eth0`), so if down, we retry to reset it every 30 seconds (`--ifup-grace=30`) forever (`--max-nolink=0`), checking the connectivity every 10 seconds (`--interval=10`).
 
 
 #### <ins>Management of Strongswan IPSec with VTI tunnel interface:</ins>
@@ -373,7 +373,7 @@ nw-watchdog 1.2.3.4 \
 --pidfile=/run/nw-watchdog-ipsecserver.pid
 ```
 
-Then we setup the monitor for the IPSec VTI tunnel which will also be created, configured and brought up.<br>
+Then we set up the monitor for the IPSec VTI tunnel which will also be created, configured and brought up.<br>
 Note that we are using different `--pidfile` for the two watchdogs allowing them to run simultaneously.<br>
 It would be smoother to use a script and `--ifcup=/path/script`, but it can also be done like this:
 
@@ -392,14 +392,14 @@ nw-watchdog 169.254.0.1 \
 --pidfile=/run/nw-watchdog-ipsectunnel.pid
 ```
 
-__OBSERVE__ that the entire `--ifcup=` command needs to be on a single line without line breaks (linebreaks added above for readability):
+__OBSERVE__ that the entire `--ifcup=` command needs to be on a single line without line breaks (line breaks added above for readability):
 ```
 --ifcup='ipsec up connection-name ; ip tunnel add %{IFC} mode vti local 4.3.2.1 remote 1.2.3.4 ttl 255 key 111 ; ip addr add dev %{IFC} 169.254.0.2 remote 169.254.0.1 ; ip link set %{IFC} up multicast on mtu 1424 state UP ; ip route add 10.10.0.0/20 via 169.254.0.1 dev %{IFC}'
 ```
 
 
 We use `--ifup-grace=25` to allow enough time for IPSec to establish the connection upon start and interface reset.
-`--slow-up-timeout=5` (making the deadline 25 seconds for the slow-up ping test) should be enough for an idle IPSec conmnection to wakeup and start forwarding packets when monitored.
+`--slow-up-timeout=5` (making the deadline 25 seconds for the slow-up ping test) should be enough for an idle IPSec connection to wakeup and start forwarding packets when monitored.
 
 In the above example we monitor the connectivity to the peer address inside the VTI tunnel, which is also the NEXTHOP.
 If we are interested in the connectivity to something in the remote network routed via the tunnel we could use that as a <ins>TARGET</ins> instead of the peer address:
@@ -413,9 +413,9 @@ Even with <ins>TARGET</ins> `10.10.1.1`, the NEXTHOP (`169.254.0.1`) will also b
 
 
 #### <ins>Wireguard full tunnel management:</ins>
-This is an example of how one can use __nw-watchdog__ to setup and monitor a wireguard full tunnel, also monitoring the connectivity to the wireguard server, running both whatchdogs as systemd services getting alerts via e-mail:
+This is an example of how one can use __nw-watchdog__ to set up and monitor a wireguard full tunnel, also monitoring the connectivity to the wireguard server, running both watchdogs as systemd services getting alerts via e-mail:
 
-Firstly, we setup the __nw-watchdog__ systemd service for the wireguard server which we reach via the default route:
+Firstly, we set up the __nw-watchdog__ systemd service for the wireguard server which we reach via the default route:
 
 ```shell
 nw-watchdog wgserver.domain.dom \
@@ -423,9 +423,9 @@ nw-watchdog wgserver.domain.dom \
 --alert='mailx -a "From: nwwatchdog@`hostname -f`" -s "wgserver %{STATE} via %{IFC}" admin@`cat /etc/mailname`' \
 --slow-up-timeout=3 \
 --ifup-grace=20 \
---install-systemd=wgserver"
+--install-systemd=wgserver
 ```
-Then we setup the monitor for the wireguard full tunnel which will also create and configure and bring the tunnel up (if not already) upon start of the sytemd service, making sure we have a /32 routes to all of the wireguard server's ip addresses that the hostname resolves to.<br>
+Then we set up the monitor for the wireguard full tunnel which will also create and configure and bring the tunnel up (if not already) upon start of the systemd service, making sure we have a /32 routes to all of the wireguard server's ip addresses that the hostname resolves to.<br>
 Note: It would be smoother to use a script and `--ifcup=/path/script`, but it can also be done like this:
 
 ```shell
@@ -440,7 +440,7 @@ nw-watchdog 10.0.0.1 \
          ip address add 10.0.0.2 peer 10.0.0.1 dev wg0 ;
          getent ahostsv4 wgserver.my.dom | grep -oE "^[0-9.]+" | uniq
          | while read addr; do
-             ip route add $addr/32 via `ip route show default | head -1 | cut -d" " -f3` ;
+             ip route add $addr/32 via $(ip route show default | head -1 | while read -r _ _ i _; do echo $i; done) ;
            done ;
          ip route add 0.0.0.0/1 via 10.0.0.1 dev wg0 src 10.0.0.2 ;
          ip route add 128.0.0.0/1 via 10.0.0.1 dev wg0 src 10.0.0.2' \
@@ -448,9 +448,9 @@ nw-watchdog 10.0.0.1 \
 --install-systemd=wg0
 ```
 
-__OBSERVE__ that the entire `--ifcup='...'` command need to be on a single line without line breaks (linebreaks added above for readability):
+__OBSERVE__ that the entire `--ifcup='...'` command need to be on a single line without line breaks (line breaks added above for readability):
 ```
---ifcup='ip link add wg0 type wireguard ; ip link set wg0 up ; wg setconf wg0 /etc/wireguard/wg0.conf ; ip address add 10.0.0.2 peer 10.0.0.1 dev wg0 ; getent ahostsv4 wgserver.my.dom | grep -oE "^[0-9.]+" | uniq | while read addr; do ip route add $addr/32 via `ip route show default | head -1 | cut -d" " -f3` ; done ; ip route add 0.0.0.0/1 via 10.0.0.1 dev wg0 src 10.0.0.2 ; ip route add 128.0.0.0/1 via 10.0.0.1 dev wg0 src 10.0.0.2'
+--ifcup='ip link add wg0 type wireguard ; ip link set wg0 up ; wg setconf wg0 /etc/wireguard/wg0.conf ; ip address add 10.0.0.2 peer 10.0.0.1 dev wg0 ; getent ahostsv4 wgserver.my.dom | grep -oE "^[0-9.]+" | uniq | while read addr; do ip route add $addr/32 via $(ip route show default | head -1 | while read -r _ _ i _; do echo $i; done) ; done ; ip route add 0.0.0.0/1 via 10.0.0.1 dev wg0 src 10.0.0.2 ; ip route add 128.0.0.0/1 via 10.0.0.1 dev wg0 src 10.0.0.2'
 ```
 
 We use `--no-ping-nexthop` as the NEXTHOP is the same as the <ins>TARGET</ins> peer-to-peer address we monitor the connection for (in reality we don't need to specify it as it is the default behaviour if the <ins>TARGET</ins> address is the same as the NEXTHOP address).
@@ -458,9 +458,9 @@ We use `--no-ping-nexthop` as the NEXTHOP is the same as the <ins>TARGET</ins> p
 	
 #### <ins>Several VPN paths with one preferred interface:
 
-This is a (real life) cornor case but worth explaining to get an understanding of the capabilities of __nw-watchdog__.
+This is a (real life) corner case but worth explaining to get an understanding of the capabilities of __nw-watchdog__.
 
-We have setup ifupdown to handle three different vpn-interfaces: `vpnL` `vpnP` and `vpnF`<br>
+We have set up ifupdown to handle three different vpn-interfaces: `vpnL` `vpnP` and `vpnF`<br>
 They all use the same VPN server but have different routes via the server depending on which interface is up.<br>
 Only one of the interfaces can be up at any given time.
 
@@ -469,7 +469,7 @@ If `vpnP` is up we route to all private addresses via it, including `10.0.0.0/8`
 If `vpnF` is up we use it as a full tunnel, routing all traffic (apart from the VPN-connection itself) via it.
 
 Our preferred interface is `vpnL` and if we can't get any traffic through the vpn-server, `vpnL` is the interface we want to reset.<br>
-BUT as long as we can get traffic through using any of the three interfaces, we don't want to get alerted and have any interface reset, so we can't use `--force-interface`. The soloution will be to allow continuous topology detection but hardcode the preferred interface in `--ifcup` and `--ifcdown`.
+BUT as long as we can get traffic through using any of the three interfaces, we don't want to get alerted and have any interface reset, so we can't use `--force-interface`. The solution will be to allow continuous topology detection but hardcode the preferred interface in `--ifcup` and `--ifcdown`.
 
 ```shell
 nw-watchdog vpn.inside.dom \
@@ -477,7 +477,7 @@ nw-watchdog vpn.inside.dom \
 --no-ping-nexthop \
 --slow-up-timeout=7 \
 --ifup-grace=35 \
---ifcdown='ifdown vnpL ; ifdown vpnP  ; ifdown vpnF' \
+--ifcdown='ifdown vpnL ; ifdown vpnP ; ifdown vpnF' \
 --ifcup='ifup vpnL'
 ```
 Starting the watchdog like the above with any of the three vpn-interfaces up, the vpn-interface that is up will be detected and used as source interface. The continuous topology detection will ensure switching to which ever interface currently is up. If all interfaces are down the topology detection will think the interface for the default gw is the one to monitor (in our example `eth0`) but since we have `--no-ping-nexthop` and hardcoded the preferred vpn-interface in `--ifcup` the watchdog will bring up `vpnL`. If any of the vpn interfaces are up, but have problems the watchdog will bring them all down and then bring up `vpnL`.
@@ -486,7 +486,7 @@ We add `--verbosity-level=5` to the above, allowing us to get a trace of what is
 `vpnL` is up when __nw-watchdog__ starts,<br>
 after a while we see that `vpnF` is replacing `vpnL` (as somebody brought up the full tunnel for a while)<br>
 then `vpnF` is brought down (as somebody did not need it anymore) and<br>
-__nw-watchdog__ detetcs that the connectivity via the VPN-server is lost and brings up `vpnL`:
+__nw-watchdog__ detects that the connectivity via the VPN-server is lost and brings up `vpnL`:
 ```
 00:00:01   INFO: Target (vpn.inside.dom) resolved to 10.0.10.1 (instead of '').
 00:00:01   INFO: Detected topology: IFC='vpnL' -> 'vpnL' ; NEXTHOP='' -> '10.0.10.1'
@@ -504,10 +504,10 @@ __nw-watchdog__ detetcs that the connectivity via the VPN-server is lost and bri
 ^^^ and here the full tunnel was brought down again (without replacing it with any of the other vpn-interfaces) 
 ```
 00:00:32  TRACE: quick-up failed ... trying slow-up ...
-00:00:32  TRACE: slow-up failed or ambigious result ... verifying ...
+00:00:32  TRACE: slow-up failed or ambiguous result ... verifying ...
 00:00:34  TRACE: No reply from target 'vpn.inside.dom' (10.0.10.1), checking link and topology.
 00:00:35  TRACE: quick-up failed ... trying slow-up ...
-00:00:35  TRACE: slow-up failed or ambigious result ... verifying ...
+00:00:35  TRACE: slow-up failed or ambiguous result ... verifying ...
 ```
 ^^^ Here the __nw-watchdog__ gives up and concludes that the <ins>TARGET</ins> is down. 
 ```
@@ -559,7 +559,7 @@ __nw-watchdog__ will function without the below listed utilities, but will use t
 
 - `flock`<br>
   If available the logfile will be locked before truncated or written to.<br>
-  If not available, there is a slight risk of log entries being lost if two or more instances of __nw-watchdog__ are concurently running using the same logfile and at least one of them have `--logsize` set to a value larger than 0.
+  If not available, there is a slight risk of log entries being lost if two or more instances of __nw-watchdog__ are concurrently running using the same logfile and at least one of them have `--logsize` set to a value larger than 0.
 
 - `fmt`<br>
   Is used to format the help message if available.
