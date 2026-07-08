@@ -150,10 +150,10 @@ _USAGE() {
     _show_errmsg "$@"
     $FMT<<EOU
 $__
-${_b_}NAME $__
+${_b_}NAME$__
     $_b_$nwwatchdog$__ - Network Watchdog
 
-${_b_}VERSION $__
+${_b_}VERSION$__
 EOU
     if printf %s "$VERSION" | grep -q -e-; then $FMT<<EOU
     $VERSION
@@ -167,7 +167,7 @@ EOU
     else printf '    %s\n' "$VERSION"; fi
     $FMT<<EOU
 
-${_b_}SYNOPSIS $__
+${_b_}SYNOPSIS$__
 
     $_b_$nwwatchdog$__ ${___}TARGET$__ [ OPTIONS ]
 
@@ -175,7 +175,7 @@ ${_b_}SYNOPSIS $__
 
     $_b_$nwwatchdog --remove-systemd$__ ${___}SERVICENAME$__ | ${___}UNITNAME$__
 
-${_b_}DESCRIPTION $__
+${_b_}DESCRIPTION$__
     $_b_$nwwatchdog$__ is a highly configurable network watchdog written in POSIX shell script for use in Linux, depending only on the most standard Linux tools that are normally installed by default in all distributions (also see the ${_b_}DEPENDENCIES$__ section).
 
     It monitors the network connectivity to a specified ${___}TARGET${__} and/or the next hop towards that ${___}TARGET${__}, alerting upon lost connectivity explaining what is wrong. It can reset the source interface and will detect topology changes and, if allowed, reconfigure itself accordingly. It's intended to run as a daemon and has an option to install itself as a systemd service. If you want to monitor the connectivity to several ${___}TARGET${__}s, you can run several instances of $_b_$nwwatchdog$__ using different $_b_--pidfile$__ option arguments.
@@ -196,10 +196,10 @@ ${_b_}${___}TARGET$__
 
     ${___}TARGET$__ can be placed before, after or between valid OPTIONS.
 
-${_b_}OPTIONS $__(no arguments)
+${_b_}OPTIONS$__ (no arguments)
     These options take no arguments, and may be specified in any order. They can be grouped (e.g. -vAP) in their short form, also having one of the OPTIONS that requires an argument last in the group.
 
-    $_b_--help | -h $__
+    $_b_--help | -h$__
         Shows this help, using \$PAGER if set to an executable, otherwise 'less' or 'more' if available in "/sbin:/bin:/usr/sbin:/usr/bin:\$PATH"
 
         All other options are ignored, apart from --no-pager which can be used to avoid using a pager.
@@ -209,7 +209,7 @@ ${_b_}OPTIONS $__(no arguments)
 
         $_b_--install-systemd$__ will enforce $_b_--no-pager$__ for the installed systemd service.
 
-    $_b_--no-ping-target | -P $__
+    $_b_--no-ping-target | -P$__
         If the ${___}TARGET${__} is the next hop (on the same subnet), reachability of the ${___}TARGET${__} is checked by arp cache status and ping.
         If the ${___}TARGET${__} is not on the same subnet as the source, the reachability of the ${___}TARGET${__} is checked by pinging it in a certain pattern (see $_b_--slow-up-timeout$__ for details).
 
@@ -218,28 +218,28 @@ ${_b_}OPTIONS $__(no arguments)
 
         $_b_--no-ping-target$__ cannot be used in combination with $_b_--no-ping-nexthop$__.
 
-    $_b_--no-ping-nexthop | -N | --no-ping-gateway | -G $__
+    $_b_--no-ping-nexthop | -N | --no-ping-gateway | -G$__
         By default, if the connectivity to the ${___}TARGET${__} cannot be verified, and the next hop (NEXTHOP) is not the ${___}TARGET${__} itself, the reachability of the NEXTHOP (usually a gateway) is checked, firstly by checking its status in the arp cache and then by pinging it, rechecking the arp cache status upon failed ping.
 
         $_b_--no-ping-nexthop$__ disables the reachability check for the NEXTHOP so only connectivity to ${___}TARGET${__} itself is checked. Useful if the NEXTHOP is a peer-to-peer address and not set up to reply to ping.
 
         $_b_--no-ping-nexthop$__ cannot be used in combination with $_b_--no-ping-target$__.
 
-    $_b_--no-ipaddr-alert | -A $__
+    $_b_--no-ipaddr-alert | -A$__
         Do not alert for not finding any global scope ip addresses on the source interface.
 
-    $_b_--no-interface-reset | -R $__
+    $_b_--no-interface-reset | -R$__
         Do not try to bring down and up interface after failed connectivity checks.
         (Do not try to "repair" the connection, just monitor it.)
 
-    $_b_--no-continuous-topology-detect | -T $__
+    $_b_--no-continuous-topology-detect | -T$__
         Normally the topology (resolving the ip address of the ${___}TARGET${__}, detecting which source interface to use and the ip address of the NEXTHOP towards the ${___}TARGET${__}) is detected at startup and continuously monitored for changes.
 
         $_b_--no-continuous-topology-detect$__ disables the topology detection for as long as the ${___}TARGET${__} replies (or in combination with $_b_--no-ping-target$__, for as long as the NEXTHOP is reachable). The topology will only be detected at startup and if the ${___}TARGET${__} does not reply or if the NEXTHOP cannot be reached, meaning that routing changes making the ${___}TARGET${__} or NEXTHOP unreachable will not be detected as long as the ${___}TARGET${__} / NEXTHOP can be reached using the old topology.
 
         $_b_--force-interface$__ implies $_b_--no-continuous-topology-detect$__.
 
-    $_b_--foreground | -f | --no-daemonize | -D $__
+    $_b_--foreground | -f | --no-daemonize | -D$__
         Run in foreground, do not fork / daemonize.
 
     $_b_--list-systemd$__
@@ -247,11 +247,11 @@ ${_b_}OPTIONS $__(no arguments)
 
         Cannot be combined with any other options.
 
-    $_b_--verbose | -v $__
+    $_b_--verbose | -v$__
         Shortcut for $_b_--verbosity-level=5$__
         If used in combination with $_b_--verbosity-level$__, the specified $_b_--verbosity-level$__ level will take precedence.
 
-    $_b_--debug | -d $__
+    $_b_--debug | -d$__
         Shortcut for: $_b_--verbosity-level=6 $_b_--logfile=- $_b_--logsize=0 $_b_--pidfile=/dev/null $_b_--slow-up-timeout=1 $_b_--sleep=3 $_b_--ifup-grace=5 $_b_--alert='cat' $_b_--foreground$__
 
         If it's combined with any of the options it provides shortcuts for, the specified option will take precedence over the $_b_--debug$__ shortcut.
@@ -373,7 +373,7 @@ EOU
         A word of warning: If set to 0 and interface is not up / goes down, infinite retries to bring the interface up will be made before checking topology. Only set it to 0 if you are sure that the specified interface should always be used and you want to make sure it's up before starting to monitor the connection.
         Typically, you would want to also use $_b_--force-interface$__ when using $_b_--max-nolink=0$__.
 
-    $_b_--ifcup | -u $__ ${___}STRING$__
+    $_b_--ifcup | -u$__ ${___}STRING$__
         Default: '$IFCUPT'
         ${___}STRING$__ will be passed to 'sh -c' to bring the interface up.
         $_b_%{IFC}$__ will be dynamically replaced with the interface name currently in use as source interface.
@@ -398,7 +398,7 @@ EOU
               --ifcup='ipsec up connection-name'
               (see ${_b_}EXAMPLES$__ below for a more extensive IPSec example using vti tunnel interface)
 
-    $_b_--ifcdown | -U $__ ${___}STRING$__
+    $_b_--ifcdown | -U$__ ${___}STRING$__
         Default: '$IFCDOWNT'
         ${___}STRING$__ will be passed to 'sh -c' to bring the interface down.
         $_b_%{IFC}$__ will be dynamically replaced with the interface name currently in use as source interface.
@@ -423,7 +423,7 @@ EOU
               --ifcdown='ipsec down connection-name'
               (see ${_b_}EXAMPLES$__ below for a more extensive IPSec example using vti tunnel interface)
 
-    $_b_--alert | -a $__ ${___}STRING$__
+    $_b_--alert | -a$__ ${___}STRING$__
         Default: '$ALERTCMDT'
 
         Errors, warnings and alerts regarding change of state will be piped to: sh -c '${___}STRING$__'
@@ -672,41 +672,41 @@ EOU
     cat <<EOU
     00:00:01   INFO: Target (vpn.inside.dom) resolved to 10.0.10.1 (instead of '').
     00:00:01   INFO: Detected topology: IFC='vpnL' -> 'vpnL' ; NEXTHOP='' -> '10.0.10.1'
-$_b_    ^^^^^^^^^^^^^^^^ $__
-$_b_    This shows that vpnL is the interface that is up at start $__
+$_b_    ^^^^^^^^^^^^^^^^$__
+$_b_    This shows that vpnL is the interface that is up at start$__
 
     00:00:01  TRACE: Continuously checking if target is up...
     00:00:01  TRACE: ... and for changes in topology
     00:00:26   INFO: Detected topology: IFC='vpnL' -> 'vpnF' ; NEXTHOP='10.0.10.1' -> '10.0.10.1'
-$_b_    ^^^^^^^^^^^^^^^^ $__
-$_b_    Here somebody replaced vpnL with the full tunnel vpnF $__
+$_b_    ^^^^^^^^^^^^^^^^$__
+$_b_    Here somebody replaced vpnL with the full tunnel vpnF$__
 
     00:00:31   INFO: Detected topology: IFC='vpnF' -> 'eth0' ; NEXTHOP='10.0.10.1' -> '192.168.0.1'
-$_b_    ^^^^^^^^^^^^^^^^ $__
-$_b_    and here the full tunnel was brought down again (without replacing it with any of the other vpn-interfaces) $__
+$_b_    ^^^^^^^^^^^^^^^^$__
+$_b_    and here the full tunnel was brought down again (without replacing it with any of the other vpn-interfaces)$__
 
     00:00:32  TRACE: quick-up failed ... trying slow-up ...
     00:00:32  TRACE: slow-up failed or ambiguous result ... verifying ...
     00:00:34  TRACE: No reply from target 'vpn.inside.dom' (10.0.10.1), checking link and topology.
     00:00:35  TRACE: quick-up failed ... trying slow-up ...
     00:00:35  TRACE: slow-up failed or ambiguous result ... verifying ...
-$_b_    ^^^^^^^^^^^^^^^^ $__
-$_b_    Here the $nwwatchdog gives up and concludes that the ${___}TARGET${__}$_b_ is down. $__
+$_b_    ^^^^^^^^^^^^^^^^$__
+$_b_    Here the $nwwatchdog gives up and concludes that the ${___}TARGET${__}$_b_ is down.$__
 
     00:00:37  ALERT: DOWN - Not getting replies from target 'vpn.inside.dom' (10.0.10.1) on interface 'eth0'.
                      Resetting interface:
                      ifdown vpnL ; ifdown vpnP ; ifdown vpnF
                      ifup vpnL
     00:00:37   INFO: Resetting interface (eth0).
-$_b_    ^^^^^^^^^^^^^^^^                      ^^^^ $__
-$_b_    This can be confusing since it's actually not eth0 that is reset (but it's the current source interface) $__
-$_b_    Below we see that the watchdog actually brings down all the vpn-interfaces and brings up vpnL $__
+$_b_    ^^^^^^^^^^^^^^^^                      ^^^^$__
+$_b_    This can be confusing since it's actually not eth0 that is reset (but it's the current source interface)$__
+$_b_    Below we see that the watchdog actually brings down all the vpn-interfaces and brings up vpnL$__
 
     00:00:37  TRACE: sh -c 'ifdown vpnL ; ifdown vpnP ; ifdown vpnF'
     00:00:38  TRACE: sh -c 'ifup vpnL'
     00:00:38  TRACE: Sleeping for 35 seconds.
-$_b_    ^^^^^^^^^^^^^^^^ $__
-$_b_    This is the grace period we have set in --ifup-grace $__
+$_b_    ^^^^^^^^^^^^^^^^$__
+$_b_    This is the grace period we have set in --ifup-grace$__
     00:01:13   INFO: Detected topology: IFC='eth0' -> 'vpnL' ; NEXTHOP='192.168.0.1' -> '10.0.10.1'
     00:01:13  TRACE: Continuously checking if target is up...
     00:01:13  TRACE: ... and for changes in topology
