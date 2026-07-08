@@ -1,7 +1,7 @@
 # nw-watchdog
-__nw-watchdog__ is a higly configurable network watchdog written in [POSIX](https://pubs.opengroup.org/onlinepubs/9699919799/utilities/contents.html) shell script for use in Linux, depending only on Linux most standard tools that are normally installed by default in all distributions (also see the __[DEPENDENCIES](https://github.com/fraxflax/nw-watchdog/blob/main/documentation/help.md#deps)__ section).
+__nw-watchdog__ is a highly configurable network watchdog written in [POSIX](https://pubs.opengroup.org/onlinepubs/9699919799/utilities/contents.html) shell script for use in Linux, depending only on the most standard Linux tools that are normally installed by default in all distributions (also see the __[DEPENDENCIES](https://github.com/fraxflax/nw-watchdog/blob/main/documentation/help.md#deps)__ section).
 
-It monitors the network connectivity to a specified <ins>TARGET</ins> and/or the next hop towards that <ins>TARGET</ins>, alerting upon lost connectivity explaining what is wrong. It can reset the source interface and will detect topology changes and, if allowed, reconfigure itself accordingly. It's intended to run as a daemon and has an option to install itself as a systemd service.  If you want to monitor the connectivity to several <ins>TARGET</ins>s, you can run several instances of __nw-watchdog__ using different `--pidfile` option arguments.
+It monitors the network connectivity to a specified <ins>TARGET</ins> and/or the next hop towards that <ins>TARGET</ins>, alerting upon lost connectivity explaining what is wrong. It can reset the source interface and will detect topology changes and, if allowed, reconfigure itself accordingly. It's intended to run as a daemon and has an option to install itself as a systemd service. If you want to monitor the connectivity to several <ins>TARGET</ins>s, you can run several instances of __nw-watchdog__ using different `--pidfile` option arguments.
 
 __nw-watchdog__ is free software written by Fredrik Ax \<nw-watchdog@axnet.nu\>.<br>
 Feel free to modify and/or (re)distribute it in any way you like.<br>
@@ -9,7 +9,7 @@ Feel free to modify and/or (re)distribute it in any way you like.<br>
 
 __nw-watchdog__ comes with ABSOLUTELY NO WARRANTY.
 
-If you expirence any problems with __nw-watchdog__, are lacking any functionality or just want to voice your opions about it, feel free to contact me via e-mail.
+If you experience any problems with __nw-watchdog__, are lacking any functionality or just want to voice your options about it, feel free to contact me via e-mail.
 
 ## INSTALL
 Just copy / download the `nw-watchdog` script into your PATH and make it executable.<br>
