@@ -37,18 +37,21 @@ rather than rewriting history.
 The `VERSION` line at the top of the `nw-watchdog` script identifies the build.
 `--version` and `--help` treat any version string containing a `-` as unreleased.
 
-| Where              | Format                              | Example                              |
-|--------------------|-------------------------------------|--------------------------------------|
-| Release (tag)      | `X.Y.Z`                             | `1.1.6`                              |
-| `main` (TESTING)   | `X.Y.Z-main-YYYYMMDD-PR#`           | `1.1.6-main-20260707-72`            |
-| `development`      | `<current main version>-development`| `1.1.6-main-20260707-72-development` |
+| Where            | Format                          | Example                        |
+|------------------|---------------------------------|--------------------------------|
+| Release (tag)    | `X.Y.Z`                         | `1.1.6`                        |
+| `main` (testing) | `X.Y.Z-testing-YYYYMMDD-PR#`    | `1.1.6-testing-20260708-73`    |
+| `development`    | `X.Y.Z-development-YYYYMMDD-PR#` | `1.1.6-development-20260708-73` |
 
-- `X.Y.Z` is the release the build is based on, `YYYYMMDD` the change date, and
-  `PR#` the pull request that introduced it.
-- The maintainer sets the `main` version **inside the PR** — the PR number is known
-  as soon as the PR is opened, so the stamp is visible at review and correct at merge.
-- After the fast-forward sync, `development`'s version is simply the `main` version
-  with `-development` appended.
+- `X.Y.Z` is the release it is based on; `CHANNEL` is `testing` (stable enough to run, normally the
+  next release) or `development` (unstable, in progress); `YYYYMMDD` is the change date; and `PR#` is
+  the pull request that introduced it (for a `development` build, the `testing` build it is based on).
+- The channel word denotes *maturity*, not the branch name, so it stays `testing` even if that branch
+  is later renamed.
+- The maintainer sets the `testing` version **inside the PR** — the PR number is known once the PR is
+  opened, so the stamp is visible at review and correct at merge.
+- After the fast-forward sync, `development`'s version is the `testing` version with the channel word
+  swapped (`testing` → `development`).
 
 ## Releases
 

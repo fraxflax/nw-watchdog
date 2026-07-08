@@ -2,7 +2,7 @@
 # The option-table vars (${o}RE / ${o}V / ${o}ARE for SOPTIONS+AOPTIONS) are set and read
 # only via eval-based dispatch, which shellcheck cannot follow -> false SC2034/SC2154:
 # shellcheck disable=SC2034,SC2154
-VERSION=1.1.6-main-20260708-72
+VERSION=1.1.6-testing-20260708-73
 #
 #       nw-watchdog is a higly configurable network watchdog written
 #       in POSIX shell script for use in Linux.
@@ -158,10 +158,11 @@ EOU
     if printf %s "$VERSION" | grep -q -e-; then $FMT<<EOU
     $VERSION
 
-    This is an unreleased version. Unreleased versions on the main (TESTING) branch use the format
-    LATESTRELEASE-main-CHANGEDATE-PULLREQUESTNUMBER, where LATESTRELEASE is the release this is based on,
-    CHANGEDATE is the date (YYYYMMDD) of the change, and PULLREQUESTNUMBER is the pull request that introduced it.
-    Development-branch builds append "-development" to the main version they are based on.
+    This is an unreleased version. Unreleased versions use the format
+    LATESTRELEASE-CHANNEL-CHANGEDATE-PULLREQUESTNUMBER, where LATESTRELEASE is the release it is based on,
+    CHANNEL is "testing" (stable enough to run, normally the next release) or "development" (unstable, in
+    progress), CHANGEDATE is the date (YYYYMMDD), and PULLREQUESTNUMBER is the pull request that introduced
+    the change (for a "development" build, the "testing" build it is based on).
 EOU
     else printf '    %s\n' "$VERSION"; fi
     $FMT<<EOU
