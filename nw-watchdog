@@ -686,31 +686,31 @@ $_b_    ^^^^^^^^^^^^^^^^$__
 $_b_    and here the full tunnel was brought down again (without replacing it with any of the other vpn-interfaces)$__
 
     00:00:32  TRACE: quick-up failed ... trying slow-up ...
-    00:00:32  TRACE: slow-up failed or ambiguous result ... verifying ...
-    00:00:34  TRACE: No reply from target 'vpn.inside.dom' (10.0.10.1), checking link and topology.
-    00:00:35  TRACE: quick-up failed ... trying slow-up ...
-    00:00:35  TRACE: slow-up failed or ambiguous result ... verifying ...
+    00:01:07  TRACE: slow-up failed or ambiguous result ... verifying ...
+    00:01:09  TRACE: No reply from target 'vpn.inside.dom' (10.0.10.1), checking link and topology.
+    00:01:10  TRACE: quick-up failed ... trying slow-up ...
+    00:01:45  TRACE: slow-up failed or ambiguous result ... verifying ...
 $_b_    ^^^^^^^^^^^^^^^^$__
 $_b_    Here the $nwwatchdog gives up and concludes that the ${___}TARGET${__}$_b_ is down.$__
 
-    00:00:37  ALERT: DOWN - Not getting replies from target 'vpn.inside.dom' (10.0.10.1) on interface 'eth0'.
+    00:01:47  ALERT: DOWN - Not getting replies from target 'vpn.inside.dom' (10.0.10.1) on interface 'eth0'.
                      Resetting interface:
                      ifdown vpnL ; ifdown vpnP ; ifdown vpnF
                      ifup vpnL
-    00:00:37   INFO: Resetting interface (eth0).
+    00:01:47   INFO: Resetting interface (eth0).
 $_b_    ^^^^^^^^^^^^^^^^                      ^^^^$__
 $_b_    This can be confusing since it's actually not eth0 that is reset (but it's the current source interface)$__
 $_b_    Below we see that the watchdog actually brings down all the vpn-interfaces and brings up vpnL$__
 
-    00:00:37  TRACE: sh -c 'ifdown vpnL ; ifdown vpnP ; ifdown vpnF'
-    00:00:38  TRACE: sh -c 'ifup vpnL'
-    00:00:38  TRACE: Sleeping for 35 seconds.
+    00:01:47  TRACE: sh -c 'ifdown vpnL ; ifdown vpnP ; ifdown vpnF'
+    00:01:48  TRACE: sh -c 'ifup vpnL'
+    00:01:48  TRACE: Sleeping for 35 seconds.
 $_b_    ^^^^^^^^^^^^^^^^$__
 $_b_    This is the grace period we have set in --ifup-grace$__
-    00:01:13   INFO: Detected topology: IFC='eth0' -> 'vpnL' ; NEXTHOP='192.168.0.1' -> '10.0.10.1'
-    00:01:13  TRACE: Continuously checking if target is up...
-    00:01:13  TRACE: ... and for changes in topology
-    00:01:13  ALERT: UP - Target 'vpn.inside.dom' (10.0.10.1) is up.
+    00:02:23   INFO: Detected topology: IFC='eth0' -> 'vpnL' ; NEXTHOP='192.168.0.1' -> '10.0.10.1'
+    00:02:23  TRACE: Continuously checking if target is up...
+    00:02:23  TRACE: ... and for changes in topology
+    00:02:23  ALERT: UP - Target 'vpn.inside.dom' (10.0.10.1) is up.
 EOU
     $FMT <<EOU
 
